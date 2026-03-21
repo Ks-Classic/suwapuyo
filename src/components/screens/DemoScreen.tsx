@@ -846,10 +846,13 @@ class PuyoDemo {
     this.onScoreChange?.(this.score);
     this.onChainChange?.(this.chainCount);
 
-    // Check if any tanuki in the clearable groups
+    // Check character-specific sounds
     const hasTanuki = clearable.some((g) => g.type === "tanuki");
+    const hasTooth = clearable.some((g) => g.type === "tooth");
     if (hasTanuki) {
       this.sfx.coin();
+    } else if (hasTooth) {
+      this.sfx.toothPop();
     } else {
       this.sfx.pop(this.chainCount);
     }
