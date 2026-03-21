@@ -1073,68 +1073,62 @@ class PuyoDemo {
       .then(() => text.destroy());
   }
 
-  /** Spawn gold coin particles for tanuki pop */
+  /** Spawn money emoji particles for tanuki pop 💰🪙💵 */
   spawnCoinParticles(x: number, y: number, count: number) {
-    // Gold coin circles
+    const moneyEmoji = ["💰", "🪙", "💵", "💲", "$", "💰", "🪙", "💵"];
+
+    // Big money emoji flying outward
     for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
-      const speed = 150 + Math.random() * 200;
-      const size = 4 + Math.random() * 5;
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+      const speed = 120 + Math.random() * 180;
 
-      const g = new Graphics();
+      const g = new Container();
 
-      // Coin body (gold gradient look)
-      g.circle(0, 0, size).fill({ color: 0xffd700, alpha: 1 });
-      g.circle(0, 0, size * 0.7).fill({ color: 0xffec80, alpha: 0.8 });
+      const emoji = moneyEmoji[i % moneyEmoji.length];
+      const fontSize = 16 + Math.random() * 14;
 
-      // Small ¥ mark on larger coins
-      if (size > 6 && i % 3 === 0) {
-        const yenStyle = new TextStyle({
-          fontFamily: "'M PLUS Rounded 1c', sans-serif",
-          fontSize: size * 1.2,
-          fontWeight: "900",
-          fill: "#B08860",
-        });
-        const yen = new Text({ text: "¥", style: yenStyle });
-        yen.anchor.set(0.5);
-        g.addChild(yen);
-      }
+      const textObj = new Text({
+        text: emoji,
+        style: new TextStyle({
+          fontSize,
+          fontFamily: "sans-serif",
+        }),
+      });
+      textObj.anchor.set(0.5);
+      g.addChild(textObj);
 
       g.x = x;
       g.y = y;
       this.effectContainer.addChild(g);
 
       particles.push({
-        g,
+        g: g as any,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 100, // bias upward
+        vy: Math.sin(angle) * speed - 120,
         life: 0,
-        maxLife: 500 + Math.random() * 300,
+        maxLife: 700 + Math.random() * 400,
       });
     }
 
-    // Sparkle stars
-    for (let i = 0; i < 6; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 8 + Math.random() * 20;
-      const g = new Graphics();
+    // Extra: floating "+$" text rising up
+    const plusText = new Text({
+      text: "+$$$",
+      style: new TextStyle({
+        fontFamily: "'M PLUS Rounded 1c', sans-serif",
+        fontSize: 22,
+        fontWeight: "900",
+        fill: "#FFD700",
+        stroke: { color: "#B08860", width: 3 },
+      }),
+    });
+    plusText.anchor.set(0.5);
+    plusText.x = x;
+    plusText.y = y;
+    this.effectContainer.addChild(plusText);
 
-      // Star shape (4 points)
-      const sz = 2 + Math.random() * 3;
-      g.star(0, 0, 4, sz, sz * 0.4).fill({ color: 0xfffacd, alpha: 1 });
-
-      g.x = x + Math.cos(angle) * dist;
-      g.y = y + Math.sin(angle) * dist;
-      this.effectContainer.addChild(g);
-
-      particles.push({
-        g,
-        vx: Math.cos(angle) * 60,
-        vy: Math.sin(angle) * 60 - 50,
-        life: 0,
-        maxLife: 350 + Math.random() * 200,
-      });
-    }
+    tweenTo(plusText as any, { y: y - 60, alpha: 0 }, 900, easeOutQuad).then(
+      () => plusText.destroy()
+    );
   }
 
   destroy() {
