@@ -2,31 +2,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
   width: 100%;
   max-width: 500px;
-  height: 100%;
-  overflow-y: auto;
+  height: 100vh;
+  height: 100dvh;
+  padding: env(safe-area-inset-top, 6px) 8px env(safe-area-inset-bottom, 6px);
+  overflow: hidden;
+  gap: 5px;
 }
 
 /* ──── Header ──── */
 .header {
   text-align: center;
-  padding: var(--space-sm) var(--space-lg);
+  padding: 3px 16px;
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: var(--radius-full);
   border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 .title {
-  font-size: var(--font-size-2xl);
+  font-size: 1.3rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  line-height: 1.1;
+  line-height: 1.2;
   color: var(--color-text-primary);
 }
 
@@ -36,10 +38,10 @@
 }
 
 .subtitle {
-  font-size: var(--font-size-xs);
+  font-size: 0.65rem;
   color: var(--color-text-secondary);
-  margin-top: 2px;
   font-weight: 700;
+  line-height: 1;
 }
 
 /* ──── Stats bar ──── */
@@ -47,13 +49,14 @@
   display: flex;
   gap: var(--space-lg);
   align-items: center;
-  padding: var(--space-sm) var(--space-xl);
+  padding: 3px 20px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-radius: var(--radius-full);
   border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 .stat {
@@ -63,18 +66,20 @@
 }
 
 .statLabel {
-  font-size: var(--font-size-xs);
+  font-size: 0.6rem;
   color: var(--color-text-muted);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-weight: 700;
+  line-height: 1;
 }
 
 .statValue {
-  font-size: var(--font-size-xl);
+  font-size: 1.1rem;
   font-weight: 900;
   font-family: var(--font-game);
   color: var(--color-text-primary);
+  line-height: 1.2;
 }
 
 .chainStat {
@@ -82,10 +87,11 @@
 }
 
 .chainValue {
-  font-size: var(--font-size-xl);
+  font-size: 1.1rem;
   font-weight: 900;
   color: var(--color-orange);
   text-shadow: 1px 1px 0 rgba(245, 166, 35, 0.3);
+  line-height: 1.2;
 }
 
 @keyframes chainPulse {
@@ -96,16 +102,28 @@
 /* ──── Board ──── */
 .boardWrapper {
   position: relative;
-  flex-shrink: 0;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.boardContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .boardContainer canvas {
   display: block;
   border-radius: var(--radius-lg);
   box-shadow:
-    0 6px 24px rgba(74, 55, 40, 0.2),
-    0 2px 8px rgba(74, 55, 40, 0.1),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+    0 4px 16px rgba(74, 55, 40, 0.18),
+    0 2px 6px rgba(74, 55, 40, 0.1);
+  transition: transform 0.2s ease;
+  transform-origin: center center;
 }
 
 .loading {
@@ -115,7 +133,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   background: rgba(255, 255, 255, 0.85);
   border-radius: var(--radius-lg);
   z-index: 10;
@@ -125,8 +143,8 @@
 }
 
 .spinner {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: 3px solid rgba(74, 55, 40, 0.15);
   border-top-color: var(--color-accent);
   border-radius: 50%;
@@ -137,40 +155,36 @@
   to { transform: rotate(360deg); }
 }
 
-/* ──── Character Info ──── */
+/* ──── Character Info (compact single row) ──── */
 .charInfo {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-sm);
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
   width: 100%;
+  justify-content: center;
 }
 
 .charCard {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
+  gap: 4px;
+  padding: 3px 8px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
-  transition: var(--transition-fast);
-}
-
-.charCard:hover {
-  background: rgba(255, 255, 255, 0.95);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  flex: 1;
+  min-width: 0;
 }
 
 .charIcon {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   image-rendering: crisp-edges;
   flex-shrink: 0;
-  filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.08));
 }
 
 .charDetails {
@@ -180,45 +194,55 @@
 }
 
 .charName {
-  font-size: var(--font-size-sm);
+  font-size: 0.65rem;
   font-weight: 900;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.1;
 }
 
 .charPop {
-  font-size: var(--font-size-xs);
+  font-size: 0.55rem;
   font-weight: 700;
+  line-height: 1;
 }
 
 /* ──── Instructions ──── */
 .instructions {
-  font-size: var(--font-size-xs);
+  font-size: 0.6rem;
   font-weight: 700;
   color: var(--color-text-secondary);
   text-align: center;
-  padding: var(--space-sm) var(--space-md);
-  background: rgba(255, 255, 255, 0.7);
+  padding: 3px 12px;
+  background: rgba(255, 255, 255, 0.65);
   border-radius: var(--radius-full);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: var(--shadow-sm);
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-/* ──── Responsive ──── */
-@media (max-height: 700px) {
-  .wrapper {
-    gap: var(--space-sm);
-    padding: var(--space-sm);
-  }
-  .title {
-    font-size: var(--font-size-xl);
-  }
-  .charInfo {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .charDetails {
-    display: none;
-  }
+/* ──── Responsive: larger screens get bigger UI ──── */
+@media (min-height: 750px) {
+  .wrapper { gap: 8px; }
+  .title { font-size: 1.6rem; }
+  .statValue, .chainValue { font-size: 1.3rem; }
+  .charIcon { width: 32px; height: 32px; }
+  .charName { font-size: 0.75rem; }
+  .charPop { font-size: 0.6rem; }
+  .instructions { font-size: 0.7rem; }
+}
+
+@media (min-height: 900px) {
+  .wrapper { gap: 12px; }
+  .header { padding: 6px 20px; }
+  .title { font-size: 1.8rem; }
+  .statsBar { padding: 6px 24px; }
+  .statValue, .chainValue { font-size: 1.5rem; }
+  .charCard { padding: 6px 12px; gap: 8px; }
+  .charIcon { width: 36px; height: 36px; }
+  .charName { font-size: 0.85rem; }
+  .charPop { font-size: 0.7rem; }
+  .instructions { font-size: 0.75rem; padding: 5px 16px; }
 }

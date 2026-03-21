@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import {
   Application,
   Assets,
@@ -1087,12 +1087,32 @@ function delay(ms: number): Promise<void> {
 // ═══════════════════════════════════════
 // React Component
 // ═══════════════════════════════════════
+// Canvas size constants (match BOARD_W/H + PAD)
+const CANVAS_W = BOARD_W + BOARD_PAD * 2;
+const CANVAS_H = BOARD_H + BOARD_PAD * 2;
+
 export function DemoScreen() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const boardWrapperRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<PuyoDemo | null>(null);
   const [score, setScore] = useState(0);
   const [chain, setChain] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Auto-scale canvas to fit available space
+  const scaleCanvas = useCallback(() => {
+    const wrapper = boardWrapperRef.current;
+    const canvas = containerRef.current?.querySelector("canvas");
+    if (!wrapper || !canvas) return;
+
+    const rect = wrapper.getBoundingClientRect();
+    const scaleX = rect.width / CANVAS_W;
+    const scaleY = rect.height / CANVAS_H;
+    const scale = Math.min(scaleX, scaleY, 1);
+
+    canvas.style.transform = `scale(${scale})`;
+    canvas.style.transformOrigin = "center center";
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -1107,6 +1127,7 @@ export function DemoScreen() {
       .then(() => {
         if (!demo.destroyed) {
           setLoading(false);
+          requestAnimationFrame(scaleCanvas);
         }
       })
       .catch((err) => {
@@ -1117,7 +1138,24 @@ export function DemoScreen() {
       demo.destroy();
       demoRef.current = null;
     };
-  }, []);
+  }, [scaleCanvas]);
+
+  // Observe wrapper size for responsive scaling
+  useEffect(() => {
+    const wrapper = boardWrapperRef.current;
+    if (!wrapper || loading) return;
+
+    const observer = new ResizeObserver(() => {
+      requestAnimationFrame(scaleCanvas);
+    });
+    observer.observe(wrapper);
+    window.addEventListener("resize", scaleCanvas);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", scaleCanvas);
+    };
+  }, [loading, scaleCanvas]);
 
   return (
     <div className={styles.wrapper}>
@@ -1143,8 +1181,8 @@ export function DemoScreen() {
         )}
       </div>
 
-      {/* Game Board */}
-      <div className={styles.boardWrapper}>
+      {/* Game Board - flex:1 takes remaining space */}
+      <div ref={boardWrapperRef} className={styles.boardWrapper}>
         {loading && (
           <div className={styles.loading}>
             <div className={styles.spinner} />
