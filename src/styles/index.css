@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+
+:root {
+  /* ──── Kawaii Color Palette ──── */
+  --color-sky-top: #87CEEB;
+  --color-sky-bottom: #C5E8F7;
+  --color-grass-dark: #5DAE3E;
+  --color-grass-light: #8BD46E;
+  --color-ground: #7EC850;
+
+  --color-bg-primary: #B8E5F7;
+  --color-bg-card: rgba(255, 255, 255, 0.85);
+  --color-bg-card-hover: rgba(255, 255, 255, 0.95);
+  --color-board-bg: rgba(255, 255, 255, 0.4);
+  --color-board-cell: rgba(255, 255, 255, 0.5);
+
+  --color-text-primary: #4A3728;
+  --color-text-secondary: #7A634E;
+  --color-text-muted: #A08B74;
+  --color-text-white: #ffffff;
+
+  --color-accent: #F5A623;
+  --color-accent-light: #FFD93D;
+  --color-accent-dark: #E8950A;
+  --color-accent-glow: rgba(245, 166, 35, 0.4);
+
+  --color-pink: #FF8FAB;
+  --color-green: #6BBF4E;
+  --color-blue: #5BC0EB;
+  --color-orange: #F5A623;
+  --color-cream: #FFF8E7;
+
+  --color-success: #6BBF4E;
+  --color-warning: #F5A623;
+  --color-danger: #FF6B6B;
+
+  /* Character theme colors */
+  --color-ghost: #D4EEF7;
+  --color-tooth: #FFF5E0;
+  --color-blob: #F0E8F4;
+  --color-tanuki: #D4B896;
+
+  /* ──── Typography ──── */
+  --font-primary: 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Hiragino Maru Gothic Pro', system-ui, sans-serif;
+  --font-game: 'M PLUS Rounded 1c', 'Zen Maru Gothic', monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 3rem;
+  --font-size-4xl: 4rem;
+
+  /* ──── Spacing ──── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ──── Border Radius ──── */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* ──── Shadows ──── */
+  --shadow-sm: 0 2px 8px rgba(74, 55, 40, 0.1);
+  --shadow-md: 0 4px 16px rgba(74, 55, 40, 0.15);
+  --shadow-lg: 0 8px 32px rgba(74, 55, 40, 0.2);
+  --shadow-card: 0 4px 12px rgba(74, 55, 40, 0.12);
+  --shadow-board: 0 6px 24px rgba(74, 55, 40, 0.2), 0 2px 8px rgba(74, 55, 40, 0.1);
+
+  /* ──── Transitions ──── */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+
+  /* ──── Z-index ──── */
+  --z-board: 1;
+  --z-ui: 10;
+  --z-overlay: 100;
+  --z-modal: 1000;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Village background */
+  background: url('/assets/ui/village_bg.png') center center / cover no-repeat fixed;
+  background-color: var(--color-sky-top);
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ──── Scrollbar ──── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(74, 55, 40, 0.2);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 55, 40, 0.3);
+}
+
+/* ──── Focus ──── */
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ──── Glass card (kawaii style) ──── */
+.glass {
+  background: var(--color-bg-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
