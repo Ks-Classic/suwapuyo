@@ -1,4 +1,4 @@
-import type { BoardGrid, PuyoPairState, ConnectedGroup, GravityMove, ChainStep } from "./puyo";
+import type { BoardGrid, PuyoPairState, GravityMove, ChainStep } from "./puyo";
 import type { PuyoType } from "../config/puyoTypes";
 
 export type GamePhase =

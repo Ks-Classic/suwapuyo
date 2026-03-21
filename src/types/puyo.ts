@@ -8,12 +8,14 @@ export interface PuyoCell {
 
 export type BoardGrid = (PuyoCell | null)[][];
 
-export enum Direction {
-  UP = 0,
-  RIGHT = 1,
-  DOWN = 2,
-  LEFT = 3,
-}
+export const Direction = {
+  UP: 0,
+  RIGHT: 1,
+  DOWN: 2,
+  LEFT: 3,
+} as const;
+
+export type Direction = (typeof Direction)[keyof typeof Direction];
 
 export interface PuyoPairState {
   pivot: { row: number; col: number; type: PuyoType };
