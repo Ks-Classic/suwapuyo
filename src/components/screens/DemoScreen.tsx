@@ -845,7 +845,14 @@ class PuyoDemo {
     this.score += pointsPer;
     this.onScoreChange?.(this.score);
     this.onChainChange?.(this.chainCount);
-    this.sfx.pop(this.chainCount);
+
+    // Check if any tanuki in the clearable groups
+    const hasTanuki = clearable.some((g) => g.type === "tanuki");
+    if (hasTanuki) {
+      this.sfx.coin();
+    } else {
+      this.sfx.pop(this.chainCount);
+    }
 
     // Phase 1: Flash white + scale up
     const flashPromises = allCells.map(({ row, col }) => {
@@ -883,13 +890,22 @@ class PuyoDemo {
       if (!sprite) return Promise.resolve();
       const type = this.board[row][col];
 
-      spawnParticles(
-        this.effectContainer,
-        this.cellX(col),
-        this.cellY(row),
-        type ? THEME_COLORS[type] : 0xffffff,
-        8
-      );
+      if (type === "tanuki") {
+        // Coin particles for tanuki!
+        this.spawnCoinParticles(
+          this.cellX(col),
+          this.cellY(row),
+          12
+        );
+      } else {
+        spawnParticles(
+          this.effectContainer,
+          this.cellX(col),
+          this.cellY(row),
+          type ? THEME_COLORS[type] : 0xffffff,
+          8
+        );
+      }
 
       return Promise.all([
         tweenTo(sprite.scale as any, { x: 0, y: 0 }, 250, easeInQuad),
@@ -1055,6 +1071,70 @@ class PuyoDemo {
         ])
       )
       .then(() => text.destroy());
+  }
+
+  /** Spawn gold coin particles for tanuki pop */
+  spawnCoinParticles(x: number, y: number, count: number) {
+    // Gold coin circles
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+      const speed = 150 + Math.random() * 200;
+      const size = 4 + Math.random() * 5;
+
+      const g = new Graphics();
+
+      // Coin body (gold gradient look)
+      g.circle(0, 0, size).fill({ color: 0xffd700, alpha: 1 });
+      g.circle(0, 0, size * 0.7).fill({ color: 0xffec80, alpha: 0.8 });
+
+      // Small ¥ mark on larger coins
+      if (size > 6 && i % 3 === 0) {
+        const yenStyle = new TextStyle({
+          fontFamily: "'M PLUS Rounded 1c', sans-serif",
+          fontSize: size * 1.2,
+          fontWeight: "900",
+          fill: "#B08860",
+        });
+        const yen = new Text({ text: "¥", style: yenStyle });
+        yen.anchor.set(0.5);
+        g.addChild(yen);
+      }
+
+      g.x = x;
+      g.y = y;
+      this.effectContainer.addChild(g);
+
+      particles.push({
+        g,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 100, // bias upward
+        life: 0,
+        maxLife: 500 + Math.random() * 300,
+      });
+    }
+
+    // Sparkle stars
+    for (let i = 0; i < 6; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 8 + Math.random() * 20;
+      const g = new Graphics();
+
+      // Star shape (4 points)
+      const sz = 2 + Math.random() * 3;
+      g.star(0, 0, 4, sz, sz * 0.4).fill({ color: 0xfffacd, alpha: 1 });
+
+      g.x = x + Math.cos(angle) * dist;
+      g.y = y + Math.sin(angle) * dist;
+      this.effectContainer.addChild(g);
+
+      particles.push({
+        g,
+        vx: Math.cos(angle) * 60,
+        vy: Math.sin(angle) * 60 - 50,
+        life: 0,
+        maxLife: 350 + Math.random() * 200,
+      });
+    }
   }
 
   destroy() {

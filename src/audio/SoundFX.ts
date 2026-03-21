@@ -225,6 +225,68 @@ export class SoundFX {
     }
   }
 
+  /** シャリーン！ Coin/money jingle for tanuki (たぬぺい) */
+  coin() {
+    const ctx = this.getCtx();
+    const now = ctx.currentTime;
+
+    // Layer 1: High metallic shimmer (main "シャリーン")
+    const harmonics = [2637, 3520, 4186, 5274]; // E7, A7, C8, E8
+    harmonics.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + i * 0.015);
+
+      const vol = this.masterVolume * 0.3 / (i + 1);
+      gain.gain.setValueAtTime(vol, now + i * 0.015);
+      gain.gain.exponentialRampToValueAtTime(vol * 0.6, now + i * 0.015 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.015 + 0.5);
+
+      osc.start(now + i * 0.015);
+      osc.stop(now + i * 0.015 + 0.5);
+    });
+
+    // Layer 2: Metallic "ting" attack
+    const ting = ctx.createOscillator();
+    const tingGain = ctx.createGain();
+    ting.connect(tingGain);
+    tingGain.connect(ctx.destination);
+
+    ting.type = "square";
+    ting.frequency.setValueAtTime(6000, now);
+    ting.frequency.exponentialRampToValueAtTime(3000, now + 0.08);
+
+    tingGain.gain.setValueAtTime(this.masterVolume * 0.12, now);
+    tingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+    ting.start(now);
+    ting.stop(now + 0.1);
+
+    // Layer 3: Coin bounce resonance (delayed)
+    for (let j = 0; j < 3; j++) {
+      const bounce = ctx.createOscillator();
+      const bGain = ctx.createGain();
+      bounce.connect(bGain);
+      bGain.connect(ctx.destination);
+
+      const t = now + 0.12 + j * 0.08;
+      bounce.type = "sine";
+      bounce.frequency.setValueAtTime(3520 - j * 400, t);
+      bounce.frequency.exponentialRampToValueAtTime(2000, t + 0.12);
+
+      const bVol = this.masterVolume * 0.15 / (j + 1);
+      bGain.gain.setValueAtTime(bVol, t);
+      bGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+      bounce.start(t);
+      bounce.stop(t + 0.15);
+    }
+  }
+
   dispose() {
     if (this.ctx) {
       this.ctx.close();
