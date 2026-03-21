@@ -1242,9 +1242,9 @@ export function DemoScreen() {
       {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.title}>
-          <span className={styles.titleAccent}>Suwa</span>Puyo
+          <span className={styles.titleAccent}>すわ</span>ぷよ
         </h1>
-        <p className={styles.subtitle}>すわぷよ — MVP Demo</p>
+        <p className={styles.subtitle}>MVP Demo</p>
       </div>
 
       {/* Score & Chain */}
