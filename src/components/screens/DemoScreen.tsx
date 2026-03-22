@@ -849,10 +849,13 @@ class PuyoDemo {
     // Check character-specific sounds
     const hasTanuki = clearable.some((g) => g.type === "tanuki");
     const hasTooth = clearable.some((g) => g.type === "tooth");
+    const hasBlob = clearable.some((g) => g.type === "blob");
     if (hasTanuki) {
       this.sfx.coin();
     } else if (hasTooth) {
       this.sfx.toothPop();
+    } else if (hasBlob) {
+      this.sfx.blobPop();
     } else {
       this.sfx.pop(this.chainCount);
     }
@@ -899,6 +902,13 @@ class PuyoDemo {
           this.cellX(col),
           this.cellY(row),
           12
+        );
+      } else if (type === "blob") {
+        // Strawberry burst for blob (すーすー)!
+        this.spawnStrawberryParticles(
+          this.cellX(col),
+          this.cellY(row),
+          10
         );
       } else {
         spawnParticles(
@@ -1131,6 +1141,66 @@ class PuyoDemo {
 
     tweenTo(plusText as any, { y: y - 60, alpha: 0 }, 900, easeOutQuad).then(
       () => plusText.destroy()
+    );
+  }
+
+  /** 🍓 Strawberry burst particles for blob (すーすー) */
+  spawnStrawberryParticles(x: number, y: number, count: number) {
+    const berryEmoji = ["🍓", "🍓", "💕", "🍓", "❤️", "🍓", "💗", "🍓"];
+
+    // Strawberries flying outward in burst pattern
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+      const speed = 100 + Math.random() * 200;
+
+      const g = new Container();
+
+      const emoji = berryEmoji[i % berryEmoji.length];
+      const fontSize = 14 + Math.random() * 12;
+
+      const textObj = new Text({
+        text: emoji,
+        style: new TextStyle({
+          fontSize,
+          fontFamily: "sans-serif",
+        }),
+      });
+      textObj.anchor.set(0.5);
+      g.addChild(textObj);
+
+      g.x = x;
+      g.y = y;
+      // Start small and burst outward
+      g.scale.set(0.3);
+      this.effectContainer.addChild(g);
+
+      // Scale up quickly for "burst" feel
+      tweenTo(g.scale as any, { x: 1.2, y: 1.2 }, 150, easeOutBack);
+
+      particles.push({
+        g: g as any,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 100,
+        life: 0,
+        maxLife: 600 + Math.random() * 400,
+      });
+    }
+
+    // Extra: floating "💕" heart rising up
+    const heartText = new Text({
+      text: "💕",
+      style: new TextStyle({
+        fontFamily: "'M PLUS Rounded 1c', sans-serif",
+        fontSize: 24,
+      }),
+    });
+    heartText.anchor.set(0.5);
+    heartText.x = x;
+    heartText.y = y;
+    this.effectContainer.addChild(heartText);
+
+    tweenTo(heartText as any, { y: y - 65, alpha: 0 }, 900, easeOutQuad).then(
+      () => heartText.destroy()
     );
   }
 

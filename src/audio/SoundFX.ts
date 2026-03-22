@@ -298,6 +298,88 @@ export class SoundFX {
     }
   }
 
+  /** 💕 Heart-like cute pop for blob (すーすー) - soft, warm, dreamy */
+  blobPop() {
+    const ctx = this.getCtx();
+    const now = ctx.currentTime;
+
+    // Layer 1: Soft "pyu" attack - cute ascending chirp
+    {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.06);
+      osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+      gain.gain.setValueAtTime(this.masterVolume * 0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    }
+
+    // Layer 2: Warm heart shimmer - major chord (C5, E5, G5) with vibrato
+    const heartFreqs = [523, 659, 784]; // C5, E5, G5
+    heartFreqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + 0.05);
+      // Gentle vibrato for warmth
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      lfo.frequency.setValueAtTime(6, now + 0.05);
+      lfoGain.gain.setValueAtTime(8, now + 0.05);
+      lfo.start(now + 0.05);
+      lfo.stop(now + 0.6);
+
+      const vol = (this.masterVolume * 0.35) / (i + 1);
+      gain.gain.setValueAtTime(vol, now + 0.05);
+      gain.gain.setValueAtTime(vol * 0.7, now + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc.start(now + 0.05);
+      osc.stop(now + 0.6);
+    });
+
+    // Layer 3: Sparkly strawberry burst - descending twinkles
+    for (let j = 0; j < 4; j++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      const t = now + 0.1 + j * 0.07;
+      osc.type = "sine";
+      const freq = 2000 - j * 200 + Math.random() * 150;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.12);
+      const vol = (this.masterVolume * 0.2) / (j * 0.4 + 1);
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.start(t);
+      osc.stop(t + 0.15);
+    }
+
+    // Layer 4: Low warm "thump" - soft heartbeat feel
+    {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(150, now + 0.03);
+      osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+      gain.gain.setValueAtTime(this.masterVolume * 0.3, now + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.start(now + 0.03);
+      osc.stop(now + 0.2);
+    }
+  }
+
   /** Play suwa-good-morning.mp3 when tooth (わーわー) pops */
   async toothPop() {
     const ctx = this.getCtx();
