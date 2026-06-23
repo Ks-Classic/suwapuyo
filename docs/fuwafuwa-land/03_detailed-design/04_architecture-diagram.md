@@ -1,0 +1,84 @@
+# 03-04 アーキテクチャ構成図
+
+> 最終更新: 2026-06-23 / **同期は Supabase Realtime 第一**（D-4・2026-06-23更新 / ネット接続前提）。実装は `06_build-bible.md`。
+
+## 0. 一番知りたい所 ―― スマホ撮影がモニターに出るまで
+
+スタッフがスマホのWebアプリで**塗り絵台紙/作品用紙**を撮ったら、**Supabase（マネージドWebSocket）経由で表示PCへ即時に**飛び、体感1〜2秒でモニターに登場する。重い画像処理（マーカー切り出し・連結背景透過・縮小）は**スマホ側で完結**させ、Storageへ小さく上げる。顔写真/人物写真は登録対象外。
+
+```
+スタッフ(スマホ #/staff)              Supabase(クラウド)            表示ブラウザ(#/display)        DELLモニター
+  │ ① 作品用紙を撮影(カメラ)                │                            │                          │
+  │ ② マーカー検出→切り出し→透過→縮小        │                            │                          │
+  │ ③ 下の名前/同意を付与                  │                            │                          │
+  │ ④ Storageへ画像アップロード ──────────▶│ (bucket: artworks)         │                          │
+  │ ⑤ artworks 行を insert ──────────────▶│ (Postgres)                 │                          │
+  │                                       │ ⑥ Realtimeで insert を push ─▶│                          │
+  │                                       │                            │ ⑦ 画像URL取得＋IndexedDBにキャッシュ
+  │                                       │                            │ ⑧ PixiJSにスプライト追加 ─▶│ ⑨ 登場アニメ
+  ▼                                                                                  体感 1〜2秒で登場
+```
+
+- **正本(source of truth)は Supabase**（Storage=画像 / Postgres=`artworks`・`display_state`）。表示PCの **IndexedDB はキャッシュ＆オフライン復帰用**。
+- スタッフ操作（全リセット/ランダム/主役/非表示/表示数/一時停止）は `display_state` を update → 表示が Realtime で購読して反映。表示画面はview専用。
+- **自前WSサーバは不要**（Supabase Realtime がWebSocketを担う）。
+- 入力は「塗り絵台紙撮影」「画像ファイル」「デジタル描画」。顔写真AI変換はMVP外。
+
+## 1. システム構成（B案・本番＝Gateと同一）
+
+```
+┌────────── インターネット ──────────┐
+│                                    │
+│   ┌──────────┐   ┌──────────┐      │        ┌─────────────── Supabase ───────────────┐
+│   │ スマホ #1 │   │ スマホ #2 │ … ──┼──────▶ │  Storage(artworks bucket) : 画像Blob        │
+│   │ #/staff   │   │ #/staff   │      │        │  Postgres(artworks/display_state)         │
+│   └──────────┘   └──────────┘      │        │  Realtime(WebSocket) : insert/updateをpush │
+│         撮影＋切り出し＋操作          │        └──────────────────┬─────────────────────┘
+│                                    │                           │ Realtime購読 / 取得
+│   ┌─────────────────────────────┐  │                           ▼
+│   │ 表示PC(Chrome/Edge) #/display│◀─┼───────────────────────────┘
+│   │  ├ IndexedDB(キャッシュ/復帰) │  │
+│   │  └ PixiJS ふわふわワールド     │  │
+│   └──────────────┬──────────────┘  │
+└──────────────────┼─────────────────┘
+                   │ HDMI
+            ┌──────▼──────┐
+            │ DELLモニター  │（横長1枚を正）
+            └─────────────┘
+```
+
+## 2. ローカルフォールバック（Supabase未接続/wifi断時）
+
+```
+表示PC 1台で継続（または開発時）
+  #/staff タブ ──[BroadcastChannel]──▶ #/display タブ ──HDMI──▶ モニター
+   撮影 = PCウェブカメラ or ファイル選択 / 保存 = IndexedDB / 描画 = PixiJS
+```
+- 当日wifiが落ちても、**表示済みはIndexedDBキャッシュで表示継続**、表示PC直撮影で登録継続。回復後にSupabaseへ同期。
+- 開発初期に単体で動かす時もこのモードを使える（ただしGate判定は本番同一のSupabase構成で行う）。
+
+## 3. 段階と同期方式
+
+```
+Gate(6/25)・本番(8/2) : スマホ#/staff → Supabase Realtime → 表示PC#/display   … 本番同一・実テスト
+フォールバック          : 単一PC / IndexedDB / BroadcastChannel                … wifi断・開発時
+不採用                  : LAN-WS自前サーバ（ネット前提のため不要）
+```
+
+## 4. モジュール責務（src/fuwafuwa-land/ ・ 詳細は 06_build-bible）
+
+```
+React/components : UIと操作（StaffPanel / RegisterForm / ArtworkList / DisplayScreen / MetricsOverlay）
+capture          : 作品用紙撮影→マーカー検出→ワープ→連結背景透過→Blob（スマホ側で実行）
+digital          : 依存なし塗りキャンバス（透過PNG・印刷なし導線）
+store            : ArtworkRepository。第一= SupabaseArtworkRepository(Storage+Postgres+Realtime)。IndexedDB= キャッシュ/復帰
+renderer         : PixiJS ふわふわワールド（スプライト管理・ふわふわ移動・モード）。Realtime購読で反映
+lib/supabase     : クライアント生成（env から URL/anon key）
+```
+
+## 5. 同期境界の設計意図
+
+- **`ArtworkRepository` インターフェースの背後に同期を隠す**。第一= `SupabaseArtworkRepository`、フォールバック/開発= `LocalArtworkRepository`(IndexedDB)。UI/レンダラは無改修で差し替え可能。
+- `display_state` も Supabase Realtime（単一PC運用時のみ BroadcastChannel）。
+- これにより「Gateから本番同一構成」「wifi断はローカル継続」「将来の派生機能はクラウドのデータを再利用」を一本のコードで満たす。
+- セキュリティ: RLSを有効化し当日限定の anon ポリシー。`.env*`（URL/anon key）はコミットしない（CR-S）。
