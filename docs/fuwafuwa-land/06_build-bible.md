@@ -116,6 +116,15 @@ export interface FuwafuwaConfig {
     edgeWhite: { lumaThreshold: 235; saturationThreshold: 28; featherPx: 2 };
   };
   card: { cornerRadius: number; shadow: boolean }; // 切り出し作品の見た目(角丸カード+影)
+  secretMode: {
+    triggerSampleId: "sample-tooth";
+    tapCount: 5;
+    tapWindowMs: 2500;
+    audioUrl: "/assets/audio/suwa-good-morning.mp3";
+    modeText: "わーわーもーど!";
+    speedMultiplier: 1.5;
+    rainCount: 20;
+  };
 }
 export const SUUSUU_CONFIG: FuwafuwaConfig = { /* 既定値 */ };
 ```
@@ -281,6 +290,7 @@ Props: `{ width:number; height:number; onComplete:(blob:Blob, w:number, h:number
 - 作品スプライト: `getImageURL(id)`→`createImageBitmap`→`Texture.from`。角丸＋ソフト影は、生成時に1度だけ角丸マスク済みテクスチャを作る（毎フレームfilter禁止＝性能）。
 - 背景: `config.background.imageUrl` があれば `public/assets/ui/village_bg.png` をPixiステージ最背面にcover配置する。CSS側も同画像を背景に指定し、WebGL初期化前も白画面にしない。
 - サンプル: `config.sampleCharacters` / `sampleCharacters.ts` は既存 `public/assets/sprites/*/idle.png` を参照する。作品登録後も削除せず、世界観の住人として背面寄りに漂わせる。
+- 裏モード: サンプルの `sample-tooth`（わーわー）は `pointertap` 対象。タップごとに `/assets/audio/suwa-good-morning.mp3` を再生し、`tapWindowMs` 内に5回タップされたら `わーわーもーど!` がぐるぐる登場し、最後に約1秒どーんと中央表示される。同時に表示中の全キャラの見た目とラベルをわーわーに差し替えて大きくし、約20匹のわーわーが上から回転しながら降ってくる。裏モード中は全キャラを約1.5倍速で動かす。再度5回タップで元に戻す。登録作品のSupabase画像/メタデータは変更しない。
 - 各スプライトの状態 `{ id, sprite, x,y, vx,vy, phase }`。`artworkMotion.update(dt)` で：ゆっくり等速ドリフト＋正弦の上下(bob)＋微回転、画面端で反射、重なり過多を避ける弱い反発。速度は `config.motion`。
 - モード:
   - `idle`: 作品0件→`sampleCharacters`を漂わせる。

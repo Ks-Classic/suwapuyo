@@ -14,6 +14,17 @@ interface WorldItem {
   featured?: boolean;
 }
 
+interface WaawaaRainItem {
+  sprite: Sprite;
+  body: MotionBody;
+  targetY: number;
+  spinSpeed: number;
+  scale: number;
+  landed: boolean;
+}
+
+const WAAWAA_SAMPLE_ID = "sample-tooth";
+
 function isSampleId(id: string): boolean {
   return id.startsWith("sample-");
 }
@@ -26,9 +37,16 @@ export class FuwafuwaWorld {
   private background: Sprite | null = null;
   private paused = false;
   private fpsListener: ((fps: number) => void) | null = null;
+  private waawaaTapCount = 0;
+  private lastWaawaaTapAt = 0;
+  private waawaaMode = false;
+  private readonly waawaaAudio: HTMLAudioElement;
+  private readonly waawaaRain: WaawaaRainItem[] = [];
 
   constructor(config: FuwafuwaConfig) {
     this.config = config;
+    this.waawaaAudio = new Audio(config.secretMode.audioUrl);
+    this.waawaaAudio.preload = "auto";
   }
 
   async mount(parent: HTMLElement): Promise<void> {
@@ -54,6 +72,7 @@ export class FuwafuwaWorld {
     const canvas = this.app?.canvas;
     this.background?.destroy();
     this.background = null;
+    this.clearWaawaaRain();
     this.items.forEach((item) => item.container.destroy({ children: true }));
     this.items.clear();
     this.loadingIds.clear();
@@ -148,9 +167,12 @@ export class FuwafuwaWorld {
 
   private populateSprite(container: Container, texture: Texture, artwork: Artwork, featured: boolean): void {
     container.removeChildren().forEach((child) => child.destroy({ children: true }));
-    const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(0xffffff).stroke({ color: 0xb7d7e8, width: 4 });
+    const cardColor = this.waawaaMode ? 0xfff7d6 : 0xffffff;
+    const strokeColor = this.waawaaMode ? 0xe11d48 : 0xb7d7e8;
+    const labelColor = this.waawaaMode ? 0xe11d48 : 0x223344;
+    const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(cardColor).stroke({ color: strokeColor, width: 4 });
     const sprite = new Sprite(texture);
-    const label = new Text({ text: artwork.givenName ?? artwork.displayLabel, style: { fill: 0x223344, fontSize: 20, fontWeight: "800" } });
+    const label = new Text({ text: this.waawaaMode ? "わーわー" : artwork.givenName ?? artwork.displayLabel, style: { fill: labelColor, fontSize: 20, fontWeight: "800" } });
     sprite.anchor.set(0.5);
     const maxEdge = featured ? 260 : 190;
     const textureEdge = Math.max(texture.width, texture.height, 1);
@@ -159,6 +181,26 @@ export class FuwafuwaWorld {
     label.anchor.set(0.5, 0);
     label.y = Math.min(88, texture.height * scale * 0.5 + 10);
     container.addChild(card, sprite, label);
+    if (this.waawaaMode) {
+      void this.replaceArtworkSpriteWithWaawaa(sprite, featured);
+    }
+  }
+
+  private async replaceArtworkSpriteWithWaawaa(sprite: Sprite, featured: boolean): Promise<void> {
+    const waawaaSample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === WAAWAA_SAMPLE_ID);
+    if (waawaaSample === undefined) {
+      return;
+    }
+    try {
+      const texture = await this.loadTexture(waawaaSample.imageUrl);
+      if (!this.waawaaMode || sprite.destroyed) {
+        return;
+      }
+      sprite.texture = texture;
+      sprite.scale.set((featured ? 250 : 190) / Math.max(texture.width, texture.height, 1));
+    } catch {
+      return;
+    }
   }
 
   private async loadTexture(url: string): Promise<Texture> {
@@ -178,9 +220,12 @@ export class FuwafuwaWorld {
       return;
     }
     const container = new Container();
-    const card = new Graphics().roundRect(-96, -80, 192, 160, this.config.card.cornerRadius).fill(0xfffbeb).stroke({ color: 0xffb703, width: 4 });
-    const mark = new Text({ text: artwork.displayLabel, style: { fill: 0x3a2f23, fontSize: 24, fontWeight: "800" } });
-    const label = new Text({ text: artwork.givenName ?? "ふわふわ", style: { fill: 0x3a2f23, fontSize: 18, fontWeight: "700" } });
+    const card = new Graphics()
+      .roundRect(-96, -80, 192, 160, this.config.card.cornerRadius)
+      .fill(this.waawaaMode ? 0xfff7d6 : 0xfffbeb)
+      .stroke({ color: this.waawaaMode ? 0xe11d48 : 0xffb703, width: 4 });
+    const mark = new Text({ text: this.waawaaMode ? "わーわー" : artwork.displayLabel, style: { fill: this.waawaaMode ? 0xe11d48 : 0x3a2f23, fontSize: 24, fontWeight: "800" } });
+    const label = new Text({ text: this.waawaaMode ? "わーわー" : artwork.givenName ?? "ふわふわ", style: { fill: this.waawaaMode ? 0xe11d48 : 0x3a2f23, fontSize: 18, fontWeight: "700" } });
     mark.anchor.set(0.5);
     label.anchor.set(0.5);
     label.y = 42;
@@ -203,6 +248,11 @@ export class FuwafuwaWorld {
         return;
       }
       const container = new Container();
+      if (sample.id === this.config.secretMode.triggerSampleId) {
+        container.eventMode = "static";
+        container.cursor = "pointer";
+        container.on("pointertap", () => this.handleWaawaaTap());
+      }
       this.app?.stage.addChild(container);
       if (this.app !== null) {
         this.items.set(sample.id, { id: sample.id, container, body: createBody(this.app.screen.width, this.app.screen.height, this.config), kind: "sample" });
@@ -214,15 +264,17 @@ export class FuwafuwaWorld {
   private async populateSample(container: Container, sampleId: string): Promise<void> {
     container.removeChildren().forEach((child) => child.destroy({ children: true }));
     const sample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === sampleId) ?? SAMPLE_CHARACTERS[0];
-    const text = new Text({ text: sample.label, style: { fill: 0x283747, fontSize: 22, fontWeight: "800" } });
+    const visualSample = this.waawaaMode ? SAMPLE_CHARACTERS.find((candidate) => candidate.id === WAAWAA_SAMPLE_ID) ?? sample : sample;
+    const labelText = this.waawaaMode ? "わーわー" : sample.label;
+    const text = new Text({ text: labelText, style: { fill: this.waawaaMode ? 0xe11d48 : 0x283747, fontSize: 22, fontWeight: "800" } });
     text.anchor.set(0.5, 0);
     text.y = 62;
     container.addChild(text);
     try {
-      const texture = await this.loadTexture(sample.imageUrl);
+      const texture = await this.loadTexture(visualSample.imageUrl);
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
-      const scale = 112 / Math.max(texture.width, texture.height, 1);
+      const scale = (this.waawaaMode ? 132 : 112) / Math.max(texture.width, texture.height, 1);
       sprite.scale.set(scale);
       container.addChildAt(sprite, 0);
     } catch {
@@ -231,17 +283,185 @@ export class FuwafuwaWorld {
     }
   }
 
+  private handleWaawaaTap(): void {
+    const now = performance.now();
+    this.waawaaTapCount = now - this.lastWaawaaTapAt > this.config.secretMode.tapWindowMs ? 1 : this.waawaaTapCount + 1;
+    this.lastWaawaaTapAt = now;
+    this.playWaawaaAudio();
+    if (this.waawaaTapCount < this.config.secretMode.tapCount) {
+      return;
+    }
+    this.waawaaTapCount = 0;
+    this.waawaaMode = !this.waawaaMode;
+    if (!this.waawaaMode) {
+      this.clearWaawaaRain();
+    }
+    this.refreshItemsForWaawaaMode();
+    void this.showWaawaaModeBurst();
+  }
+
+  private playWaawaaAudio(): void {
+    this.waawaaAudio.currentTime = 0;
+    void this.waawaaAudio.play().catch(() => undefined);
+  }
+
+  private refreshItemsForWaawaaMode(): void {
+    this.items.forEach((item) => {
+      if (item.kind === "sample") {
+        void this.populateSample(item.container, item.id);
+        return;
+      }
+      if (item.artwork !== undefined && item.texture !== undefined) {
+        this.populateSprite(item.container, item.texture, item.artwork, item.featured ?? false);
+      }
+    });
+  }
+
+  private async showWaawaaModeBurst(): Promise<void> {
+    if (this.app === null) {
+      return;
+    }
+    const text = new Text({
+      text: this.config.secretMode.modeText,
+      style: { fill: 0xfff7d6, fontSize: 72, fontWeight: "900", stroke: { color: 0xe11d48, width: 8 } },
+    });
+    text.anchor.set(0.5);
+    text.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
+    this.app.stage.addChild(text);
+    const turningOn = this.waawaaMode;
+    if (turningOn) {
+      this.growAllCharacters();
+    }
+    const startedAt = performance.now();
+    const spinMs = 1400;
+    const holdMs = 1000;
+    const animate = () => {
+      if (this.app === null) {
+        return;
+      }
+      const elapsed = performance.now() - startedAt;
+      const spinProgress = Math.min(1, elapsed / spinMs);
+      text.rotation = spinProgress < 1 ? spinProgress * Math.PI * 6 : 0;
+      text.scale.set(spinProgress < 1 ? 0.35 + Math.sin(spinProgress * Math.PI) * 1.4 + spinProgress * 0.7 : 2.1);
+      text.alpha = elapsed > spinMs + holdMs * 0.65 ? Math.max(0, 1 - (elapsed - spinMs - holdMs * 0.65) / (holdMs * 0.35)) : 1;
+      if (elapsed >= spinMs + holdMs) {
+        this.app.ticker.remove(animate);
+        text.destroy();
+        if (turningOn && this.waawaaMode) {
+          void this.spawnWaawaaRain();
+        }
+      }
+    };
+    this.app.ticker.add(animate);
+  }
+
+  private growAllCharacters(): void {
+    if (this.app === null) {
+      return;
+    }
+    const startedAt = performance.now();
+    const baseScales = Array.from(this.items.values()).map((item) => ({ item, scale: item.container.scale.x }));
+    const animate = () => {
+      if (this.app === null) {
+        return;
+      }
+      const progress = Math.min(1, (performance.now() - startedAt) / 1100);
+      const punch = Math.sin(progress * Math.PI) * 0.32 + progress * 0.16;
+      baseScales.forEach(({ item, scale }) => item.container.scale.set(scale * (1 + punch)));
+      if (progress >= 1) {
+        this.app.ticker.remove(animate);
+      }
+    };
+    this.app.ticker.add(animate);
+  }
+
+  private async spawnWaawaaRain(): Promise<void> {
+    if (this.app === null || !this.waawaaMode) {
+      return;
+    }
+    this.clearWaawaaRain();
+    const waawaaSample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === WAAWAA_SAMPLE_ID);
+    if (waawaaSample === undefined) {
+      return;
+    }
+    try {
+      const texture = await this.loadTexture(waawaaSample.imageUrl);
+      if (this.app === null || !this.waawaaMode) {
+        return;
+      }
+      const width = this.app.screen.width;
+      const height = this.app.screen.height;
+      for (let index = 0; index < this.config.secretMode.rainCount; index += 1) {
+        const sprite = new Sprite(texture);
+        const scale = (70 + Math.random() * 46) / Math.max(texture.width, texture.height, 1);
+        const x = width * (0.08 + Math.random() * 0.84);
+        const targetY = height * (0.16 + Math.random() * 0.62);
+        sprite.anchor.set(0.5);
+        sprite.position.set(x, -80 - Math.random() * height * 0.55);
+        sprite.scale.set(scale);
+        sprite.rotation = Math.random() * Math.PI * 2;
+        this.app.stage.addChild(sprite);
+        this.waawaaRain.push({
+          sprite,
+          body: {
+            x,
+            y: targetY,
+            vx: (Math.random() - 0.5) * this.config.motion.driftSpeed * 1.8,
+            vy: (Math.random() - 0.5) * this.config.motion.driftSpeed * 1.8,
+            phase: Math.random() * Math.PI * 2,
+            rotation: (Math.random() - 0.5) * this.config.motion.rotationJitter * 2,
+          },
+          targetY,
+          spinSpeed: (Math.random() > 0.5 ? 1 : -1) * (0.012 + Math.random() * 0.018),
+          scale,
+          landed: false,
+        });
+      }
+    } catch {
+      return;
+    }
+  }
+
+  private clearWaawaaRain(): void {
+    this.waawaaRain.forEach((item) => item.sprite.destroy());
+    this.waawaaRain.length = 0;
+  }
+
   private tick(deltaMs: number): void {
     if (this.app === null || this.paused) {
       return;
     }
     this.layoutBackground();
     const bounds = { width: this.app.screen.width, height: this.app.screen.height };
+    const speedAdjustedDelta = this.waawaaMode ? deltaMs * this.config.secretMode.speedMultiplier : deltaMs;
     this.items.forEach((item) => {
-      item.body = updateBody(item.body, deltaMs, bounds, this.config);
+      item.body = updateBody(item.body, speedAdjustedDelta, bounds, this.config);
       item.container.x = item.body.x;
       item.container.y = item.body.y + Math.sin(item.body.phase) * this.config.motion.bobAmplitude;
       item.container.rotation = Math.sin(item.body.phase * 0.7) * item.body.rotation;
+    });
+    this.tickWaawaaRain(speedAdjustedDelta, bounds);
+  }
+
+  private tickWaawaaRain(deltaMs: number, bounds: { width: number; height: number }): void {
+    this.waawaaRain.forEach((item) => {
+      if (!item.landed) {
+        item.sprite.y += deltaMs * (0.5 + Math.random() * 0.08);
+        item.sprite.rotation += deltaMs * item.spinSpeed;
+        item.sprite.scale.set(item.scale * (1 + Math.sin(item.sprite.y * 0.018) * 0.08));
+        if (item.sprite.y >= item.targetY) {
+          item.landed = true;
+          item.sprite.y = item.targetY;
+          item.body.x = item.sprite.x;
+          item.body.y = item.sprite.y;
+        }
+        return;
+      }
+      item.body = updateBody(item.body, deltaMs, bounds, this.config);
+      item.sprite.x = item.body.x;
+      item.sprite.y = item.body.y + Math.sin(item.body.phase) * this.config.motion.bobAmplitude * 0.8;
+      item.sprite.rotation += deltaMs * item.spinSpeed * 0.18;
+      item.sprite.scale.set(item.scale);
     });
   }
 
