@@ -2,7 +2,7 @@
 
 > 最終更新: 2026-06-23
 
-MVPではDBを使わないが、将来DB化できるようテーブル相当の型を定義する。
+Supabase Postgresを正本として使う。画像本体はStorage、作品メタと表示状態はPostgres、表示PCのIndexedDBはキャッシュ/復帰用。
 
 ## artwork
 
@@ -29,7 +29,18 @@ MVPではDBを使わないが、将来DB化できるようテーブル相当の�
 | featuredArtworkId | string | No | 主役表示ID |
 | mode | enum | Yes | `idle` / `random` / `featured` / `paused` |
 | maxVisibleCount | number | Yes | 同時表示上限 |
+| displayEvent | object | No | 表示イベント。例: `{ id, type: "battle", startedAt }` |
 | updatedAt | string | Yes | ISO日時 |
+
+### displayEvent
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---:|---|
+| id | string | Yes | イベント発火ごとのUUID。ディスプレイ側の二重発火防止に使う |
+| type | enum | Yes | 現在は `battle` |
+| startedAt | string | Yes | ISO日時 |
+
+スタッフ画面のイベントメニューが `display_state.display_event` を更新し、ディスプレイ画面がRealtimeで購読してPixiJS演出を開始する。イベント停止は `display_event = null`。
 
 ## operation_log
 
@@ -40,4 +51,3 @@ MVPではDBを使わないが、将来DB化できるようテーブル相当の�
 | artworkId | string | No | 対象作品 |
 | message | string | Yes | 内容 |
 | createdAt | string | Yes | ISO日時 |
-

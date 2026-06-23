@@ -162,6 +162,7 @@ export interface DisplayState {
   featuredArtworkId?: string;
   mode: DisplayMode;
   maxVisibleCount: number;
+  displayEvent?: { id: string; type: "battle"; startedAt: string } | null;
   updatedAt: string;
 }
 
@@ -211,6 +212,11 @@ export interface ArtworkRepository {
 
 ### displayState.ts
 `getDisplayState()/updateDisplayState(patch)`。表示画面は `display_state` を **Supabase Realtime で購読**（単一PC運用時のみ BroadcastChannel でも可）。スタッフ操作は `display_state` を update → 表示が購読して反映。
+
+イベント操作:
+- `startBattleEvent()`: `display_event = { id: crypto.randomUUID(), type: "battle", startedAt }` を書き込む。
+- `clearDisplayEvent()`: `display_event = null` を書き込む。
+- ディスプレイ側は `display_event.id` ごとに一度だけ演出開始する。表示画面が未クリックの場合、ブラウザの自動再生制限で音が鳴らないことがあるため、`音ON` ボタンで事前アンロックできるようにする。
 ```ts
 // 操作API(スタッフ→表示)
 showArtwork(id, mode: "normal"|"featured")
@@ -309,7 +315,8 @@ Props: `{ width:number; height:number; onComplete:(blob:Blob, w:number, h:number
 - `RegisterForm`: [カメラで撮る]/[画像を選ぶ]/[デジタルで描く] → 手動撮影またはファイル選択 → プレビュー（台紙用/白背景/そのままを切替再処理、デジタルは透明PNG）→ 任意「下の名前」入力 → consent(既定 event_only) → [登録して主役表示]/[登録のみ]。マーカー失敗時も全体画像フォールバックで登録を止めない。正式判定バッジ/自動プレビューは `FL-G03g/h` として未実装。
 - `ArtworkList`: 一覧（直近20件を上）＋**ID/名前ジャンプ検索**（`list({query})`、M-3）。各行 [表示][主役][非表示]。
 - 表示操作バー: [全リセット][ランダム表示][一時停止]、同時表示数 8/12/20/30 切替。
-- `DisplayScreen`: `FuwafuwaWorld` のマウント先（`/display`）。
+- イベントメニュー: [バトル][イベント停止]。スタッフ画面から `display_state.display_event` を更新し、ディスプレイ側がRealtimeで演出を開始/停止する。
+- `DisplayScreen`: `FuwafuwaWorld` のマウント先（`/display`）。`display_event.type === "battle"` でバトル演出を開始し、`音ON` ボタンで音声再生をアンロックできる。
 - `MetricsOverlay`(`/debug` or トグル): FPS(ticker)、JSヒープ(`performance.memory`があれば)、作品数、`navigator.storage.estimate()` 使用量。**Gate中Must・本番非表示**。
 
 ---

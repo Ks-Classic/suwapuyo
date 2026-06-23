@@ -1,12 +1,26 @@
 import { DISPLAY_STATE_ID } from "../config";
 import { getSupabaseClient, type FuwafuwaSupabaseClient } from "../lib/supabase";
 import type { Database } from "../types/database.types";
-import type { Artwork, ConnectionStatus, DisplayState, DisplayStateService, RealtimeSubscription } from "../types";
+import type { Artwork, ConnectionStatus, DisplayEvent, DisplayState, DisplayStateService, RealtimeSubscription } from "../types";
 import { cacheDisplayState, getCachedDisplayState } from "./db";
 import { SupabaseArtworkRepository } from "./artworkStore";
 import { appendOperationLog } from "./operationLog";
 
 type DisplayStateRow = Database["public"]["Tables"]["display_state"]["Row"];
+
+function isDisplayEvent(value: unknown): value is DisplayEvent {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "type" in value &&
+    "startedAt" in value &&
+    typeof value.id === "string" &&
+    value.type === "battle" &&
+    typeof value.startedAt === "string"
+  );
+}
+
 function stateFromRow(row: DisplayStateRow): DisplayState {
   return {
     id: "current",
@@ -14,6 +28,7 @@ function stateFromRow(row: DisplayStateRow): DisplayState {
     featuredArtworkId: row.featured_artwork_id ?? undefined,
     mode: row.mode,
     maxVisibleCount: row.max_visible_count,
+    displayEvent: isDisplayEvent(row.display_event) ? row.display_event : undefined,
     updatedAt: row.updated_at,
   };
 }
@@ -23,12 +38,23 @@ function isDisplayStateRow(value: unknown): value is DisplayStateRow {
 }
 
 function patchToRow(patch: Partial<Omit<DisplayState, "id" | "updatedAt">>): Database["public"]["Tables"]["display_state"]["Update"] {
-  return {
+  const row: Database["public"]["Tables"]["display_state"]["Update"] = {
     visible_artwork_ids: patch.visibleArtworkIds,
     featured_artwork_id: patch.featuredArtworkId ?? null,
     mode: patch.mode,
     max_visible_count: patch.maxVisibleCount,
   };
+  if ("displayEvent" in patch) {
+    row.display_event =
+      patch.displayEvent === null || patch.displayEvent === undefined
+        ? null
+        : {
+            id: patch.displayEvent.id,
+            type: patch.displayEvent.type,
+            startedAt: patch.displayEvent.startedAt,
+          };
+  }
+  return row;
 }
 
 async function ensureClient(): Promise<FuwafuwaSupabaseClient> {
@@ -159,6 +185,23 @@ export class SupabaseDisplayStateService implements DisplayStateService {
   async pauseToggle(): Promise<DisplayState> {
     const current = await this.getDisplayState();
     return this.updateDisplayState({ mode: current.mode === "paused" ? "random" : "paused" });
+  }
+
+  async startBattleEvent(): Promise<DisplayState> {
+    const state = await this.updateDisplayState({
+      displayEvent: {
+        id: crypto.randomUUID(),
+        type: "battle",
+        startedAt: new Date().toISOString(),
+      },
+      mode: "random",
+    });
+    await appendOperationLog("random", "battle_event_started");
+    return state;
+  }
+
+  async clearDisplayEvent(): Promise<DisplayState> {
+    return this.updateDisplayState({ displayEvent: undefined });
   }
 
   subscribeDisplayState(onChange: (state: DisplayState) => void, onStatus: (status: ConnectionStatus) => void): RealtimeSubscription {

@@ -1,6 +1,7 @@
 export type ArtworkStatus = "queued" | "visible" | "hidden" | "archived";
 export type ConsentScope = "event_only" | "sns_allowed" | "unknown";
 export type DisplayMode = "idle" | "random" | "featured" | "paused";
+export type DisplayEventType = "battle";
 export type ArtworkSource = "photo" | "digital";
 export type ConnectionStatus = "missing-config" | "connecting" | "online" | "offline" | "error";
 export type TransparencyMode = "coloring-sheet" | "edge-white" | "none";
@@ -30,7 +31,14 @@ export interface DisplayState {
   featuredArtworkId?: string;
   mode: DisplayMode;
   maxVisibleCount: number;
+  displayEvent?: DisplayEvent | null;
   updatedAt: string;
+}
+
+export interface DisplayEvent {
+  id: string;
+  type: DisplayEventType;
+  startedAt: string;
 }
 
 export type OperationType = "register" | "show" | "feature" | "hide" | "archive" | "reset" | "random" | "error";
@@ -97,6 +105,8 @@ export interface DisplayStateService {
   randomizeDisplay(count: number, includeAlreadyShown: boolean): Promise<DisplayState>;
   setMaxVisible(count: number): Promise<DisplayState>;
   pauseToggle(): Promise<DisplayState>;
+  startBattleEvent(): Promise<DisplayState>;
+  clearDisplayEvent(): Promise<DisplayState>;
   subscribeDisplayState(onChange: (state: DisplayState) => void, onStatus: (status: ConnectionStatus) => void): RealtimeSubscription;
 }
 

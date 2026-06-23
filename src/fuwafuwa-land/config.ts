@@ -33,6 +33,10 @@ export interface FuwafuwaConfig {
     speedMultiplier: 1.5;
     rainCount: 20;
   };
+  events: {
+    battleAudioUrl: string;
+    battleDurationMs: 12_000;
+  };
 }
 
 export const SUUSUU_CONFIG: FuwafuwaConfig = {
@@ -74,6 +78,10 @@ export const SUUSUU_CONFIG: FuwafuwaConfig = {
     modeText: "わーわーもーど!",
     speedMultiplier: 1.5,
     rainCount: 20,
+  },
+  events: {
+    battleAudioUrl: "/assets/audio/suwa-good-morning.mp3",
+    battleDurationMs: 12_000,
   },
 };
 

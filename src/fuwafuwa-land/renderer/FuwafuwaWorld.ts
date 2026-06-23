@@ -23,6 +23,20 @@ interface WaawaaRainItem {
   landed: boolean;
 }
 
+interface BattleState {
+  id: string;
+  startedAt: number;
+  nextEliminationAt: number;
+  winnerAt: number;
+  endAt: number;
+  participants: string[];
+  eliminatedIds: Set<string>;
+  winnerId?: string;
+  title: Text;
+  crown?: Text;
+  flag?: Text;
+}
+
 const WAAWAA_SAMPLE_ID = "sample-tooth";
 const SECRET_MODE_TEXT_SPIN_MS = 1000;
 const SECRET_MODE_TEXT_HOLD_MS = 2000;
@@ -47,12 +61,16 @@ export class FuwafuwaWorld {
   private lastWaawaaTapAt = 0;
   private waawaaMode = false;
   private readonly waawaaAudio: HTMLAudioElement;
+  private readonly battleAudio: HTMLAudioElement;
   private readonly waawaaRain: WaawaaRainItem[] = [];
+  private battleState: BattleState | null = null;
 
   constructor(config: FuwafuwaConfig) {
     this.config = config;
     this.waawaaAudio = new Audio(config.secretMode.audioUrl);
     this.waawaaAudio.preload = "auto";
+    this.battleAudio = new Audio(config.events.battleAudioUrl);
+    this.battleAudio.preload = "auto";
   }
 
   async mount(parent: HTMLElement): Promise<void> {
@@ -79,6 +97,7 @@ export class FuwafuwaWorld {
     this.background?.destroy();
     this.background = null;
     this.clearWaawaaRain();
+    this.clearBattleState();
     this.items.forEach((item) => item.container.destroy({ children: true }));
     this.items.clear();
     this.loadingIds.clear();
@@ -89,6 +108,44 @@ export class FuwafuwaWorld {
 
   onFps(listener: (fps: number) => void): void {
     this.fpsListener = listener;
+  }
+
+  async unlockAudio(): Promise<boolean> {
+    return this.tryPlayAudio(this.battleAudio);
+  }
+
+  startBattleEvent(eventId: string): void {
+    if (this.app === null || this.battleState?.id === eventId) {
+      return;
+    }
+    this.clearBattleState();
+    const participants = Array.from(this.items.keys());
+    if (participants.length === 0) {
+      return;
+    }
+    const title = new Text({
+      text: "ふわふわバトル!",
+      style: { fill: 0xfff7d6, fontSize: this.getSecretModeTextSize(), fontWeight: "900", stroke: { color: 0xe11d48, width: 8 } },
+    });
+    title.anchor.set(0.5);
+    title.position.set(this.app.screen.width / 2, this.app.screen.height * 0.18);
+    this.app.stage.addChild(title);
+    const now = performance.now();
+    this.battleState = {
+      id: eventId,
+      startedAt: now,
+      nextEliminationAt: now + 1800,
+      winnerAt: now + this.config.events.battleDurationMs * 0.68,
+      endAt: now + this.config.events.battleDurationMs,
+      participants,
+      eliminatedIds: new Set<string>(),
+      title,
+    };
+    void this.tryPlayAudio(this.battleAudio);
+  }
+
+  stopDisplayEvent(): void {
+    this.clearBattleState();
   }
 
   async sync(artworks: Artwork[], state: DisplayState, getImageURL: (id: string) => Promise<string>): Promise<void> {
@@ -323,7 +380,17 @@ export class FuwafuwaWorld {
 
   private playWaawaaAudio(): void {
     this.waawaaAudio.currentTime = 0;
-    void this.waawaaAudio.play().catch(() => undefined);
+    void this.tryPlayAudio(this.waawaaAudio);
+  }
+
+  private async tryPlayAudio(audio: HTMLAudioElement): Promise<boolean> {
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private refreshItemsForWaawaaMode(): void {
@@ -459,12 +526,33 @@ export class FuwafuwaWorld {
     this.waawaaRain.length = 0;
   }
 
+  private clearBattleState(): void {
+    if (this.battleState === null) {
+      return;
+    }
+    this.battleState.title.destroy();
+    this.battleState.crown?.destroy();
+    this.battleState.flag?.destroy();
+    this.battleState.participants.forEach((id) => {
+      const item = this.items.get(id);
+      if (item !== undefined) {
+        item.container.alpha = 1;
+        item.container.visible = true;
+      }
+    });
+    this.battleState = null;
+  }
+
   private tick(deltaMs: number): void {
     if (this.app === null || this.paused) {
       return;
     }
     this.layoutBackground();
     const bounds = { width: this.app.screen.width, height: this.app.screen.height };
+    if (this.battleState !== null) {
+      this.tickBattle(deltaMs, bounds);
+      return;
+    }
     const speedAdjustedDelta = this.waawaaMode ? deltaMs * this.config.secretMode.speedMultiplier : deltaMs;
     this.items.forEach((item) => {
       item.body = updateBody(item.body, speedAdjustedDelta, bounds, this.config);
@@ -473,6 +561,78 @@ export class FuwafuwaWorld {
       item.container.rotation = this.waawaaMode ? item.container.rotation + speedAdjustedDelta * 0.006 : Math.sin(item.body.phase * 0.7) * item.body.rotation;
     });
     this.tickWaawaaRain(speedAdjustedDelta, bounds);
+  }
+
+  private tickBattle(deltaMs: number, bounds: { width: number; height: number }): void {
+    if (this.app === null || this.battleState === null) {
+      return;
+    }
+    const now = performance.now();
+    const battle = this.battleState;
+    const activeIds = battle.participants.filter((id) => !battle.eliminatedIds.has(id));
+    if (now >= battle.nextEliminationAt && activeIds.length > 1 && now < battle.winnerAt) {
+      const targetIndex = Math.floor(Math.random() * activeIds.length);
+      battle.eliminatedIds.add(activeIds[targetIndex]);
+      battle.nextEliminationAt = now + 850;
+    }
+    const remainingIds = battle.participants.filter((id) => !battle.eliminatedIds.has(id));
+    if (now >= battle.winnerAt && battle.winnerId === undefined) {
+      battle.winnerId = remainingIds[Math.floor(Math.random() * remainingIds.length)] ?? remainingIds[0];
+      battle.participants.forEach((id) => {
+        if (id !== battle.winnerId) {
+          battle.eliminatedIds.add(id);
+        }
+      });
+      this.showBattleWinner(battle);
+    }
+    if (now >= battle.endAt) {
+      this.clearBattleState();
+      return;
+    }
+
+    const centerX = bounds.width / 2;
+    const centerY = bounds.height / 2;
+    battle.title.rotation = Math.sin((now - battle.startedAt) * 0.006) * 0.08;
+    battle.title.scale.set(1 + Math.sin((now - battle.startedAt) * 0.008) * 0.08);
+    battle.participants.forEach((id, index) => {
+      const item = this.items.get(id);
+      if (item === undefined) {
+        return;
+      }
+      const elapsed = now - battle.startedAt + index * 173;
+      const eliminated = battle.eliminatedIds.has(id);
+      const winner = battle.winnerId === id;
+      const orbit = winner ? 28 : eliminated ? 170 : 96 + Math.sin(elapsed * 0.003) * 28;
+      const angle = elapsed * (winner ? 0.004 : 0.009) + index * ((Math.PI * 2) / Math.max(1, battle.participants.length));
+      const targetX = centerX + Math.cos(angle) * orbit;
+      const targetY = centerY + Math.sin(angle * 1.3) * orbit * 0.62;
+      item.container.x += (targetX - item.container.x) * 0.075;
+      item.container.y += (targetY - item.container.y) * 0.075;
+      item.container.rotation += deltaMs * (winner ? 0.004 : 0.014);
+      item.container.alpha = eliminated ? 0.22 : 1;
+      item.container.scale.set(winner ? 2.3 : eliminated ? 0.48 : 1.35 + Math.sin(elapsed * 0.015) * 0.18);
+    });
+    if (battle.winnerId !== undefined) {
+      const winner = this.items.get(battle.winnerId);
+      if (winner !== undefined) {
+        battle.crown?.position.set(winner.container.x, winner.container.y - 100);
+        battle.flag?.position.set(winner.container.x + 82, winner.container.y - 26);
+      }
+    }
+  }
+
+  private showBattleWinner(battle: BattleState): void {
+    if (this.app === null || battle.winnerId === undefined) {
+      return;
+    }
+    battle.title.text = "きょうのチャンピオン!";
+    const crown = new Text({ text: "おうかん", style: { fill: 0xffb703, fontSize: 30, fontWeight: "900", stroke: { color: 0x7c2d12, width: 4 } } });
+    const flag = new Text({ text: "ゆうしょう", style: { fill: 0xffffff, fontSize: 24, fontWeight: "900", stroke: { color: 0x0f766e, width: 5 } } });
+    crown.anchor.set(0.5);
+    flag.anchor.set(0.5);
+    this.app.stage.addChild(crown, flag);
+    battle.crown = crown;
+    battle.flag = flag;
   }
 
   private getSecretModeTextSize(): number {

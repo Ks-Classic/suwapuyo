@@ -57,6 +57,7 @@ export interface Database {
           featured_artwork_id: string | null;
           mode: "idle" | "random" | "featured" | "paused";
           max_visible_count: number;
+          display_event: Json | null;
           updated_at: string;
         };
         Insert: {
@@ -65,12 +66,14 @@ export interface Database {
           featured_artwork_id?: string | null;
           mode?: "idle" | "random" | "featured" | "paused";
           max_visible_count?: number;
+          display_event?: Json | null;
         };
         Update: {
           visible_artwork_ids?: string[];
           featured_artwork_id?: string | null;
           mode?: "idle" | "random" | "featured" | "paused";
           max_visible_count?: number;
+          display_event?: Json | null;
         };
         Relationships: [];
       };

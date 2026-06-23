@@ -14,6 +14,7 @@ const INITIAL_STATE: DisplayState = {
   visibleArtworkIds: [],
   mode: "idle",
   maxVisibleCount: 12,
+  displayEvent: null,
   updatedAt: new Date(0).toISOString(),
 };
 
@@ -43,6 +44,8 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   const [fps, setFps] = useState(0);
   const [storageEstimate, setStorageEstimate] = useState<{ usage?: number; quota?: number }>({});
   const [worldReady, setWorldReady] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const lastEventIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -96,6 +99,22 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   }, [artworks, displayState, services.repository, worldReady]);
 
   useEffect(() => {
+    if (!worldReady) {
+      return;
+    }
+    if (displayState.displayEvent?.type !== "battle") {
+      lastEventIdRef.current = null;
+      worldRef.current?.stopDisplayEvent();
+      return;
+    }
+    if (lastEventIdRef.current === displayState.displayEvent.id) {
+      return;
+    }
+    lastEventIdRef.current = displayState.displayEvent.id;
+    worldRef.current?.startBattleEvent(displayState.displayEvent.id);
+  }, [displayState.displayEvent, worldReady]);
+
+  useEffect(() => {
     let active = true;
     const missingIds = displayState.visibleArtworkIds.filter((id) => !artworks.some((artwork) => artwork.id === id));
     if (missingIds.length === 0) {
@@ -145,6 +164,17 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
         <a href="/">ホーム</a>
         <a href="/staff">スタッフ</a>
       </nav>
+      {!audioUnlocked ? (
+        <button
+          type="button"
+          className="fuwafuwa-audio-unlock"
+          onClick={() => {
+            void worldRef.current?.unlockAudio().then(setAudioUnlocked);
+          }}
+        >
+          音ON
+        </button>
+      ) : null}
       <div ref={hostRef} className="fuwafuwa-world" />
       {debug ? (
         <div className="fuwafuwa-html-layer">

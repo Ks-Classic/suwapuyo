@@ -44,6 +44,24 @@ export function StaffPanel({ services }: StaffPanelProps) {
       </header>
       <RegisterForm repository={services.repository} displayState={services.displayState} onRegistered={(artwork) => setArtworks((current) => [artwork, ...current.filter((item) => item.id !== artwork.id)])} />
       <section className="fuwafuwa-panel">
+        <div className="fuwafuwa-panel-title">
+          <strong>イベント</strong>
+          <span>ディスプレイで演出が始まります</span>
+        </div>
+        <div className="fuwafuwa-toolbar">
+          <button type="button" className="fuwafuwa-primary-action" onClick={() => void services.displayState.startBattleEvent()}>
+            バトル
+          </button>
+          <button type="button" onClick={() => void services.displayState.clearDisplayEvent()}>
+            イベント停止
+          </button>
+        </div>
+      </section>
+      <section className="fuwafuwa-panel">
+        <div className="fuwafuwa-panel-title">
+          <strong>表示操作</strong>
+          <span>表示数と通常モード</span>
+        </div>
         <div className="fuwafuwa-toolbar">
           <button type="button" onClick={() => void services.displayState.resetDisplay().then(refresh)}>
             全リセット

@@ -20,7 +20,7 @@
 ```
 
 - **正本(source of truth)は Supabase**（Storage=画像 / Postgres=`artworks`・`display_state`）。表示PCの **IndexedDB はキャッシュ＆オフライン復帰用**。
-- スタッフ操作（全リセット/ランダム/主役/非表示/表示数/一時停止）は `display_state` を update → 表示が Realtime で購読して反映。表示画面はview専用。
+- スタッフ操作（全リセット/ランダム/主役/非表示/表示数/一時停止/イベント開始・停止）は `display_state` を update → 表示が Realtime で購読して反映。表示画面はview専用。
 - **自前WSサーバは不要**（Supabase Realtime がWebSocketを担う）。
 - 入力は「塗り絵台紙撮影」「画像ファイル」「デジタル描画」。顔写真AI変換はMVP外。
 
