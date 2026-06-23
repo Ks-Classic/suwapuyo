@@ -724,4 +724,32 @@
   .fuwafuwa-video {
     max-height: 36vh;
   }
+
+  .fuwafuwa-display-links {
+    left: max(8px, env(safe-area-inset-left));
+    top: max(8px, env(safe-area-inset-top));
+    gap: 6px;
+    opacity: 0.74;
+  }
+
+  .fuwafuwa-display-links a {
+    min-height: 32px;
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
+  .fuwafuwa-metrics {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    max-width: calc(100vw - 16px);
+    gap: 5px;
+    padding: 6px 7px;
+    font-size: 10px;
+  }
+
+  .fuwafuwa-empty {
+    top: calc(max(8px, env(safe-area-inset-top)) + 42px);
+    max-width: calc(100vw - 16px);
+    font-size: 12px;
+  }
 }

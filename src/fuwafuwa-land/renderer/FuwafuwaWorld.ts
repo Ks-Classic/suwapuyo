@@ -24,6 +24,8 @@ interface WaawaaRainItem {
 }
 
 const WAAWAA_SAMPLE_ID = "sample-tooth";
+const SECRET_MODE_TEXT_SPIN_MS = 1000;
+const SECRET_MODE_TEXT_HOLD_MS = 2000;
 
 function isSampleId(id: string): boolean {
   return id.startsWith("sample-");
@@ -167,12 +169,17 @@ export class FuwafuwaWorld {
 
   private populateSprite(container: Container, texture: Texture, artwork: Artwork, featured: boolean): void {
     container.removeChildren().forEach((child) => child.destroy({ children: true }));
-    const cardColor = this.waawaaMode ? 0xfff7d6 : 0xffffff;
-    const strokeColor = this.waawaaMode ? 0xe11d48 : 0xb7d7e8;
-    const labelColor = this.waawaaMode ? 0xe11d48 : 0x223344;
-    const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(cardColor).stroke({ color: strokeColor, width: 4 });
+    if (this.waawaaMode) {
+      const sprite = new Sprite(texture);
+      sprite.anchor.set(0.5);
+      sprite.scale.set((featured ? 250 : 190) / Math.max(texture.width, texture.height, 1));
+      container.addChild(sprite);
+      void this.replaceArtworkSpriteWithWaawaa(sprite, featured);
+      return;
+    }
+    const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(0xffffff).stroke({ color: 0xb7d7e8, width: 4 });
     const sprite = new Sprite(texture);
-    const label = new Text({ text: this.waawaaMode ? "わーわー" : artwork.givenName ?? artwork.displayLabel, style: { fill: labelColor, fontSize: 20, fontWeight: "800" } });
+    const label = new Text({ text: artwork.givenName ?? artwork.displayLabel, style: { fill: 0x223344, fontSize: 20, fontWeight: "800" } });
     sprite.anchor.set(0.5);
     const maxEdge = featured ? 260 : 190;
     const textureEdge = Math.max(texture.width, texture.height, 1);
@@ -181,9 +188,6 @@ export class FuwafuwaWorld {
     label.anchor.set(0.5, 0);
     label.y = Math.min(88, texture.height * scale * 0.5 + 10);
     container.addChild(card, sprite, label);
-    if (this.waawaaMode) {
-      void this.replaceArtworkSpriteWithWaawaa(sprite, featured);
-    }
   }
 
   private async replaceArtworkSpriteWithWaawaa(sprite: Sprite, featured: boolean): Promise<void> {
@@ -220,12 +224,16 @@ export class FuwafuwaWorld {
       return;
     }
     const container = new Container();
-    const card = new Graphics()
-      .roundRect(-96, -80, 192, 160, this.config.card.cornerRadius)
-      .fill(this.waawaaMode ? 0xfff7d6 : 0xfffbeb)
-      .stroke({ color: this.waawaaMode ? 0xe11d48 : 0xffb703, width: 4 });
-    const mark = new Text({ text: this.waawaaMode ? "わーわー" : artwork.displayLabel, style: { fill: this.waawaaMode ? 0xe11d48 : 0x3a2f23, fontSize: 24, fontWeight: "800" } });
-    const label = new Text({ text: this.waawaaMode ? "わーわー" : artwork.givenName ?? "ふわふわ", style: { fill: this.waawaaMode ? 0xe11d48 : 0x3a2f23, fontSize: 18, fontWeight: "700" } });
+    if (this.waawaaMode) {
+      void this.populateSample(container, WAAWAA_SAMPLE_ID);
+      container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
+      this.app.stage.addChild(container);
+      this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured });
+      return;
+    }
+    const card = new Graphics().roundRect(-96, -80, 192, 160, this.config.card.cornerRadius).fill(0xfffbeb).stroke({ color: 0xffb703, width: 4 });
+    const mark = new Text({ text: artwork.displayLabel, style: { fill: 0x3a2f23, fontSize: 24, fontWeight: "800" } });
+    const label = new Text({ text: artwork.givenName ?? "ふわふわ", style: { fill: 0x3a2f23, fontSize: 18, fontWeight: "700" } });
     mark.anchor.set(0.5);
     label.anchor.set(0.5);
     label.y = 42;
@@ -248,11 +256,7 @@ export class FuwafuwaWorld {
         return;
       }
       const container = new Container();
-      if (sample.id === this.config.secretMode.triggerSampleId) {
-        container.eventMode = "static";
-        container.cursor = "pointer";
-        container.on("pointertap", () => this.handleWaawaaTap());
-      }
+      this.applySampleTapBehavior(container, sample.id);
       this.app?.stage.addChild(container);
       if (this.app !== null) {
         this.items.set(sample.id, { id: sample.id, container, body: createBody(this.app.screen.width, this.app.screen.height, this.config), kind: "sample" });
@@ -265,16 +269,17 @@ export class FuwafuwaWorld {
     container.removeChildren().forEach((child) => child.destroy({ children: true }));
     const sample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === sampleId) ?? SAMPLE_CHARACTERS[0];
     const visualSample = this.waawaaMode ? SAMPLE_CHARACTERS.find((candidate) => candidate.id === WAAWAA_SAMPLE_ID) ?? sample : sample;
-    const labelText = this.waawaaMode ? "わーわー" : sample.label;
-    const text = new Text({ text: labelText, style: { fill: this.waawaaMode ? 0xe11d48 : 0x283747, fontSize: 22, fontWeight: "800" } });
-    text.anchor.set(0.5, 0);
-    text.y = 62;
-    container.addChild(text);
+    if (!this.waawaaMode) {
+      const text = new Text({ text: sample.label, style: { fill: 0x283747, fontSize: 22, fontWeight: "800" } });
+      text.anchor.set(0.5, 0);
+      text.y = 62;
+      container.addChild(text);
+    }
     try {
       const texture = await this.loadTexture(visualSample.imageUrl);
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
-      const scale = (this.waawaaMode ? 132 : 112) / Math.max(texture.width, texture.height, 1);
+      const scale = (this.waawaaMode ? this.getWaawaaCharacterSize("sample") : 112) / Math.max(texture.width, texture.height, 1);
       sprite.scale.set(scale);
       container.addChildAt(sprite, 0);
     } catch {
@@ -308,6 +313,7 @@ export class FuwafuwaWorld {
   private refreshItemsForWaawaaMode(): void {
     this.items.forEach((item) => {
       if (item.kind === "sample") {
+        this.applySampleTapBehavior(item.container, item.id);
         void this.populateSample(item.container, item.id);
         return;
       }
@@ -317,34 +323,44 @@ export class FuwafuwaWorld {
     });
   }
 
+  private applySampleTapBehavior(container: Container, sampleId: string): void {
+    container.removeAllListeners("pointertap");
+    const canTap = sampleId === this.config.secretMode.triggerSampleId || this.waawaaMode;
+    container.eventMode = canTap ? "static" : "none";
+    container.cursor = canTap ? "pointer" : "default";
+    if (canTap) {
+      container.on("pointertap", () => this.handleWaawaaTap());
+    }
+  }
+
   private async showWaawaaModeBurst(): Promise<void> {
     if (this.app === null) {
       return;
     }
     const text = new Text({
       text: this.config.secretMode.modeText,
-      style: { fill: 0xfff7d6, fontSize: 72, fontWeight: "900", stroke: { color: 0xe11d48, width: 8 } },
+      style: { fill: 0xfff7d6, fontSize: this.getSecretModeTextSize(), fontWeight: "900", stroke: { color: 0xe11d48, width: 8 } },
     });
     text.anchor.set(0.5);
     text.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
+    const textFitScale = Math.min(1, (this.app.screen.width * 0.88) / Math.max(text.width, 1));
     this.app.stage.addChild(text);
     const turningOn = this.waawaaMode;
     if (turningOn) {
       this.growAllCharacters();
     }
     const startedAt = performance.now();
-    const spinMs = 1400;
-    const holdMs = 1000;
     const animate = () => {
       if (this.app === null) {
         return;
       }
       const elapsed = performance.now() - startedAt;
-      const spinProgress = Math.min(1, elapsed / spinMs);
+      const spinProgress = Math.min(1, elapsed / SECRET_MODE_TEXT_SPIN_MS);
       text.rotation = spinProgress < 1 ? spinProgress * Math.PI * 6 : 0;
-      text.scale.set(spinProgress < 1 ? 0.35 + Math.sin(spinProgress * Math.PI) * 1.4 + spinProgress * 0.7 : 2.1);
-      text.alpha = elapsed > spinMs + holdMs * 0.65 ? Math.max(0, 1 - (elapsed - spinMs - holdMs * 0.65) / (holdMs * 0.35)) : 1;
-      if (elapsed >= spinMs + holdMs) {
+      const animatedScale = spinProgress < 1 ? 0.35 + Math.sin(spinProgress * Math.PI) * 1.4 + spinProgress * 0.7 : 2.1;
+      text.scale.set(animatedScale * textFitScale);
+      text.alpha = 1;
+      if (elapsed >= SECRET_MODE_TEXT_SPIN_MS + SECRET_MODE_TEXT_HOLD_MS) {
         this.app.ticker.remove(animate);
         text.destroy();
         if (turningOn && this.waawaaMode) {
@@ -393,7 +409,7 @@ export class FuwafuwaWorld {
       const height = this.app.screen.height;
       for (let index = 0; index < this.config.secretMode.rainCount; index += 1) {
         const sprite = new Sprite(texture);
-        const scale = (70 + Math.random() * 46) / Math.max(texture.width, texture.height, 1);
+        const scale = (this.getWaawaaCharacterSize("rain") * (0.72 + Math.random() * 0.42)) / Math.max(texture.width, texture.height, 1);
         const x = width * (0.08 + Math.random() * 0.84);
         const targetY = height * (0.16 + Math.random() * 0.62);
         sprite.anchor.set(0.5);
@@ -438,9 +454,27 @@ export class FuwafuwaWorld {
       item.body = updateBody(item.body, speedAdjustedDelta, bounds, this.config);
       item.container.x = item.body.x;
       item.container.y = item.body.y + Math.sin(item.body.phase) * this.config.motion.bobAmplitude;
-      item.container.rotation = Math.sin(item.body.phase * 0.7) * item.body.rotation;
+      item.container.rotation = this.waawaaMode ? item.container.rotation + speedAdjustedDelta * 0.006 : Math.sin(item.body.phase * 0.7) * item.body.rotation;
     });
     this.tickWaawaaRain(speedAdjustedDelta, bounds);
+  }
+
+  private getSecretModeTextSize(): number {
+    if (this.app === null) {
+      return 72;
+    }
+    return Math.max(38, Math.min(82, this.app.screen.width * 0.12));
+  }
+
+  private getWaawaaCharacterSize(kind: "sample" | "rain"): number {
+    if (this.app === null) {
+      return kind === "sample" ? 132 : 92;
+    }
+    const base = Math.min(this.app.screen.width, this.app.screen.height);
+    if (kind === "sample") {
+      return Math.max(86, Math.min(132, base * 0.14));
+    }
+    return Math.max(48, Math.min(94, base * 0.1));
   }
 
   private tickWaawaaRain(deltaMs: number, bounds: { width: number; height: number }): void {
