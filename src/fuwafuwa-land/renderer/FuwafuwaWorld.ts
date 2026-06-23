@@ -279,7 +279,7 @@ export class FuwafuwaWorld {
       const texture = await this.loadTexture(visualSample.imageUrl);
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
-      const scale = (this.waawaaMode ? this.getWaawaaCharacterSize("sample") : 112) / Math.max(texture.width, texture.height, 1);
+      const scale = (this.waawaaMode ? this.getWaawaaCharacterSize() : 112) / Math.max(texture.width, texture.height, 1);
       sprite.scale.set(scale);
       container.addChildAt(sprite, 0);
     } catch {
@@ -409,7 +409,7 @@ export class FuwafuwaWorld {
       const height = this.app.screen.height;
       for (let index = 0; index < this.config.secretMode.rainCount; index += 1) {
         const sprite = new Sprite(texture);
-        const scale = (this.getWaawaaCharacterSize("rain") * (0.72 + Math.random() * 0.42)) / Math.max(texture.width, texture.height, 1);
+        const scale = this.getWaawaaCharacterSize() / Math.max(texture.width, texture.height, 1);
         const x = width * (0.08 + Math.random() * 0.84);
         const targetY = height * (0.16 + Math.random() * 0.62);
         sprite.anchor.set(0.5);
@@ -466,15 +466,12 @@ export class FuwafuwaWorld {
     return Math.max(38, Math.min(82, this.app.screen.width * 0.12));
   }
 
-  private getWaawaaCharacterSize(kind: "sample" | "rain"): number {
+  private getWaawaaCharacterSize(): number {
     if (this.app === null) {
-      return kind === "sample" ? 132 : 92;
+      return 132;
     }
     const base = Math.min(this.app.screen.width, this.app.screen.height);
-    if (kind === "sample") {
-      return Math.max(86, Math.min(132, base * 0.14));
-    }
-    return Math.max(48, Math.min(94, base * 0.1));
+    return Math.max(86, Math.min(132, base * 0.14));
   }
 
   private tickWaawaaRain(deltaMs: number, bounds: { width: number; height: number }): void {
@@ -482,7 +479,7 @@ export class FuwafuwaWorld {
       if (!item.landed) {
         item.sprite.y += deltaMs * (0.5 + Math.random() * 0.08);
         item.sprite.rotation += deltaMs * item.spinSpeed;
-        item.sprite.scale.set(item.scale * (1 + Math.sin(item.sprite.y * 0.018) * 0.08));
+        item.sprite.scale.set(item.scale);
         if (item.sprite.y >= item.targetY) {
           item.landed = true;
           item.sprite.y = item.targetY;
