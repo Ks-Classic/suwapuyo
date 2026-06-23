@@ -34,8 +34,8 @@ export interface FuwafuwaConfig {
     rainCount: 20;
   };
   events: {
-    battleAudioUrl: string;
     battleDurationMs: 12_000;
+    battleRestitution: 0.92;
   };
 }
 
@@ -80,8 +80,8 @@ export const SUUSUU_CONFIG: FuwafuwaConfig = {
     rainCount: 20,
   },
   events: {
-    battleAudioUrl: "/assets/audio/suwa-good-morning.mp3",
     battleDurationMs: 12_000,
+    battleRestitution: 0.92,
   },
 };
 

@@ -217,6 +217,7 @@ export interface ArtworkRepository {
 - `startBattleEvent()`: `display_event = { id: crypto.randomUUID(), type: "battle", startedAt }` を書き込む。
 - `clearDisplayEvent()`: `display_event = null` を書き込む。
 - ディスプレイ側は `display_event.id` ごとに一度だけ演出開始する。表示画面が未クリックの場合、ブラウザの自動再生制限で音が鳴らないことがあるため、`音ON` ボタンで事前アンロックできるようにする。
+- `battle` は外部音源を使わずWebAudio生成SEで鳴らす。イントロ/衝突/脱落/勝利の各フェーズをPixiJSアニメーションに同期し、音源ライセンス・帰属・再配布リスクをゼロにする。
 ```ts
 // 操作API(スタッフ→表示)
 showArtwork(id, mode: "normal"|"featured")
@@ -317,6 +318,7 @@ Props: `{ width:number; height:number; onComplete:(blob:Blob, w:number, h:number
 - 表示操作バー: [全リセット][ランダム表示][一時停止]、同時表示数 8/12/20/30 切替。
 - イベントメニュー: [バトル][イベント停止]。スタッフ画面から `display_state.display_event` を更新し、ディスプレイ側がRealtimeで演出を開始/停止する。
 - `DisplayScreen`: `FuwafuwaWorld` のマウント先（`/display`）。`display_event.type === "battle"` でバトル演出を開始し、`音ON` ボタンで音声再生をアンロックできる。
+- `FuwafuwaWorld` battle: 表示中キャラ/サンプルを円形ボディとして扱い、中央へ引き寄せる弱い力、減衰、壁反射、キャラ同士の反発衝突を毎tick解く。衝突時はリング/星エフェクトと生成SE、脱落時は粒エフェクトと下降SE、勝者決定時はスポットライト・図形王冠・優勝旗・紙吹雪・勝利アルペジオを出す。イベント終了/停止時は通常ふわふわ状態へ復帰する。
 - `MetricsOverlay`(`/debug` or トグル): FPS(ticker)、JSヒープ(`performance.memory`があれば)、作品数、`navigator.storage.estimate()` 使用量。**Gate中Must・本番非表示**。
 
 ---

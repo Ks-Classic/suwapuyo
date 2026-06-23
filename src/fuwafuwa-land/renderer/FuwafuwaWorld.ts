@@ -23,18 +23,42 @@ interface WaawaaRainItem {
   landed: boolean;
 }
 
+interface BattleActor {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  baseScale: number;
+  eliminated: boolean;
+  eliminatedAt?: number;
+  seed: number;
+}
+
+interface BattleEffect {
+  container: Container;
+  startedAt: number;
+  durationMs: number;
+}
+
 interface BattleState {
   id: string;
   startedAt: number;
+  lastCollisionSoundAt: number;
   nextEliminationAt: number;
   winnerAt: number;
   endAt: number;
   participants: string[];
+  actors: Map<string, BattleActor>;
   eliminatedIds: Set<string>;
   winnerId?: string;
   title: Text;
-  crown?: Text;
-  flag?: Text;
+  subtitle: Text;
+  effects: BattleEffect[];
+  crown?: Container;
+  flag?: Container;
+  spotlight?: Graphics;
 }
 
 const WAAWAA_SAMPLE_ID = "sample-tooth";
@@ -61,7 +85,7 @@ export class FuwafuwaWorld {
   private lastWaawaaTapAt = 0;
   private waawaaMode = false;
   private readonly waawaaAudio: HTMLAudioElement;
-  private readonly battleAudio: HTMLAudioElement;
+  private audioContext: AudioContext | null = null;
   private readonly waawaaRain: WaawaaRainItem[] = [];
   private battleState: BattleState | null = null;
 
@@ -69,8 +93,6 @@ export class FuwafuwaWorld {
     this.config = config;
     this.waawaaAudio = new Audio(config.secretMode.audioUrl);
     this.waawaaAudio.preload = "auto";
-    this.battleAudio = new Audio(config.events.battleAudioUrl);
-    this.battleAudio.preload = "auto";
   }
 
   async mount(parent: HTMLElement): Promise<void> {
@@ -111,7 +133,13 @@ export class FuwafuwaWorld {
   }
 
   async unlockAudio(): Promise<boolean> {
-    return this.tryPlayAudio(this.battleAudio);
+    const context = this.ensureAudioContext();
+    if (context === null) {
+      return false;
+    }
+    await context.resume();
+    this.playSparkleSound(1);
+    return true;
   }
 
   startBattleEvent(eventId: string): void {
@@ -123,25 +151,54 @@ export class FuwafuwaWorld {
     if (participants.length === 0) {
       return;
     }
+    const bounds = { width: this.app.screen.width, height: this.app.screen.height };
+    const actors = new Map<string, BattleActor>();
+    participants.forEach((id, index) => {
+      const item = this.items.get(id);
+      const angle = index * ((Math.PI * 2) / Math.max(1, participants.length));
+      const x = item?.container.x === undefined || item.container.x === 0 ? bounds.width / 2 + Math.cos(angle) * 180 : item.container.x;
+      const y = item?.container.y === undefined || item.container.y === 0 ? bounds.height / 2 + Math.sin(angle) * 110 : item.container.y;
+      actors.set(id, {
+        id,
+        x,
+        y,
+        vx: Math.cos(angle + Math.PI / 2) * 0.34,
+        vy: Math.sin(angle + Math.PI / 2) * 0.34,
+        radius: isSampleId(id) ? 52 : 62,
+        baseScale: item?.container.scale.x ?? 1,
+        eliminated: false,
+        seed: Math.random() * 1000,
+      });
+    });
     const title = new Text({
-      text: "ふわふわバトル!",
+      text: "ふわふわバトル",
       style: { fill: 0xfff7d6, fontSize: this.getSecretModeTextSize(), fontWeight: "900", stroke: { color: 0xe11d48, width: 8 } },
     });
+    const subtitle = new Text({
+      text: "ぽよんとぶつかって、さいごの1人へ",
+      style: { fill: 0x17324d, fontSize: Math.max(18, this.getSecretModeTextSize() * 0.32), fontWeight: "900", stroke: { color: 0xffffff, width: 5 } },
+    });
     title.anchor.set(0.5);
+    subtitle.anchor.set(0.5);
     title.position.set(this.app.screen.width / 2, this.app.screen.height * 0.18);
-    this.app.stage.addChild(title);
+    subtitle.position.set(this.app.screen.width / 2, this.app.screen.height * 0.18 + this.getSecretModeTextSize() * 0.8);
+    this.app.stage.addChild(title, subtitle);
     const now = performance.now();
     this.battleState = {
       id: eventId,
       startedAt: now,
-      nextEliminationAt: now + 1800,
-      winnerAt: now + this.config.events.battleDurationMs * 0.68,
+      lastCollisionSoundAt: 0,
+      nextEliminationAt: now + 4400,
+      winnerAt: now + this.config.events.battleDurationMs * 0.72,
       endAt: now + this.config.events.battleDurationMs,
       participants,
+      actors,
       eliminatedIds: new Set<string>(),
       title,
+      subtitle,
+      effects: [],
     };
-    void this.tryPlayAudio(this.battleAudio);
+    this.playBattleIntroSound();
   }
 
   stopDisplayEvent(): void {
@@ -393,6 +450,61 @@ export class FuwafuwaWorld {
     }
   }
 
+  private ensureAudioContext(): AudioContext | null {
+    if (this.audioContext !== null) {
+      return this.audioContext;
+    }
+    const AudioContextClass = window.AudioContext;
+    if (AudioContextClass === undefined) {
+      return null;
+    }
+    this.audioContext = new AudioContextClass();
+    return this.audioContext;
+  }
+
+  private playTone(frequency: number, durationMs: number, gainValue: number, type: OscillatorType, delayMs = 0): void {
+    const context = this.ensureAudioContext();
+    if (context === null) {
+      return;
+    }
+    const start = context.currentTime + delayMs / 1000;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(40, frequency * 0.72), start + durationMs / 1000);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(gainValue, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + durationMs / 1000);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + durationMs / 1000 + 0.03);
+  }
+
+  private playBattleIntroSound(): void {
+    [523, 659, 784, 1046].forEach((frequency, index) => this.playTone(frequency, 160, 0.055, "triangle", index * 85));
+  }
+
+  private playCollisionSound(strength: number): void {
+    const frequency = 260 + Math.min(1, strength) * 260;
+    this.playTone(frequency, 110, 0.035 + Math.min(1, strength) * 0.035, "sine");
+    this.playTone(frequency * 1.5, 80, 0.018, "triangle", 22);
+  }
+
+  private playEliminationSound(): void {
+    this.playTone(392, 180, 0.05, "triangle");
+    this.playTone(220, 210, 0.04, "sine", 80);
+  }
+
+  private playSparkleSound(volume = 1): void {
+    [880, 1174, 1568].forEach((frequency, index) => this.playTone(frequency, 170, 0.028 * volume, "triangle", index * 70));
+  }
+
+  private playVictorySound(): void {
+    [523, 659, 784, 1046, 1318].forEach((frequency, index) => this.playTone(frequency, 260, 0.06, "triangle", index * 120));
+    this.playTone(196, 720, 0.05, "sine", 80);
+  }
+
   private refreshItemsForWaawaaMode(): void {
     this.items.forEach((item) => {
       if (item.kind === "sample") {
@@ -531,13 +643,18 @@ export class FuwafuwaWorld {
       return;
     }
     this.battleState.title.destroy();
+    this.battleState.subtitle.destroy();
+    this.battleState.effects.forEach((effect) => effect.container.destroy({ children: true }));
     this.battleState.crown?.destroy();
     this.battleState.flag?.destroy();
+    this.battleState.spotlight?.destroy();
     this.battleState.participants.forEach((id) => {
       const item = this.items.get(id);
       if (item !== undefined) {
         item.container.alpha = 1;
         item.container.visible = true;
+        const actor = this.battleState?.actors.get(id);
+        item.container.scale.set(actor?.baseScale ?? item.container.scale.x);
       }
     });
     this.battleState = null;
@@ -569,56 +686,148 @@ export class FuwafuwaWorld {
     }
     const now = performance.now();
     const battle = this.battleState;
-    const activeIds = battle.participants.filter((id) => !battle.eliminatedIds.has(id));
-    if (now >= battle.nextEliminationAt && activeIds.length > 1 && now < battle.winnerAt) {
-      const targetIndex = Math.floor(Math.random() * activeIds.length);
-      battle.eliminatedIds.add(activeIds[targetIndex]);
-      battle.nextEliminationAt = now + 850;
-    }
-    const remainingIds = battle.participants.filter((id) => !battle.eliminatedIds.has(id));
-    if (now >= battle.winnerAt && battle.winnerId === undefined) {
-      battle.winnerId = remainingIds[Math.floor(Math.random() * remainingIds.length)] ?? remainingIds[0];
-      battle.participants.forEach((id) => {
-        if (id !== battle.winnerId) {
-          battle.eliminatedIds.add(id);
-        }
-      });
-      this.showBattleWinner(battle);
-    }
     if (now >= battle.endAt) {
       this.clearBattleState();
       return;
     }
+    const activeActors = [...battle.actors.values()].filter((actor) => !actor.eliminated);
+    if (now >= battle.nextEliminationAt && activeActors.length > 2 && now < battle.winnerAt) {
+      const slowest = activeActors.reduce((picked, actor) => {
+        const pickedSpeed = Math.hypot(picked.vx, picked.vy);
+        const actorSpeed = Math.hypot(actor.vx, actor.vy);
+        return actorSpeed < pickedSpeed ? actor : picked;
+      }, activeActors[0]);
+      this.eliminateActor(battle, slowest, now);
+      battle.nextEliminationAt = now + 1100;
+    }
+    if (now >= battle.winnerAt && battle.winnerId === undefined) {
+      const remainingActors = [...battle.actors.values()].filter((actor) => !actor.eliminated);
+      const winner = remainingActors[Math.floor(Math.random() * remainingActors.length)] ?? remainingActors[0];
+      battle.winnerId = winner?.id;
+      remainingActors.forEach((actor) => {
+        if (actor.id !== battle.winnerId) {
+          this.eliminateActor(battle, actor, now);
+        }
+      });
+      this.showBattleWinner(battle);
+    }
 
-    const centerX = bounds.width / 2;
-    const centerY = bounds.height / 2;
-    battle.title.rotation = Math.sin((now - battle.startedAt) * 0.006) * 0.08;
-    battle.title.scale.set(1 + Math.sin((now - battle.startedAt) * 0.008) * 0.08);
-    battle.participants.forEach((id, index) => {
-      const item = this.items.get(id);
-      if (item === undefined) {
-        return;
-      }
-      const elapsed = now - battle.startedAt + index * 173;
-      const eliminated = battle.eliminatedIds.has(id);
-      const winner = battle.winnerId === id;
-      const orbit = winner ? 28 : eliminated ? 170 : 96 + Math.sin(elapsed * 0.003) * 28;
-      const angle = elapsed * (winner ? 0.004 : 0.009) + index * ((Math.PI * 2) / Math.max(1, battle.participants.length));
-      const targetX = centerX + Math.cos(angle) * orbit;
-      const targetY = centerY + Math.sin(angle * 1.3) * orbit * 0.62;
-      item.container.x += (targetX - item.container.x) * 0.075;
-      item.container.y += (targetY - item.container.y) * 0.075;
-      item.container.rotation += deltaMs * (winner ? 0.004 : 0.014);
-      item.container.alpha = eliminated ? 0.22 : 1;
-      item.container.scale.set(winner ? 2.3 : eliminated ? 0.48 : 1.35 + Math.sin(elapsed * 0.015) * 0.18);
-    });
+    this.stepBattlePhysics(battle, deltaMs, bounds, now);
+    this.renderBattleActors(battle, deltaMs, now);
+    this.tickBattleEffects(battle, now);
     if (battle.winnerId !== undefined) {
       const winner = this.items.get(battle.winnerId);
       if (winner !== undefined) {
-        battle.crown?.position.set(winner.container.x, winner.container.y - 100);
-        battle.flag?.position.set(winner.container.x + 82, winner.container.y - 26);
+        battle.crown?.position.set(winner.container.x, winner.container.y - 115);
+        battle.flag?.position.set(winner.container.x + 96, winner.container.y - 34);
+        battle.spotlight?.position.set(winner.container.x, winner.container.y);
       }
     }
+  }
+
+  private stepBattlePhysics(battle: BattleState, deltaMs: number, bounds: { width: number; height: number }, now: number): void {
+    const centerX = bounds.width / 2;
+    const centerY = bounds.height / 2 + bounds.height * 0.04;
+    const activeActors = [...battle.actors.values()].filter((actor) => !actor.eliminated);
+    activeActors.forEach((actor) => {
+      const towardCenterX = centerX - actor.x;
+      const towardCenterY = centerY - actor.y;
+      const length = Math.max(1, Math.hypot(towardCenterX, towardCenterY));
+      const swirl = Math.sin((now - battle.startedAt) * 0.002 + actor.seed) * 0.002;
+      actor.vx += (towardCenterX / length) * 0.012 + (-towardCenterY / length) * swirl;
+      actor.vy += (towardCenterY / length) * 0.012 + (towardCenterX / length) * swirl;
+    });
+    for (let leftIndex = 0; leftIndex < activeActors.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < activeActors.length; rightIndex += 1) {
+        this.resolveBattleCollision(battle, activeActors[leftIndex], activeActors[rightIndex], now);
+      }
+    }
+    battle.actors.forEach((actor) => {
+      if (actor.eliminated) {
+        actor.vy += 0.0018 * deltaMs;
+      }
+      actor.x += actor.vx * deltaMs;
+      actor.y += actor.vy * deltaMs;
+      actor.vx *= actor.eliminated ? 0.992 : 0.985;
+      actor.vy *= actor.eliminated ? 0.992 : 0.985;
+      const margin = actor.radius;
+      if (actor.x < margin || actor.x > bounds.width - margin) {
+        actor.x = Math.max(margin, Math.min(bounds.width - margin, actor.x));
+        actor.vx *= -this.config.events.battleRestitution;
+      }
+      if (actor.y < margin || actor.y > bounds.height - margin) {
+        actor.y = Math.max(margin, Math.min(bounds.height - margin, actor.y));
+        actor.vy *= -this.config.events.battleRestitution;
+      }
+    });
+  }
+
+  private resolveBattleCollision(battle: BattleState, left: BattleActor, right: BattleActor, now: number): void {
+    const dx = right.x - left.x;
+    const dy = right.y - left.y;
+    const distance = Math.max(0.01, Math.hypot(dx, dy));
+    const minDistance = left.radius + right.radius;
+    if (distance >= minDistance) {
+      return;
+    }
+    const nx = dx / distance;
+    const ny = dy / distance;
+    const overlap = minDistance - distance;
+    left.x -= nx * overlap * 0.5;
+    left.y -= ny * overlap * 0.5;
+    right.x += nx * overlap * 0.5;
+    right.y += ny * overlap * 0.5;
+    const relativeVelocity = (right.vx - left.vx) * nx + (right.vy - left.vy) * ny;
+    if (relativeVelocity > 0) {
+      return;
+    }
+    const impulse = (-(1 + this.config.events.battleRestitution) * relativeVelocity) / 2;
+    left.vx -= impulse * nx;
+    left.vy -= impulse * ny;
+    right.vx += impulse * nx;
+    right.vy += impulse * ny;
+    const strength = Math.min(1, Math.abs(relativeVelocity) * 1.7 + overlap / minDistance);
+    this.addBattleBumpEffect((left.x + right.x) / 2, (left.y + right.y) / 2, strength);
+    if (now - battle.lastCollisionSoundAt > 90) {
+      this.playCollisionSound(strength);
+      battle.lastCollisionSoundAt = now;
+    }
+  }
+
+  private renderBattleActors(battle: BattleState, deltaMs: number, now: number): void {
+    const progress = Math.min(1, (now - battle.startedAt) / this.config.events.battleDurationMs);
+    battle.title.rotation = Math.sin((now - battle.startedAt) * 0.006) * 0.06;
+    battle.title.scale.set(1 + Math.sin((now - battle.startedAt) * 0.008) * 0.07);
+    battle.subtitle.alpha = progress > 0.5 ? Math.max(0, 1 - (progress - 0.5) / 0.2) : 1;
+    battle.actors.forEach((actor) => {
+      const item = this.items.get(actor.id);
+      if (item === undefined) {
+        return;
+      }
+      const eliminatedElapsed = actor.eliminatedAt === undefined ? 0 : now - actor.eliminatedAt;
+      const winner = battle.winnerId === actor.id;
+      const pulse = 1 + Math.sin((now + actor.seed) * 0.014) * 0.08;
+      item.container.x = actor.x;
+      item.container.y = actor.y + Math.sin((now + actor.seed) * 0.007) * 10;
+      item.container.rotation += deltaMs * (winner ? 0.004 : actor.eliminated ? 0.018 : 0.011);
+      item.container.alpha = actor.eliminated ? Math.max(0.12, 1 - eliminatedElapsed / 650) : 1;
+      item.container.visible = !actor.eliminated || eliminatedElapsed < 900;
+      item.container.scale.set(winner ? actor.baseScale * 2.25 * pulse : actor.eliminated ? actor.baseScale * Math.max(0.25, 1 - eliminatedElapsed / 700) : actor.baseScale * 1.28 * pulse);
+    });
+  }
+
+  private eliminateActor(battle: BattleState, actor: BattleActor, now: number): void {
+    if (actor.eliminated) {
+      return;
+    }
+    actor.eliminated = true;
+    actor.eliminatedAt = now;
+    battle.eliminatedIds.add(actor.id);
+    const angle = Math.atan2(actor.y - (this.app?.screen.height ?? 1) / 2, actor.x - (this.app?.screen.width ?? 1) / 2);
+    actor.vx += Math.cos(angle) * 0.55;
+    actor.vy += Math.sin(angle) * 0.55 - 0.35;
+    this.addBattlePopEffect(actor.x, actor.y);
+    this.playEliminationSound();
   }
 
   private showBattleWinner(battle: BattleState): void {
@@ -626,13 +835,108 @@ export class FuwafuwaWorld {
       return;
     }
     battle.title.text = "きょうのチャンピオン!";
-    const crown = new Text({ text: "おうかん", style: { fill: 0xffb703, fontSize: 30, fontWeight: "900", stroke: { color: 0x7c2d12, width: 4 } } });
-    const flag = new Text({ text: "ゆうしょう", style: { fill: 0xffffff, fontSize: 24, fontWeight: "900", stroke: { color: 0x0f766e, width: 5 } } });
-    crown.anchor.set(0.5);
-    flag.anchor.set(0.5);
-    this.app.stage.addChild(crown, flag);
+    battle.subtitle.text = "みんなでぽよん、さいごは主役!";
+    battle.subtitle.alpha = 1;
+    const spotlight = new Graphics().ellipse(0, 18, 155, 54).fill({ color: 0xfff7d6, alpha: 0.34 }).stroke({ color: 0xffb703, alpha: 0.6, width: 3 });
+    const crown = this.createCrownGraphic();
+    const flag = this.createWinnerFlag();
+    this.app.stage.addChild(spotlight, crown, flag);
+    battle.spotlight = spotlight;
     battle.crown = crown;
     battle.flag = flag;
+    this.addConfettiBurst();
+    this.playVictorySound();
+  }
+
+  private createCrownGraphic(): Container {
+    const container = new Container();
+    const crown = new Graphics()
+      .poly([-54, 22, -44, -28, -18, 6, 0, -38, 18, 6, 44, -28, 54, 22])
+      .fill(0xffc857)
+      .stroke({ color: 0x9a5b00, width: 5 });
+    const base = new Graphics().roundRect(-60, 18, 120, 24, 8).fill(0xffb703).stroke({ color: 0x9a5b00, width: 4 });
+    const shine = new Graphics().circle(-18, -3, 7).circle(18, -3, 7).circle(0, -20, 8).fill(0xffffff);
+    shine.alpha = 0.72;
+    container.addChild(crown, base, shine);
+    return container;
+  }
+
+  private createWinnerFlag(): Container {
+    const container = new Container();
+    const pole = new Graphics().roundRect(-4, -54, 8, 112, 4).fill(0x7c2d12);
+    const cloth = new Graphics().poly([0, -54, 92, -38, 70, 2, 0, -12]).fill(0x14b8a6).stroke({ color: 0x0f766e, width: 4 });
+    const text = new Text({ text: "優勝", style: { fill: 0xffffff, fontSize: 24, fontWeight: "900", stroke: { color: 0x0f766e, width: 4 } } });
+    text.anchor.set(0.5);
+    text.position.set(42, -25);
+    container.addChild(pole, cloth, text);
+    return container;
+  }
+
+  private addBattleBumpEffect(x: number, y: number, strength: number): void {
+    if (this.app === null || this.battleState === null) {
+      return;
+    }
+    const container = new Container();
+    const radius = 18 + strength * 30;
+    const ring = new Graphics().circle(0, 0, radius).stroke({ color: 0xffffff, width: 5, alpha: 0.95 });
+    const star = new Graphics()
+      .poly([0, -radius * 0.8, 7, -8, radius * 0.75, 0, 7, 8, 0, radius * 0.8, -7, 8, -radius * 0.75, 0, -7, -8])
+      .fill(0xfff7d6);
+    container.position.set(x, y);
+    container.addChild(ring, star);
+    this.app.stage.addChild(container);
+    this.battleState.effects.push({ container, startedAt: performance.now(), durationMs: 420 });
+  }
+
+  private addBattlePopEffect(x: number, y: number): void {
+    if (this.app === null || this.battleState === null) {
+      return;
+    }
+    const container = new Container();
+    for (let index = 0; index < 8; index += 1) {
+      const angle = index * (Math.PI / 4);
+      const piece = new Graphics().circle(Math.cos(angle) * 22, Math.sin(angle) * 22, 8).fill(index % 2 === 0 ? 0xffb703 : 0x14b8a6);
+      container.addChild(piece);
+    }
+    const text = new Text({ text: "ぽよん", style: { fill: 0xe11d48, fontSize: 22, fontWeight: "900", stroke: { color: 0xffffff, width: 4 } } });
+    text.anchor.set(0.5);
+    container.addChild(text);
+    container.position.set(x, y);
+    this.app.stage.addChild(container);
+    this.battleState.effects.push({ container, startedAt: performance.now(), durationMs: 680 });
+  }
+
+  private addConfettiBurst(): void {
+    if (this.app === null || this.battleState === null) {
+      return;
+    }
+    const container = new Container();
+    const colors = [0xffb703, 0xe11d48, 0x14b8a6, 0x60a5fa, 0xffffff];
+    for (let index = 0; index < 46; index += 1) {
+      const x = (Math.random() - 0.5) * this.app.screen.width * 0.72;
+      const y = (Math.random() - 0.5) * this.app.screen.height * 0.45;
+      const piece = new Graphics().rect(-5, -3, 10, 6).fill(colors[index % colors.length]);
+      piece.position.set(x, y);
+      piece.rotation = Math.random() * Math.PI * 2;
+      container.addChild(piece);
+    }
+    container.position.set(this.app.screen.width / 2, this.app.screen.height * 0.4);
+    this.app.stage.addChild(container);
+    this.battleState.effects.push({ container, startedAt: performance.now(), durationMs: 2400 });
+  }
+
+  private tickBattleEffects(battle: BattleState, now: number): void {
+    battle.effects = battle.effects.filter((effect) => {
+      const progress = Math.min(1, (now - effect.startedAt) / effect.durationMs);
+      effect.container.alpha = 1 - progress;
+      effect.container.scale.set(0.8 + progress * 1.4);
+      effect.container.rotation += 0.018;
+      if (progress >= 1) {
+        effect.container.destroy({ children: true });
+        return false;
+      }
+      return true;
+    });
   }
 
   private getSecretModeTextSize(): number {
