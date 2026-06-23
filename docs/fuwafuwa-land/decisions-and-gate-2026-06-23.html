@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ふわふわランド 確定版ダッシュボード｜2026-06-23</title>
+<style>
+  :root{
+    --cream:#FBF7F0; --paper:#FFFFFF; --ink:#2A2622; --muted:#7A7066; --line:#EBE2D6;
+    --coral:#E8694A; --teal:#2F8F83; --teal-soft:#DCEFEC; --amber:#D9911F;
+    --good:#2F8F83; --good-soft:#DCEFEC; --crit:#D33A2C; --crit-soft:#FBE5E1;
+    --amber-soft:#FAF0DC; --slate-soft:#F0ECE4;
+    --shadow:0 1px 2px rgba(42,38,34,.04),0 8px 28px rgba(42,38,34,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  
+  body{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    background:radial-gradient(1100px 560px at 82% -10%, #E7F2EF 0%, transparent 55%),radial-gradient(900px 480px at -8% 8%, #FDEEE6 0%, transparent 50%),var(--cream);
+    color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;padding:clamp(16px,4vw,48px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .kicker{font-size:.78rem;letter-spacing:.18em;color:var(--teal);font-weight:700;text-transform:uppercase}
+  h1{font-size:clamp(1.8rem,4.3vw,2.9rem);line-height:1.15;letter-spacing:-.01em;margin:.3em 0 .25em;font-weight:800}
+  h1 .soft{color:var(--muted);font-weight:700}
+  .lede{color:var(--muted);max-width:64ch;font-size:1.02rem}
+  section{margin-top:clamp(32px,5vw,52px)}
+  h2{font-size:1.45rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.55em;margin-bottom:.2em}
+  h2 .n{font-size:.8rem;color:#fff;background:var(--ink);width:1.9em;height:1.9em;display:grid;place-items:center;border-radius:50%;font-weight:700}
+  .sub{color:var(--muted);font-size:.95rem;margin-bottom:1.2em}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:.82em;background:var(--cream);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+
+  .hero{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:clamp(22px,3.4vw,36px);box-shadow:var(--shadow);margin-top:24px}
+  .pill{display:inline-block;background:var(--teal);color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.06em;padding:5px 13px;border-radius:999px}
+  .hero h3{font-size:clamp(1.2rem,2.7vw,1.6rem);margin:14px 0 6px}
+  .statline{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+  .stat{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:.9rem;display:flex;align-items:center;gap:8px}
+  .dot{width:9px;height:9px;border-radius:50%}.dot.g{background:var(--good)}.dot.y{background:var(--amber)}
+
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.g2,.g4{grid-template-columns:1fr}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:transform .15s ease}
+  .card:hover{transform:translateY(-2px)}
+  .card .id{font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--teal)}
+  .card h3{font-size:1.02rem;margin:5px 0 6px}
+  .card p{font-size:.9rem;color:#4a443d}
+  .card .why{margin-top:8px;font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:7px}
+
+  /* resolved status */
+  .res{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:820px){.res{grid-template-columns:1fr 1fr}}@media(max-width:480px){.res{grid-template-columns:1fr}}
+  .rc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+  .rc .tag{font-size:.7rem;font-weight:800;color:var(--crit)}
+  .rc h4{font-size:.92rem;margin:5px 0}
+  .rc .st{display:inline-block;margin-top:6px;font-size:.74rem;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--good-soft);color:var(--good)}
+  .rc .st.down{background:var(--amber-soft);color:var(--amber)}
+
+  .phase{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:14px;border-top:4px solid var(--coral)}
+  .phase:nth-child(2){border-top-color:var(--amber)}.phase:nth-child(3){border-top-color:var(--teal)}
+  .phase h3{display:flex;align-items:center;gap:10px;font-size:1.05rem;margin-bottom:8px}
+  .phase h3 em{font-style:normal;font-size:.72rem;background:var(--slate-soft);color:var(--ink);padding:3px 9px;border-radius:999px;font-weight:800}
+  .phase ul{margin:0 0 0 1.1em;font-size:.9rem;display:grid;gap:5px}
+  .phase code{font-size:.78rem}
+
+  .gono{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:620px){.gono{grid-template-columns:1fr}}
+  .gn{border-radius:14px;padding:14px;border:1px solid var(--line)}
+  .gn.go{background:var(--good-soft)}.gn.cond{background:var(--amber-soft)}.gn.no{background:var(--crit-soft)}
+  .gn h4{font-size:.95rem;margin-bottom:5px}.gn.go h4{color:var(--good)}.gn.cond h4{color:var(--amber)}.gn.no h4{color:var(--crit)}
+  .gn p{font-size:.83rem;color:#4a443d}
+
+  ul.clean{list-style:none;display:grid;gap:9px}
+  ul.clean li{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:.9rem;display:flex;gap:10px;align-items:flex-start}
+  ul.clean li::before{content:"●";color:var(--teal);font-size:.6rem;margin-top:.5em}
+  footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">確定版ダッシュボード v2 ・ 2026-06-23 壁打ち反映</div>
+  <h1>ふわふわランド <span class="soft">設計判断＋3日Gate計画</span></h1>
+  <p class="lede">正は <code>05_summary/04_decision-log-and-gate-plan.md</code>。前回レビューのCritical 4件は、設計判断で解消/降格しました。目的=<b>2026-06-25に「開発を進めてよいか」をGoで判定できる状態</b>。</p>
+
+  <div class="hero">
+    <span class="pill">現在地</span>
+    <h3>$0・通信非依存・3日で歩く骨格 → Gate判定へ</h3>
+    <p style="color:var(--muted)">クラウドDBもライセンス費も不要。最大の技術リスク(背景除去)はマーカー方式とデジタル入力で回避。残るは「実際に動かして6時間もつか」を3日で実証するだけ。</p>
+    <div class="statline">
+      <div class="stat"><span class="dot g"></span><b>Critical</b>　4件 → 解消3 / 降格1</div>
+      <div class="stat"><span class="dot g"></span><b>コスト</b>　ソフト$0（自前PC前提）</div>
+      <div class="stat"><span class="dot y"></span><b>残課題</b>　Major軽量3件</div>
+    </div>
+  </div>
+
+  <!-- 決定 -->
+  <section>
+    <h2><span class="n">D</span>確定した設計判断</h2>
+    <p class="sub">8決定。各文書はこれに追従させる。</p>
+    <div class="grid g2">
+      <div class="card"><div class="id">D-1 ストレージ</div><h3>IndexedDB＋Blob＋persist()</h3><p>localStorage/base64を廃止。300枚=30〜100MBで容量は3桁の余裕。</p><div class="why">クラウド不要・$0・通信非依存。NFR-203と整合。 → C-1解消</div></div>
+      <div class="card"><div class="id">D-2 入力方式</div><h3>ハイブリッド寄り紙（マーカー枠）</h3><p>A4四隅マーカー＋隅QRで撮影→既知矩形を切り出し。最小デジタルキャンバスをGate実証＆当日フォールバック。</p><div class="why">背景除去がML不要のクロップに。 → C-2/C-2b/M-7解消</div></div>
+      <div class="card"><div class="id">D-3 氏名表示</div><h3>モニターは下の名前OK（任意）</h3><p>SNS転用は名前なし。作品内の苗字等は目視除外。</p><div class="why">名前ラベルで「自分の作品」を見つけやすく、指定表示検索も楽。 → C-4降格/M-3緩和</div></div>
+      <div class="card"><div class="id">D-4 複数端末(B案)</div><h3>会場LANのローカルWebSocket第一</h3><p>スマホ/iPad撮影→表示PC即反映。Supabaseは任意層。iPad撮影は標準Safariタブ。</p><div class="why">要ネット無し・$0・auto-pause無し。Gateは単一PC→本番前に上乗せ。 → M-6</div></div>
+      <div class="card"><div class="id">D-5 配信</div><h3>イベントはローカル/PWA</h3><p>URL要時のみCloudflare Pages。Vercel Hobbyは商用NGで使わない。</p><div class="why">静的SPAにCloud Runは過剰。通信非依存が最堅牢。</div></div>
+      <div class="card"><div class="id">D-6 6hソーク</div><h3>60分以上・300枚・計測ログ</h3><p>10秒毎入替＋FPS/メモリ/容量を記録。合格基準を数値化。</p><div class="why">10分では実故障モードを再現できない。 → C-3解消</div></div>
+      <div class="card"><div class="id">D-7 動画（Gate後・並行）</div><h3>Remotion回避→完全$0 OSS</h3><p>Live2D FREE/Synfig＋Revideo/FFmpeg＋VOICEVOX。AI生成は特別回のみ。</p><div class="why">単純アニメはOSSで十分。原画を動かしキャラ一貫性100%。 → ライセンス費0</div></div>
+      <div class="card"><div class="id">D-8 計測</div><h3>Gate期間オーバーレイMust</h3><p>FPS/メモリ/作品数/storage.estimate()を常時表示（本番は非表示）。</p><div class="why">6h判定は実測の証拠が要る。 → M-5</div></div>
+    </div>
+  </section>
+
+  <!-- Critical解消 -->
+  <section>
+    <h2><span class="n" style="background:var(--good)">✓</span>Critical 解消ステータス</h2>
+    <div class="res">
+      <div class="rc"><div class="tag">C-1 ストレージ枯渇</div><h4>IndexedDB＋Blob</h4><div class="st">解消</div></div>
+      <div class="rc"><div class="tag">C-2 背景除去</div><h4>マーカー切り出し＋デジタル入力</h4><div class="st">解消</div></div>
+      <div class="rc"><div class="tag">C-3 6hソーク不足</div><h4>60分/300枚/計測</h4><div class="st">解消</div></div>
+      <div class="rc"><div class="tag">C-4 名前露出</div><h4>下の名前OK・SNS非流出</h4><div class="st down">降格</div></div>
+    </div>
+  </section>
+
+  <!-- 3日Gate -->
+  <section>
+    <h2><span class="n">G</span>3日Gate計画（単一PCで実施）</h2>
+    <p class="sub">きれいなUIでなく「最もリスクの高い縦の一本」を最短貫通し、判定を実測で出す。</p>
+    <div class="phase"><h3><em>DAY 1</em>データ＆入力</h3><ul>
+      <li><b>FL-G01</b> IndexedDB＋Blobストア(<code>idb</code>/Dexie)・persist()・ID採番・容量確認</li>
+      <li><b>FL-G02</b> 紙撮影パス（getUserMedia → マーカー検出 js-aruco2/jsQR＋opencv.js → 切り出し → 登録）</li>
+      <li><b>FL-G03</b> 最小デジタルキャンバス（Konva/SVG領域塗り・ブラシ・パレット・Undo・透過PNG出力）</li>
+    </ul></div>
+    <div class="phase"><h3><em>DAY 2</em>表示ワールド＆操作</h3><ul>
+      <li><b>FL-G04</b> PixiJSふわふわワールド（8〜30体・ふわふわ移動・ランダム/主役/非表示/全リセット）</li>
+      <li><b>FL-G05</b> 下の名前ラベル(任意)＋スタッフのID/名前ジャンプ検索</li>
+      <li><b>FL-G06</b> 計測オーバーレイ（FPS/メモリ/作品数/容量）</li>
+    </ul></div>
+    <div class="phase"><h3><em>DAY 3</em>検証＆判定</h3><ul>
+      <li><b>FL-G07</b> 6時間ソーク（300枚・60分以上・10秒毎入替・途中操作・ログ取得）</li>
+      <li><b>FL-G08</b> スタッフ1人10作品連続登録（平均60秒以内）＋DELL視認性（1台横長を正）</li>
+      <li><b>FL-G09</b> 判定レポート記入 → Go / Conditional Go / No-Go</li>
+    </ul></div>
+
+    <div class="gono" style="margin-top:6px">
+      <div class="gn go"><h4>Go</h4><p>登録→表示成立／12〜20体安定(FPS基準)／リセット・ランダム・指定・非表示・復旧OK／1人運用見通し／マーカー切り出しが基準成功率。</p></div>
+      <div class="gn cond"><h4>Conditional Go</h4><p>マーカー不安定でも四角表示orデジタル入力で成立／B案分離は難しいが単一PCで成立。</p></div>
+      <div class="gn no"><h4>No-Go</h4><p>12体で停止／登録平均2分超／復旧不能／ソークでメモリ破綻。</p></div>
+    </div>
+  </section>
+
+  <!-- 残課題 -->
+  <section>
+    <h2><span class="n" style="background:var(--amber)">▲</span>残課題（軽量・Gate中に処理）</h2>
+    <ul class="clean">
+      <li><b>M-1</b> Issue ID一本化（Gate=<code>FL-G##</code> / Event=<code>FL-E##</code>）。TODOリンクを番号付き正式体系へ差し替え済み。</li>
+      <li><b>M-2</b> 2台連結は不採用、<b>1台横長(1枚)を正</b>。連結は別検証に分離。</li>
+      <li><b>M-4</b> 性能定量化：FPS閾値(12〜20体≥50fps/30体≥30fps)・マーカー切り出し成功率(例:30枚中良好18+)。</li>
+      <li><b>Gate後</b>：本番マーカー台紙 <code>02/07_capture-setup.md</code>・氏名3行ルール <code>01/06_privacy-consent.md</code>・運用Runbook・リハーサル。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>正: <code>docs/fuwafuwa-land/05_summary/04_decision-log-and-gate-plan.md</code> ・ 対象は docs/ と TODO のみ、コード/.env*/無関係ファイルは未変更</span>
+    <span>v2 確定版 2026-06-23</span>
+  </footer>
+</div>
+</body>
+</html>
