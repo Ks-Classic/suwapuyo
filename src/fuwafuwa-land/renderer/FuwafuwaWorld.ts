@@ -14,8 +14,6 @@ interface WorldItem {
   featured?: boolean;
 }
 
-const WAAWAA_SAMPLE_ID = "sample-tooth";
-
 function isSampleId(id: string): boolean {
   return id.startsWith("sample-");
 }
@@ -28,15 +26,9 @@ export class FuwafuwaWorld {
   private background: Sprite | null = null;
   private paused = false;
   private fpsListener: ((fps: number) => void) | null = null;
-  private waawaaTapCount = 0;
-  private lastWaawaaTapAt = 0;
-  private waawaaMode = false;
-  private readonly waawaaAudio: HTMLAudioElement;
 
   constructor(config: FuwafuwaConfig) {
     this.config = config;
-    this.waawaaAudio = new Audio(config.secretMode.audioUrl);
-    this.waawaaAudio.preload = "auto";
   }
 
   async mount(parent: HTMLElement): Promise<void> {
@@ -156,12 +148,9 @@ export class FuwafuwaWorld {
 
   private populateSprite(container: Container, texture: Texture, artwork: Artwork, featured: boolean): void {
     container.removeChildren().forEach((child) => child.destroy({ children: true }));
-    const cardColor = this.waawaaMode ? 0xfff7d6 : 0xffffff;
-    const strokeColor = this.waawaaMode ? 0xe11d48 : 0xb7d7e8;
-    const labelColor = this.waawaaMode ? 0xe11d48 : 0x223344;
-    const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(cardColor).stroke({ color: strokeColor, width: 4 });
+    const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(0xffffff).stroke({ color: 0xb7d7e8, width: 4 });
     const sprite = new Sprite(texture);
-    const label = new Text({ text: this.waawaaMode ? "わーわー" : artwork.givenName ?? artwork.displayLabel, style: { fill: labelColor, fontSize: 20, fontWeight: "800" } });
+    const label = new Text({ text: artwork.givenName ?? artwork.displayLabel, style: { fill: 0x223344, fontSize: 20, fontWeight: "800" } });
     sprite.anchor.set(0.5);
     const maxEdge = featured ? 260 : 190;
     const textureEdge = Math.max(texture.width, texture.height, 1);
@@ -170,26 +159,6 @@ export class FuwafuwaWorld {
     label.anchor.set(0.5, 0);
     label.y = Math.min(88, texture.height * scale * 0.5 + 10);
     container.addChild(card, sprite, label);
-    if (this.waawaaMode) {
-      void this.replaceArtworkSpriteWithWaawaa(sprite, featured);
-    }
-  }
-
-  private async replaceArtworkSpriteWithWaawaa(sprite: Sprite, featured: boolean): Promise<void> {
-    const waawaaSample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === WAAWAA_SAMPLE_ID);
-    if (waawaaSample === undefined) {
-      return;
-    }
-    try {
-      const texture = await this.loadTexture(waawaaSample.imageUrl);
-      if (!this.waawaaMode || sprite.destroyed) {
-        return;
-      }
-      sprite.texture = texture;
-      sprite.scale.set((featured ? 250 : 190) / Math.max(texture.width, texture.height, 1));
-    } catch {
-      return;
-    }
   }
 
   private async loadTexture(url: string): Promise<Texture> {
@@ -209,12 +178,9 @@ export class FuwafuwaWorld {
       return;
     }
     const container = new Container();
-    const card = new Graphics()
-      .roundRect(-96, -80, 192, 160, this.config.card.cornerRadius)
-      .fill(this.waawaaMode ? 0xfff7d6 : 0xfffbeb)
-      .stroke({ color: this.waawaaMode ? 0xe11d48 : 0xffb703, width: 4 });
-    const mark = new Text({ text: this.waawaaMode ? "わーわー" : artwork.displayLabel, style: { fill: this.waawaaMode ? 0xe11d48 : 0x3a2f23, fontSize: 24, fontWeight: "800" } });
-    const label = new Text({ text: this.waawaaMode ? "わーわー" : artwork.givenName ?? "ふわふわ", style: { fill: this.waawaaMode ? 0xe11d48 : 0x3a2f23, fontSize: 18, fontWeight: "700" } });
+    const card = new Graphics().roundRect(-96, -80, 192, 160, this.config.card.cornerRadius).fill(0xfffbeb).stroke({ color: 0xffb703, width: 4 });
+    const mark = new Text({ text: artwork.displayLabel, style: { fill: 0x3a2f23, fontSize: 24, fontWeight: "800" } });
+    const label = new Text({ text: artwork.givenName ?? "ふわふわ", style: { fill: 0x3a2f23, fontSize: 18, fontWeight: "700" } });
     mark.anchor.set(0.5);
     label.anchor.set(0.5);
     label.y = 42;
@@ -237,11 +203,6 @@ export class FuwafuwaWorld {
         return;
       }
       const container = new Container();
-      if (sample.id === this.config.secretMode.triggerSampleId) {
-        container.eventMode = "static";
-        container.cursor = "pointer";
-        container.on("pointertap", () => this.handleWaawaaTap());
-      }
       this.app?.stage.addChild(container);
       if (this.app !== null) {
         this.items.set(sample.id, { id: sample.id, container, body: createBody(this.app.screen.width, this.app.screen.height, this.config), kind: "sample" });
@@ -253,82 +214,21 @@ export class FuwafuwaWorld {
   private async populateSample(container: Container, sampleId: string): Promise<void> {
     container.removeChildren().forEach((child) => child.destroy({ children: true }));
     const sample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === sampleId) ?? SAMPLE_CHARACTERS[0];
-    const visualSample = this.waawaaMode ? SAMPLE_CHARACTERS.find((candidate) => candidate.id === WAAWAA_SAMPLE_ID) ?? sample : sample;
-    const labelText = this.waawaaMode ? "わーわー" : sample.label;
-    const text = new Text({ text: labelText, style: { fill: this.waawaaMode ? 0xe11d48 : 0x283747, fontSize: 22, fontWeight: "800" } });
+    const text = new Text({ text: sample.label, style: { fill: 0x283747, fontSize: 22, fontWeight: "800" } });
     text.anchor.set(0.5, 0);
     text.y = 62;
     container.addChild(text);
     try {
-      const texture = await this.loadTexture(visualSample.imageUrl);
+      const texture = await this.loadTexture(sample.imageUrl);
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
-      const scale = (this.waawaaMode ? 132 : 112) / Math.max(texture.width, texture.height, 1);
+      const scale = 112 / Math.max(texture.width, texture.height, 1);
       sprite.scale.set(scale);
       container.addChildAt(sprite, 0);
     } catch {
       const graphics = new Graphics().roundRect(-60, -44, 120, 88, 28).fill(0xffffff).stroke({ color: 0xffb703, width: 4 });
       container.addChildAt(graphics, 0);
     }
-  }
-
-  private handleWaawaaTap(): void {
-    const now = performance.now();
-    this.waawaaTapCount = now - this.lastWaawaaTapAt > this.config.secretMode.tapWindowMs ? 1 : this.waawaaTapCount + 1;
-    this.lastWaawaaTapAt = now;
-    this.playWaawaaAudio();
-    if (this.waawaaTapCount < this.config.secretMode.tapCount) {
-      return;
-    }
-    this.waawaaTapCount = 0;
-    this.waawaaMode = !this.waawaaMode;
-    this.refreshItemsForWaawaaMode();
-    this.showWaawaaModeBurst();
-  }
-
-  private playWaawaaAudio(): void {
-    this.waawaaAudio.currentTime = 0;
-    void this.waawaaAudio.play().catch(() => undefined);
-  }
-
-  private refreshItemsForWaawaaMode(): void {
-    this.items.forEach((item) => {
-      if (item.kind === "sample") {
-        void this.populateSample(item.container, item.id);
-        return;
-      }
-      if (item.artwork !== undefined && item.texture !== undefined) {
-        this.populateSprite(item.container, item.texture, item.artwork, item.featured ?? false);
-      }
-    });
-  }
-
-  private showWaawaaModeBurst(): void {
-    if (this.app === null) {
-      return;
-    }
-    const text = new Text({
-      text: this.config.secretMode.modeText,
-      style: { fill: 0xfff7d6, fontSize: 72, fontWeight: "900", stroke: { color: 0xe11d48, width: 8 } },
-    });
-    text.anchor.set(0.5);
-    text.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
-    this.app.stage.addChild(text);
-    const startedAt = performance.now();
-    const animate = () => {
-      if (this.app === null) {
-        return;
-      }
-      const progress = Math.min(1, (performance.now() - startedAt) / 1800);
-      text.rotation = progress * Math.PI * 4;
-      text.scale.set(0.4 + Math.sin(progress * Math.PI) * 1.4 + progress * 0.4);
-      text.alpha = progress > 0.72 ? Math.max(0, 1 - (progress - 0.72) / 0.28) : 1;
-      if (progress >= 1) {
-        this.app.ticker.remove(animate);
-        text.destroy();
-      }
-    };
-    this.app.ticker.add(animate);
   }
 
   private tick(deltaMs: number): void {

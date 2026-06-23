@@ -24,13 +24,6 @@ export interface FuwafuwaConfig {
     cornerRadius: number;
     shadow: boolean;
   };
-  secretMode: {
-    triggerSampleId: string;
-    tapCount: 5;
-    tapWindowMs: 2500;
-    audioUrl: string;
-    modeText: string;
-  };
 }
 
 export const SUUSUU_CONFIG: FuwafuwaConfig = {
@@ -63,13 +56,6 @@ export const SUUSUU_CONFIG: FuwafuwaConfig = {
   card: {
     cornerRadius: 22,
     shadow: true,
-  },
-  secretMode: {
-    triggerSampleId: "sample-tooth",
-    tapCount: 5,
-    tapWindowMs: 2500,
-    audioUrl: "/assets/audio/suwa-good-morning.mp3",
-    modeText: "わーわーもーど!",
   },
 };
 
