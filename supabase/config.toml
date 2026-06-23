@@ -1,0 +1,6 @@
+project_id = "suwapuyo-fuwafuwa"
+
+[storage.buckets.artworks]
+public = true
+file_size_limit = "2MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
