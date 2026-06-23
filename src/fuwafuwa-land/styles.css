@@ -411,6 +411,51 @@
   background: repeating-conic-gradient(#f3f4f6 0% 25%, #fff 0% 50%) 50% / 18px 18px;
 }
 
+.fuwafuwa-transparency-box {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #d9e5ef;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.fuwafuwa-transparency-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.fuwafuwa-transparency-title span {
+  color: #667085;
+  text-align: right;
+}
+
+.fuwafuwa-segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.fuwafuwa-segmented button {
+  min-height: 38px;
+  padding-inline: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  font-weight: 900;
+}
+
+.fuwafuwa-segmented button.is-active {
+  border-color: #0f766e;
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
 .fuwafuwa-form-grid,
 .fuwafuwa-list-head {
   display: grid;
@@ -719,6 +764,14 @@
 
   .fuwafuwa-scale-control {
     grid-template-columns: 1fr;
+  }
+
+  .fuwafuwa-transparency-title {
+    display: grid;
+  }
+
+  .fuwafuwa-transparency-title span {
+    text-align: left;
   }
 
   .fuwafuwa-video {

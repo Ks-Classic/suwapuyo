@@ -1,5 +1,5 @@
 import { SUUSUU_CONFIG } from "../config";
-import type { ProcessedArtwork } from "../types";
+import type { ProcessedArtwork, TransparencyMode } from "../types";
 import { canvasToBlob, fitWithin } from "../utils/image";
 import { detectMarkers } from "./markerDetect";
 import { readQrText } from "./qr";
@@ -44,18 +44,110 @@ function imageDataToCanvas(image: ImageData): HTMLCanvasElement {
   return canvas;
 }
 
-function applyWhiteKey(image: ImageData): void {
-  for (let index = 0; index < image.data.length; index += 4) {
-    const red = image.data[index];
-    const green = image.data[index + 1];
-    const blue = image.data[index + 2];
-    const max = Math.max(red, green, blue);
-    const min = Math.min(red, green, blue);
-    const luminance = red * 0.299 + green * 0.587 + blue * 0.114;
-    if (luminance > 240 && max - min < 18) {
-      image.data[index + 3] = 0;
+function isNearWhite(data: Uint8ClampedArray, pixelIndex: number): boolean {
+  const offset = pixelIndex * 4;
+  const red = data[offset];
+  const green = data[offset + 1];
+  const blue = data[offset + 2];
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const luminance = red * 0.299 + green * 0.587 + blue * 0.114;
+  return luminance > 235 && max - min < 28;
+}
+
+function applyEdgeWhiteTransparency(image: ImageData): void {
+  const { width, height, data } = image;
+  const visited = new Uint8Array(width * height);
+  const queue: number[] = [];
+
+  function enqueue(x: number, y: number): void {
+    if (x < 0 || y < 0 || x >= width || y >= height) {
+      return;
+    }
+    const index = y * width + x;
+    if (visited[index] === 1 || !isNearWhite(data, index)) {
+      return;
+    }
+    visited[index] = 1;
+    queue.push(index);
+  }
+
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x, 0);
+    enqueue(x, height - 1);
+  }
+  for (let y = 0; y < height; y += 1) {
+    enqueue(0, y);
+    enqueue(width - 1, y);
+  }
+
+  for (let head = 0; head < queue.length; head += 1) {
+    const index = queue[head];
+    const x = index % width;
+    const y = Math.floor(index / width);
+    enqueue(x + 1, y);
+    enqueue(x - 1, y);
+    enqueue(x, y + 1);
+    enqueue(x, y - 1);
+  }
+
+  for (let index = 0; index < visited.length; index += 1) {
+    if (visited[index] === 1) {
+      data[index * 4 + 3] = 0;
     }
   }
+}
+
+function trimCanvas(input: HTMLCanvasElement, insetRatio: number): HTMLCanvasElement {
+  const insetX = Math.max(0, Math.round(input.width * insetRatio));
+  const insetY = Math.max(0, Math.round(input.height * insetRatio));
+  const width = Math.max(1, input.width - insetX * 2);
+  const height = Math.max(1, input.height - insetY * 2);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (ctx === null) {
+    throw new Error("canvas_context_unavailable");
+  }
+  ctx.drawImage(input, insetX, insetY, width, height, 0, 0, width, height);
+  return canvas;
+}
+
+function hasTransparentPixels(canvas: HTMLCanvasElement): boolean {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (ctx === null) {
+    throw new Error("canvas_context_unavailable");
+  }
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  for (let index = 3; index < image.data.length; index += 4) {
+    if (image.data[index] < 255) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function applyTransparencyMode(canvas: HTMLCanvasElement, mode: TransparencyMode): HTMLCanvasElement {
+  const target = mode === "coloring-sheet" ? trimCanvas(canvas, 0.028) : canvas;
+  if (mode === "none") {
+    return target;
+  }
+  const ctx = target.getContext("2d", { willReadFrequently: true });
+  if (ctx === null) {
+    throw new Error("canvas_context_unavailable");
+  }
+  const data = ctx.getImageData(0, 0, target.width, target.height);
+  applyEdgeWhiteTransparency(data);
+  ctx.putImageData(data, 0, 0);
+  return target;
+}
+
+async function encodeProcessedCanvas(canvas: HTMLCanvasElement, mode: TransparencyMode, warnings: string[]): Promise<{ blob: Blob; width: number; height: number }> {
+  if (mode !== "none" && hasTransparentPixels(canvas)) {
+    return encodeTransparentCanvas(canvas, warnings);
+  }
+  return encodeCanvasWithinBudget(canvas, "image/jpeg", warnings);
 }
 
 async function encodeCanvasWithinBudget(
@@ -92,7 +184,7 @@ async function encodeTransparentCanvas(canvas: HTMLCanvasElement, warnings: stri
   return encodeCanvasWithinBudget(drawOnSolidBackground(canvas, "#ffffff"), "image/jpeg", warnings);
 }
 
-export async function processArtworkCanvas(input: HTMLCanvasElement, useFallbackRectangle: boolean): Promise<ProcessedArtwork> {
+export async function processArtworkCanvas(input: HTMLCanvasElement, useFallbackRectangle: boolean, transparencyMode: TransparencyMode): Promise<ProcessedArtwork> {
   const workingCanvas = drawScaledCanvas(input, 1000);
   const ctx = workingCanvas.getContext("2d", { willReadFrequently: true });
   if (ctx === null) {
@@ -106,8 +198,8 @@ export async function processArtworkCanvas(input: HTMLCanvasElement, useFallback
   if (corners === null) {
     warnings.push("markers_not_found");
     if (!useFallbackRectangle) {
-      const fallback = drawScaledCanvas(input, SUUSUU_CONFIG.capture.outputLongEdge);
-      const encoded = await encodeCanvasWithinBudget(fallback, "image/jpeg", warnings);
+      const fallback = applyTransparencyMode(drawScaledCanvas(input, SUUSUU_CONFIG.capture.outputLongEdge), transparencyMode);
+      const encoded = await encodeProcessedCanvas(fallback, transparencyMode, warnings);
       return {
         blob: encoded.blob,
         width: encoded.width,
@@ -135,11 +227,9 @@ export async function processArtworkCanvas(input: HTMLCanvasElement, useFallback
   if (resultImage !== null) {
     templateId = readQrText(resultImage);
   }
-  const data = outCtx.getImageData(0, 0, resultCanvas.width, resultCanvas.height);
-  if (SUUSUU_CONFIG.capture.whiteKey) {
-    applyWhiteKey(data);
-    outCtx.putImageData(data, 0, 0);
-    const encoded = await encodeTransparentCanvas(resultCanvas, warnings);
+  if (SUUSUU_CONFIG.capture.whiteKey && transparencyMode !== "none") {
+    const transparentCanvas = applyTransparencyMode(resultCanvas, transparencyMode);
+    const encoded = await encodeProcessedCanvas(transparentCanvas, transparencyMode, warnings);
     return {
       blob: encoded.blob,
       width: encoded.width,
@@ -149,7 +239,8 @@ export async function processArtworkCanvas(input: HTMLCanvasElement, useFallback
       warnings,
     };
   }
-  const encoded = await encodeCanvasWithinBudget(resultCanvas, "image/jpeg", warnings);
+  const outputCanvas = applyTransparencyMode(resultCanvas, transparencyMode);
+  const encoded = await encodeProcessedCanvas(outputCanvas, transparencyMode, warnings);
   return {
     blob: encoded.blob,
     width: encoded.width,

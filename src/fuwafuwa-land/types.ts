@@ -3,6 +3,7 @@ export type ConsentScope = "event_only" | "sns_allowed" | "unknown";
 export type DisplayMode = "idle" | "random" | "featured" | "paused";
 export type ArtworkSource = "photo" | "digital";
 export type ConnectionStatus = "missing-config" | "connecting" | "online" | "offline" | "error";
+export type TransparencyMode = "coloring-sheet" | "edge-white" | "none";
 export const DEFAULT_ARTWORK_DISPLAY_SCALE = 0.6;
 
 export interface Artwork {

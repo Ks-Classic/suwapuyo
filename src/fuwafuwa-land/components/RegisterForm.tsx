@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Artwork, ConsentScope, DisplayStateService, ProcessedArtwork, RegisterArtworkInput, ArtworkRepository } from "../types";
+import type { Artwork, ConsentScope, DisplayStateService, ProcessedArtwork, RegisterArtworkInput, ArtworkRepository, TransparencyMode } from "../types";
 import { captureVideoFrame, fileToCanvas, startEnvironmentCamera, stopCamera, waitForDrawableVideoFrame } from "../capture/camera";
 import { processArtworkCanvas } from "../capture/processArtwork";
 import { DigitalCanvas } from "../digital/DigitalCanvas";
@@ -13,13 +13,23 @@ interface RegisterFormProps {
 
 type InputMode = "camera" | "upload" | "digital";
 
+const TRANSPARENCY_OPTIONS: { mode: TransparencyMode; label: string; description: string }[] = [
+  { mode: "coloring-sheet", label: "台紙用", description: "外枠を避けて白背景だけ透過" },
+  { mode: "edge-white", label: "白背景", description: "端からつながる白だけ透過" },
+  { mode: "none", label: "そのまま", description: "透過せず四角画像で登録" },
+];
+
 export function RegisterForm({ repository, displayState, onRegistered }: RegisterFormProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const sourceFallbackRef = useRef(true);
+  const sourceMessageRef = useRef("プレビューを更新しました");
   const [processed, setProcessed] = useState<ProcessedArtwork | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [givenName, setGivenName] = useState("");
   const [consentScope, setConsentScope] = useState<ConsentScope>("event_only");
+  const [transparencyMode, setTransparencyMode] = useState<TransparencyMode>("coloring-sheet");
   const [mode, setMode] = useState<InputMode>("camera");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -50,10 +60,13 @@ export function RegisterForm({ repository, displayState, onRegistered }: Registe
     setMessage(null);
   }
 
-  async function processCanvas(canvas: HTMLCanvasElement, fallback: boolean, successMessage: string): Promise<void> {
+  async function processCanvas(canvas: HTMLCanvasElement, fallback: boolean, successMessage: string, modeOverride: TransparencyMode = transparencyMode): Promise<void> {
     setBusy(true);
     try {
-      const next = await processArtworkCanvas(canvas, fallback);
+      sourceCanvasRef.current = canvas;
+      sourceFallbackRef.current = fallback;
+      sourceMessageRef.current = successMessage;
+      const next = await processArtworkCanvas(canvas, fallback, modeOverride);
       setPreview(next);
       setMessage(next.ok ? successMessage : "切り出しできなかったため、全体画像として登録準備しました。");
     } catch (error) {
@@ -90,6 +103,14 @@ export function RegisterForm({ repository, displayState, onRegistered }: Registe
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "file_load_failed");
     }
+  }
+
+  async function changeTransparencyMode(nextMode: TransparencyMode): Promise<void> {
+    setTransparencyMode(nextMode);
+    if (mode === "digital" || sourceCanvasRef.current === null || processed === null) {
+      return;
+    }
+    await processCanvas(sourceCanvasRef.current, sourceFallbackRef.current, sourceMessageRef.current, nextMode);
   }
 
   async function register(featured: boolean): Promise<void> {
@@ -223,10 +244,32 @@ export function RegisterForm({ repository, displayState, onRegistered }: Registe
           width={320}
           height={420}
           onComplete={(blob, width, height) => {
+            sourceCanvasRef.current = null;
             setPreview({ blob, width, height, ok: true, warnings: [] });
             setMode("digital");
           }}
         />
+      ) : null}
+      {mode !== "digital" ? (
+        <div className="fuwafuwa-transparency-box" aria-label="透過モード">
+          <div className="fuwafuwa-transparency-title">
+            <strong>背景</strong>
+            <span>{TRANSPARENCY_OPTIONS.find((item) => item.mode === transparencyMode)?.description}</span>
+          </div>
+          <div className="fuwafuwa-segmented">
+            {TRANSPARENCY_OPTIONS.map((item) => (
+              <button
+                key={item.mode}
+                type="button"
+                disabled={busy}
+                className={transparencyMode === item.mode ? "is-active" : ""}
+                onClick={() => void changeTransparencyMode(item.mode)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
       ) : null}
       {previewUrl !== null ? (
         <div className="fuwafuwa-preview-wrap">

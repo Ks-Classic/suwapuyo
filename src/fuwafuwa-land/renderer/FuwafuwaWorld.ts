@@ -31,6 +31,10 @@ function isSampleId(id: string): boolean {
   return id.startsWith("sample-");
 }
 
+function isTransparentArtwork(artwork: Artwork): boolean {
+  return artwork.imageBlobKey.toLowerCase().endsWith(".png") || artwork.source === "digital";
+}
+
 export class FuwafuwaWorld {
   private app: Application | null = null;
   private readonly items = new Map<string, WorldItem>();
@@ -175,6 +179,18 @@ export class FuwafuwaWorld {
       sprite.scale.set((featured ? 250 : 190) / Math.max(texture.width, texture.height, 1));
       container.addChild(sprite);
       void this.replaceArtworkSpriteWithWaawaa(sprite, featured);
+      return;
+    }
+    if (isTransparentArtwork(artwork)) {
+      const sprite = new Sprite(texture);
+      const label = new Text({ text: artwork.givenName ?? artwork.displayLabel, style: { fill: 0x223344, fontSize: 20, fontWeight: "800" } });
+      sprite.anchor.set(0.5);
+      const maxEdge = featured ? 280 : 210;
+      const scale = maxEdge / Math.max(texture.width, texture.height, 1);
+      sprite.scale.set(scale);
+      label.anchor.set(0.5, 0);
+      label.y = Math.min(96, texture.height * scale * 0.5 + 8);
+      container.addChild(sprite, label);
       return;
     }
     const card = new Graphics().roundRect(-108, -88, 216, 176, this.config.card.cornerRadius).fill(0xffffff).stroke({ color: 0xb7d7e8, width: 4 });
