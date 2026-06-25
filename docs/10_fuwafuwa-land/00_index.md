@@ -6,7 +6,7 @@
 
 ## 位置づけ
 
-このディレクトリは、ふわふわランドの正式ドキュメント体系を管理する。既存の `requirements.md` / `basic-design.md` / `detailed-design.md` / `test-plan.md` / `summary.md` は統合版メモとして残すが、今後のレビュー・Issue化・実装判断では本ファイル配下の番号付きドキュメントを正とする。
+このディレクトリは、ふわふわランドの正式ドキュメント体系を管理する。旧統合版(`requirements.md` / `basic-design.md` / `detailed-design.md` / `test-plan.md` / `summary.md`)は **`../_archive/fuwafuwa-land/` に退避済み**。レビュー・Issue化・実装判断では本ディレクトリ配下の番号付きドキュメントを正とする。リポジトリ全体の地図は `../00_overview/01_repo-map.md`。
 
 ## ドキュメント一覧
 
@@ -69,7 +69,7 @@
 
 > ⚠️ **2026-06-23 以降の正は `05_summary/04_decision-log-and-gate-plan.md`(決定) と `06_build-bible.md`(実装)**。ストレージ(Supabase正本＋IndexedDBキャッシュ)、入力方式(塗り絵台紙＋マーカー/デジタル併用)、氏名表示、B案同期、配信、6hソーク、動画OSSの決定はそこに集約。各番号付き文書は順次これに追従させる。
 >
-> 事業戦略は `../business/strategy-2026-06-23.md`。IP方針: すーすーわーわーの**二次利用は基本OK・なにかあれば都度小夏さんに相談**(2026-06-23 合意)。
+> 事業戦略は `../20_business/strategy-2026-06-23.md`。IP方針: すーすーわーわーの**二次利用は基本OK・なにかあれば都度小夏さんに相談**(2026-06-23 合意)。
 
 ## 品質基準
 

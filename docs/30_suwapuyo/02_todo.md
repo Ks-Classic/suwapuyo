@@ -38,9 +38,9 @@
 
 関連ドキュメント（正式体系・番号付き）:
 
-- `docs/fuwafuwa-land/00_index.md`
-- `docs/fuwafuwa-land/05_summary/04_decision-log-and-gate-plan.md` ← **現在の正**
-- `docs/fuwafuwa-land/01_requirements/` 〜 `04_test/`
+- `docs/10_fuwafuwa-land/00_index.md`
+- `docs/10_fuwafuwa-land/05_summary/04_decision-log-and-gate-plan.md` ← **現在の正**
+- `docs/10_fuwafuwa-land/01_requirements/` 〜 `04_test/`
 
 ### Phase FL-0: ドキュメント/判断基準
 
@@ -51,7 +51,7 @@
 
 ### Phase FL-G: 3日Gate（2026-06-25判定 / Supabase本線で実施）
 
-実装の正は **`docs/fuwafuwa-land/06_build-bible.md`**（スタック/ファイル木/型/関数/アルゴリズム/受け入れ基準）。合格基準は `05_summary/04`。
+実装の正は **`docs/10_fuwafuwa-land/06_build-bible.md`**（スタック/ファイル木/型/関数/アルゴリズム/受け入れ基準）。合格基準は `05_summary/04`。
 追加依存: `npm i idb jsqr perspective-transform`（マーカー検出/二値化/ワープ/塗りは自前・OpenCV等の重依存なし）。
 触ってよいのは新規 `src/fuwafuwa-land/` と `App.tsx` の最小hash分岐、Supabase関連ファイルのみ。既存ゲーム・`.env*`・本番デプロイには触らない。
 

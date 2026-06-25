@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Strategy OS — 設計図 / ふわふわランド worked example</title>
+<style>
+  :root{
+    --paper:#f7f4ec;
+    --paper-2:#efe9dc;
+    --ink:#1c1b17;
+    --ink-soft:#4a463c;
+    --line:#d9d1be;
+    --teal:#0f6e63;        /* primary accent — systems / structure */
+    --teal-deep:#0a4d45;
+    --ochre:#bd6a2c;       /* human-judgment accent — 人間が残す判断 */
+    --rose:#a23b3b;        /* warnings / concerns */
+    --mist:#e7efe9;
+    --card:#fffdf8;
+    --shadow:0 18px 50px -28px rgba(28,27,23,.55);
+    --serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,"Times New Roman",serif;
+    --sans:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,"Segoe UI",system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);line-height:1.7;font-size:16.5px;
+    background-image:radial-gradient(rgba(28,27,23,.022) 1px,transparent 1px);
+    background-size:4px 4px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,5vw,56px)}
+
+  /* ---- masthead ---- */
+  header.masthead{padding:clamp(48px,9vw,108px) 0 40px;border-bottom:3px solid var(--ink)}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal-deep);font-weight:700}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(38px,8vw,82px);line-height:1.02;margin:.32em 0 .28em;letter-spacing:-.01em}
+  h1 em{font-style:italic;color:var(--teal-deep)}
+  .lede{font-size:clamp(18px,2.4vw,23px);max-width:30em;color:var(--ink-soft)}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:30px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft)}
+  .meta-row b{color:var(--ink)}
+
+  /* ---- thesis band ---- */
+  .thesis{margin:0;padding:clamp(34px,6vw,64px) 0;border-bottom:1px solid var(--line)}
+  .thesis blockquote{margin:0;font-family:var(--serif);font-size:clamp(24px,4.4vw,44px);line-height:1.22;letter-spacing:-.01em}
+  .thesis blockquote span{color:var(--ochre)}
+  .thesis cite{display:block;margin-top:18px;font-style:normal;font-family:var(--mono);font-size:13px;color:var(--ink-soft)}
+
+  section{padding:clamp(40px,7vw,84px) 0;border-bottom:1px solid var(--line)}
+  .sec-no{font-family:var(--mono);font-size:13px;color:var(--ochre);font-weight:700;letter-spacing:.1em}
+  h2{font-family:var(--serif);font-size:clamp(27px,4.4vw,44px);line-height:1.1;margin:.18em 0 .5em;letter-spacing:-.01em}
+  h3{font-family:var(--sans);font-size:clamp(19px,2.5vw,24px);margin:2.2em 0 .5em;font-weight:800;letter-spacing:.01em}
+  h4{font-size:16px;margin:1.6em 0 .35em;font-weight:800;color:var(--teal-deep)}
+  p{margin:.7em 0;max-width:40em}
+  a{color:var(--teal-deep)}
+  strong{font-weight:800}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+  /* TOC */
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line)}
+  .toc a{display:block;background:var(--card);padding:16px 18px;text-decoration:none;color:var(--ink);font-weight:700;transition:background .15s}
+  .toc a:hover{background:var(--mist)}
+  .toc a small{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ochre);font-weight:700;margin-bottom:3px;letter-spacing:.08em}
+  .toc a span{font-size:13px;font-weight:500;color:var(--ink-soft);display:block;margin-top:3px}
+
+  /* tables */
+  .tbl{width:100%;border-collapse:collapse;margin:1.2em 0;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl caption{caption-side:top;text-align:left;font-weight:800;padding:0 0 10px;font-size:15px}
+  .tbl th,.tbl td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl thead th{background:var(--ink);color:var(--paper);font-size:12px;letter-spacing:.05em;text-transform:uppercase;font-family:var(--mono);font-weight:600}
+  .tbl tbody tr:last-child td{border-bottom:none}
+  .tbl tbody tr:nth-child(even){background:rgba(231,239,233,.4)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .pill.skill{background:var(--mist);color:var(--teal-deep);border:1px solid #bcd8cd}
+  .pill.spar{background:#f8ecdd;color:var(--ochre);border:1px solid #e6c69d}
+  .pill.eval{background:#f3e3e3;color:var(--rose);border:1px solid #e0bcbc}
+  .pill.meta{background:#e7e3d6;color:var(--ink-soft);border:1px solid var(--line)}
+
+  /* callouts */
+  .call{border-left:4px solid var(--teal);background:var(--card);padding:18px 22px;border-radius:0 12px 12px 0;margin:1.5em 0;box-shadow:var(--shadow)}
+  .call.warn{border-color:var(--rose)}
+  .call.human{border-color:var(--ochre)}
+  .call h4{margin-top:0;color:inherit}
+  .call .tag{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .call.warn .tag{color:var(--rose)}
+  .call.human .tag{color:var(--ochre)}
+  .call .tag.t{color:var(--teal-deep)}
+
+  /* pipeline diagram */
+  .pipe{display:grid;gap:14px;margin:1.6em 0}
+  .gate{display:grid;grid-template-columns:64px 1fr;gap:18px;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;position:relative;box-shadow:var(--shadow)}
+  .gate .g{display:grid;place-items:center;font-family:var(--serif);font-size:30px;font-weight:700;color:var(--paper);background:var(--teal-deep);border-radius:12px;line-height:1}
+  .gate.g1 .g{background:var(--teal)}
+  .gate.g2 .g{background:#157c70}
+  .gate.g3 .g{background:#1a8a7d}
+  .gate h4{margin:.1em 0 .3em;font-size:17px;color:var(--ink)}
+  .gate .out{font-family:var(--mono);font-size:12px;color:var(--ochre);font-weight:700;margin-top:6px}
+  .gate .crit{font-size:13px;color:var(--ink-soft);margin-top:6px}
+  .arrow{text-align:center;color:var(--line);font-size:20px;line-height:.4;margin:-4px 0}
+
+  /* component cards */
+  .comp{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:1.4em 0}
+  .ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+  .ccard .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+  .ccard h4{margin:0;font-family:var(--mono);font-size:14.5px;color:var(--ink)}
+  .ccard p{font-size:13.5px;margin:.4em 0;max-width:none}
+  .ccard .role{font-size:12.5px;color:var(--ink-soft)}
+  .ccard ul{margin:.4em 0 0;padding-left:18px;font-size:12.5px;color:var(--ink-soft)}
+
+  /* worked example layout */
+  .work{background:linear-gradient(180deg,var(--mist),var(--paper));border:1px solid #bcd8cd;border-radius:16px;padding:clamp(20px,4vw,38px);margin:1.4em 0}
+  .work h3{margin-top:.2em}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px;margin:.8em 0}
+  .chain span{background:var(--card);border:1px solid var(--line);padding:6px 12px;border-radius:999px;font-weight:600}
+  .chain b{color:var(--ochre)}
+  .chain i{color:var(--line);font-style:normal}
+  .prfaq{background:var(--card);border:1px dashed var(--ochre);border-radius:12px;padding:18px 20px;font-family:var(--serif);font-size:16px;line-height:1.6;margin:1em 0}
+  .prfaq small{font-family:var(--mono);font-style:normal;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ochre);display:block;margin-bottom:8px}
+
+  .stage{display:grid;grid-template-columns:120px 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:.7em 0;background:var(--card)}
+  .stage .s{background:var(--ink);color:var(--paper);padding:12px 14px;font-weight:800;font-size:14px;display:grid;align-content:center}
+  .stage .s small{display:block;font-family:var(--mono);font-size:10px;color:#cfc8b6;font-weight:600;margin-top:3px}
+  .stage .b{padding:12px 16px;font-size:13.5px}
+  .stage .b em{font-style:normal;color:var(--ochre);font-weight:700}
+
+  .tok{display:flex;flex-wrap:wrap;gap:8px;margin:.8em 0}
+  .sw{display:grid;gap:4px;font-family:var(--mono);font-size:10.5px;text-align:center}
+  .sw i{display:block;width:62px;height:46px;border-radius:8px;border:1px solid rgba(0,0,0,.12)}
+
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:1.2em 0}
+  ol.steps li{position:relative;padding:4px 0 16px 44px;border-left:2px solid var(--line);margin-left:14px}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:-15px;top:0;width:28px;height:28px;background:var(--teal-deep);color:var(--paper);border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:700}
+  ol.steps li:last-child{border-left-color:transparent}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:720px){.twocol{grid-template-columns:1fr}.stage{grid-template-columns:92px 1fr}.gate{grid-template-columns:48px 1fr}}
+
+  footer{padding:60px 0 90px;color:var(--ink-soft);font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:1em 0;font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  hr.soft{border:none;border-top:1px dashed var(--line);margin:2em 0}
+</style>
+</head>
+<body>
+
+<header class="masthead"><div class="wrap">
+  <div class="eyebrow">Design Strategy OS · 設計図 v0.1</div>
+  <h1>ツールを開く前に、<br><em>勝負はついている。</em></h1>
+  <p class="lede">3本の動画が説く「プロの設計ワークフロー」を、漏らさず skill / agent に落とし込む設計図。そして、それを <strong>ふわふわランド</strong> に実適用した worked example。机上の空論にしないための一枚。</p>
+  <div class="meta-row">
+    <div>対象 <b>木幡靖彦のクライアント業務 標準装備</b></div>
+    <div>worked example <b>すーすーわーわー ふわふわランド</b></div>
+    <div>作成 <b>2026-06-25</b></div>
+    <div>形態 <b>設計図（承認後にファイル化）</b></div>
+  </div>
+</div></header>
+
+<div class="thesis"><div class="wrap">
+  <blockquote>設計能力とは、形にできるかではない。<br><span>何を作るかを決める判断の質</span>である。</blockquote>
+  <cite>— 3動画の共通核。AIが「実装の9割」を担う今、価値は手前の判断に移った。だからこそ判断は人間に残し、AIは発散と採点に使う。</cite>
+</div></div>
+
+<section><div class="wrap">
+  <div class="sec-no">00 — 目次</div>
+  <h2>この一枚の構成</h2>
+  <nav class="toc">
+    <a href="#map"><small>01</small>知見マップ<span>3動画を一つも漏らさず抽出し、置き場所を確定</span></a>
+    <a href="#rule"><small>02</small>分類ルール<span>skill か agent か壁打ちか評価か、の判断基準</span></a>
+    <a href="#system"><small>03</small>システム構成<span>3 skills + orchestrator + 壁打ち2 + 評価4</span></a>
+    <a href="#pipeline"><small>04</small>ゲート・パイプライン<span>strategy → prd → design.md → prototype</span></a>
+    <a href="#worked"><small>05</small>ふわふわランド実適用<span>戦略 / UX文脈 / デザインシステムseed</span></a>
+    <a href="#impl"><small>06</small>実装レビュー所見<span>3700行の実体と retrofit ギャップ</span></a>
+    <a href="#money"><small>07</small>マネタイズ<span>クライアント標準装備としての商品設計</span></a>
+    <a href="#concerns"><small>08</small>懸念<span>遠慮なく。7つ</span></a>
+    <a href="#next"><small>09</small>次アクション<span>承認後に作るファイル</span></a>
+  </nav>
+</div></section>
+
+<!-- ============ 01 KNOWLEDGE MAP ============ -->
+<section id="map"><div class="wrap">
+  <div class="sec-no">01 — 知見マップ</div>
+  <h2>3動画を、一つも漏らさず</h2>
+  <p>「細かくすべての知見をもらさず」という要望に応える中核。各動画の主張を行に分解し、<strong>どのコンポーネントが運ぶか</strong>を確定させる。<code>種別</code>の凡例：</p>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--teal)"></i> <span class="pill skill">SKILL</span> 手順・テンプレ・ゲート（人間が回す）</span>
+    <span><i class="dot" style="background:var(--ochre)"></i> <span class="pill spar">壁打ち</span> 発散・選択肢を広げる agent</span>
+    <span><i class="dot" style="background:var(--rose)"></i> <span class="pill eval">評価</span> 客観基準で減点・監査する agent</span>
+    <span><i class="dot" style="background:var(--ink-soft)"></i> <span class="pill meta">META</span> orchestrator が持つ全体原則</span>
+  </div>
+
+  <h3>動画①　AI時代のプロのデザインワークフロー（デザインシステム / プロトタイプ）</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:30%">知見</th><th>動画の主張（要約）</th><th style="width:24%">置き場所</th></tr></thead>
+    <tbody>
+      <tr><td>順番の逆転</td><td>昔＝戦略→ワイヤー→コンセプト→実装の一本道。今＝戦略が固まったら即プロトタイプ→見ながら直す→改善サイクル多数で方向が見えてくる。</td><td><span class="pill skill">design-system-md</span> / <span class="pill meta">design-os</span></td></tr>
+      <tr><td>手で考える</td><td>プロトタイプは「考えるための道具」。頭でなく手を動かし、出たものを見て使って考える時代。</td><td><span class="pill skill">design-system-md</span></td></tr>
+      <tr><td>早い＝早くバラバラ</td><td>AIは1枚ずつ最適化→画面間で青が違う/ボタン形/余白がずれる。一貫性を通す基準がない＝「なんか違う」の正体。1枚は悪くないが並べると気持ち悪い。</td><td><span class="pill eval">consistency-auditor</span></td></tr>
+      <tr><td>デザインシステム＝決定の束</td><td>「一度決めて二度と蒸し返さない決定の束」。色/文字組/余白/ボタン形を先に1回決め束ねる＝早く回すための前提条件。</td><td><span class="pill skill">design-system-md</span></td></tr>
+      <tr><td>一貫性が効く3理由</td><td>①整って見える ②ブランド＝「誰が作ったか/物語性」が残り信頼になる ③使いやすさ＝予測できる→脳に負担がかからない（ユーザーに考えさせるな／反射で使える）。</td><td><span class="pill skill">design-system-md</span> / <span class="pill eval">consistency-auditor</span></td></tr>
+      <tr><td>なぜプロトタイプ（コードでなく）</td><td>本実装は最も高い。側だけ固めてからコーディングエージェントに渡すのが一番安い（手戻り＝トークン浪費を減らす）。動き/アクセシビリティは文字説明より体験として並べた方が早い。</td><td><span class="pill skill">design-system-md</span> / <span class="pill meta">design-os</span></td></tr>
+      <tr><td>ブランドDNAの注入</td><td>クライアント/自分のブランドの参考資料（例：浮世絵画像）をAIに渡し、インスピレーションから色を生成。叩き台に過ぎず、そこから詰める。</td><td><span class="pill skill">design-system-md</span></td></tr>
+      <tr><td>design.md＝AI共通規格</td><td>どのエージェント（Claude Design / Claude Code / Codex / Antigravity）でも受け付ける標準ファイル。色（セマンティック）/フォント/数字/スペーシング/モーションを内包。</td><td><span class="pill skill">design-system-md</span></td></tr>
+      <tr><td>アトミックデザイン</td><td>原子（色/フォント/線/アイコン/スペーシング）→分子（ボタン/ドロップダウン）→生物（画面）。アトムほど全体に波及（ボーダー厚くすると全部に伝播）。</td><td><span class="pill skill">design-system-md</span> / <span class="pill eval">consistency-auditor</span></td></tr>
+      <tr><td>スペーシングが要素より大事</td><td>整ったUIは要素そのものよりスペーシングで決まる。4の倍数/偶数で割り切れるのがセオリー。奇数は破綻。高級感は余白を大きく。</td><td><span class="pill skill">design-system-md</span> / <span class="pill eval">consistency-auditor</span></td></tr>
+      <tr><td>コントラスト＝アクセシビリティ</td><td>テキストセーフ色／データ色がコントラスト基準をクリアしているかをレビューで確認。</td><td><span class="pill eval">consistency-auditor</span></td></tr>
+      <tr><td>複数案・Tweak</td><td>漢字 vs アラビア数字、和紙劣化70%、差し色（藍/サンゴ/松葉）等を振って比較。マークアップで箇所指定コメント。</td><td><span class="pill skill">design-system-md</span></td></tr>
+      <tr><td>ハンドオフの順序</td><td>Claude Designで粘り「本データ/バックエンド入れていい」段階で初めてClaude Codeへ。一度コードに移すと戻りにくい。Project Archiveで全部入りエクスポート。</td><td><span class="pill skill">design-system-md</span> / <span class="pill meta">design-os</span></td></tr>
+      <tr><td>不変の真理</td><td>ツールは来年変わる（名前ごと）が「実装前にデザインシステムを先に作る」順番は変わらない。デザインは"作る人全員の基礎教養"に。</td><td><span class="pill meta">design-os</span>（ツール非依存で記述）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>動画②　感動を設計する（UXデザイン / 文脈の設計）</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:30%">知見</th><th>動画の主張（要約）</th><th style="width:24%">置き場所</th></tr></thead>
+    <tbody>
+      <tr><td>UX＝感情を動かす道筋</td><td>「あ、これいいな」は偶然でなく先回りして設計された結果。UXは感情の道筋の設計、それだけ。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>勝負は手前にある</td><td>UX＝見た目（配色/UI/アニメ）は誤解。勝負はUIより遥か手前、ツールを開く前。UIを始める前にほぼ終わっている。</td><td><span class="pill meta">design-os</span></td></tr>
+      <tr><td>地味だから訓練で誰でも</td><td>特別な才能でなく現場の地味な手順。だから万人向けスキル。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>体験＝2面</td><td>①文脈の設計 ②製品そのものの設計。順番は文脈が先。製品（見た目/中身）は後。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>文脈の設計</td><td>暮らしの文脈。ターゲットがどんな毎日/状況/気分で出会い使うか。製品は生活のど真ん中に置かれ、隙間にはまらないと浮く＝すぐ使われない。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>4ステージ・フレームワーク</td><td>①知る ②アクセス ③使う ④結果（残る感情）。これが感情を動かす道筋。全部書き出す。</td><td><span class="pill skill">ux-context-design</span> / <span class="pill eval">emotion-journey-critic</span></td></tr>
+      <tr><td>①知る</td><td>存在を知られなきゃ始まらない。発見の道筋（検索/おすすめ/SNS/口コミ）。入り口をどう太くするか。公開曜日/時間もターゲットの生活に合わせる。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>②アクセス</td><td>知るとは別問。どの形/機会で手を伸ばすか（店＝足/アプリ＝スマホ/仕事道具＝PC）。通勤電車スマホ前提なら尺・画面構成が丸ごと変わる。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>③使う</td><td>製品そのものの中身。情報密度/毎回1個の本質メッセージ/質。UX段階では「大体こういう要素がいる」要件レベルの当たりだけ（ボタン位置/色はまだ不要）。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>④結果＝感情</td><td>残るのは感情（気づき/不安が薄れる/賢くなった）。データ（性能10%）より、人がどう感じたか。感情が動いて初めて習慣/行動が変わる。作り手側の結果（登録/口コミ）も感情の後についてくる。順番を逆にしない。</td><td><span class="pill skill">ux-context-design</span> / <span class="pill eval">emotion-journey-critic</span></td></tr>
+      <tr><td>PRD＝最初の1枚</td><td>ジャーニーは形式ばった図でなくていい。書き出せば最初の設計図＝PRD。感情の道筋に必要な要件を書いた1枚。</td><td><span class="pill skill">ux-context-design</span></td></tr>
+      <tr><td>9割は手前</td><td>戦略→デザインシステム→UXで道筋定義→その後のUI（見た目）は全体の1割、しかもAIが大半。人間は手前の9割。</td><td><span class="pill meta">design-os</span></td></tr>
+      <tr><td>エンパシー＝共感</td><td>コメント/SNS/ニュースにアンテナ→「こういう不安を抱える人」が見える→届けたい相手の解像度を上げる。1人を思い浮かべ、その人のために4ステージを書く。レーザービーム的に一点へ絞ると必ず誰かに共鳴。</td><td><span class="pill skill">ux-context-design</span> / <span class="pill spar">target-sharpener</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>動画③　なぜデザインスキルが万人向け教養に（デザイン戦略）</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:30%">知見</th><th>動画の主張（要約）</th><th style="width:24%">置き場所</th></tr></thead>
+    <tbody>
+      <tr><td>万人の教養に</td><td>AIで一人が実質エンジニアリングチームを持てる→「何をどういう思想で作るか」が初めて全員に降ってきた。</td><td><span class="pill meta">design-os</span></td></tr>
+      <tr><td>デザイナーはツールを開かない</td><td>Figma等を触る時間は全体の10–15%以下。シニアほど減る。残り80–90%は思考とコミュニケーション＝戦略。答えが固まってから初めて開く。</td><td><span class="pill meta">design-os</span></td></tr>
+      <tr><td>判断コストは下がらない</td><td>実行コストは激減したが「誰のために何を作るか」の判断コストは不変。むしろ判断できる人とできない人の差が見えやすくなった。</td><td><span class="pill meta">design-os</span></td></tr>
+      <tr><td>戦略が基礎中の基礎</td><td>最初にやる最重要。曖昧なまま作ると全部やり直し/刺さらない。固まれば全判断（入れる/削る/優先）に軸が通る。</td><td><span class="pill skill">design-strategy</span></td></tr>
+      <tr><td>誰のため＝一文で</td><td>「こういう人がこういう反応をする」を一文で。どんな言葉/行動なら成功か。解像度をとにかく高く。</td><td><span class="pill skill">design-strategy</span> / <span class="pill spar">target-sharpener</span></td></tr>
+      <tr><td>「みんなのため」＝最悪</td><td>対象を広げるほど解像度が下がりぼやける。「誰も幸せにしない凡庸さ（メディオクリティ）」は悪いデザインより質が悪い（取っ掛かりすらない）。尖らせ、一部から熱烈に支持される設計を。</td><td><span class="pill spar">target-sharpener</span>（凡庸さ検出）</td></tr>
+      <tr><td>OP-1の例</td><td>使いやすさ/安さを捨て、制約の中で音楽を作る特定ユーザーの体験を妥協なく作り切る→強い感情的反応。特定の人の特定の欲望を直撃するから機能する。</td><td><span class="pill skill">design-strategy</span>（事例として内蔵）</td></tr>
+      <tr><td>人間の本質＝欲望</td><td>設計＝心理学。幸福は欲望が満たされた時に発生。お金/時間/健康/承認は手段。わらしべ長者式に根の欲望まで芋づるで掘る。</td><td><span class="pill spar">desire-digger</span></td></tr>
+      <tr><td>AI壁打ちの境界</td><td>「どういう人に刺さるか」の初期ブレストはAIに相談OK・有効。だが心理的動線＝「本当に何が刺さるか」の神髄はAIだとろくな結果にならない、センスが要る、人間の判断。</td><td><span class="pill meta">design-os</span>（全agentに境界として明記）</td></tr>
+      <tr><td>どこまでやれば価値</td><td>定義しないと作る範囲が無限に広がりリリースできない。ゴールラインを必ず定義する。</td><td><span class="pill skill">design-strategy</span></td></tr>
+      <tr><td>PRFAQ</td><td>製品を作る前にプレスリリースを書く（存在しない製品の完成後の発表文）。制約から切り離し「顧客にとって何が価値か」だけに集中→意味あるゴールラインが見える。次にFAQ（どう使う/何が変わる＋社内向け：財務/法務）。</td><td><span class="pill skill">design-strategy</span> / <span class="pill eval">prfaq-evaluator</span></td></tr>
+      <tr><td>競合は後（順番）</td><td>先にPRFAQで価値を定義→次に競合。どのレベルまで磨けば意味があるかを逆算。過密市場はラインが上がる、空白領域は存在自体が価値。</td><td><span class="pill skill">design-strategy</span> / <span class="pill eval">prfaq-evaluator</span></td></tr>
+      <tr><td>デザインプリンシプル</td><td>スローガンでなく「何を優先するか」の宣言。横槍（PM/上司/エンジニア/マーケ）に流されず裁定する軸。「ユーザー第一」＝スローガン（無効）。「速さ vs 機能性では速さ」＝戦略（有効）。優先順位が具体的でないと使えない。</td><td><span class="pill skill">design-strategy</span> / <span class="pill eval">design-principle-referee</span></td></tr>
+      <tr><td>開く前の3点</td><td>①誰のために ②どこまでやれば価値 ③プリンシプル。この3つが自分の言葉で固まると後の作業が完全に変わる。</td><td><span class="pill skill">design-strategy</span>（Gate 0 合格基準）</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<!-- ============ 02 RULE ============ -->
+<section id="rule"><div class="wrap">
+  <div class="sec-no">02 — 分類ルール</div>
+  <h2>skill か、agent か、壁打ちか、評価か</h2>
+  <p>これが「これらはなにエージェントになるか？」への核心の答え。判断基準を一文で言うと——</p>
+
+  <div class="call human">
+    <span class="tag">原則 · 動画③から導出</span>
+    <h4>判断・神髄・意思決定は SKILL（人間がメインスレッドで回す手順）に残す。<br>AGENT は判断を奪わず、選択肢を広げる（壁打ち）か、客観基準で減点する（評価）だけ。</h4>
+    <p style="margin-bottom:0">根拠：動画③が明言する「刺さるかの神髄はAIに任せるとろくな結果にならない／センスが要る／人間がやるべき判断」。一方で「初期ブレストの壁打ちはAI有効」。この二つを同時に満たす唯一の設計が、<strong>判断はskillで人間に残し、agentは発散と採点に限定</strong>すること。</p>
+  </div>
+
+  <div class="twocol">
+    <div>
+      <h4>SKILL にするもの</h4>
+      <p>方法論・テンプレート・ゲート基準・チェックリスト・アンチパターン警告。<strong>メインスレッドで人間と対話しながら順番に回す</strong>もの。3動画の知見の大半（手順と判断）はここ。skillは「人間に正しい問いを、正しい順番で突きつける」。</p>
+    </div>
+    <div>
+      <h4>AGENT にするもの</h4>
+      <p><strong>独立した文脈と敵対的スタンスが効くものだけ</strong>。本体の文脈を汚さず並列で走り、結論だけ返す。2種：<br>・<span class="pill spar">壁打ち</span>＝発散。選択肢/仮説を広げ凡庸さを叩く。決定はしない。<br>・<span class="pill eval">評価</span>＝収束。客観基準で減点・監査する。「並べた瞬間気持ち悪い」を自動化。</p>
+    </div>
+  </div>
+
+  <div class="call warn">
+    <span class="tag">やってはいけない設計</span>
+    <p style="margin:0">「誰に刺さるか／どの感情を狙うか」を <b>agentに最終決定させない</b>。そこを自動化した瞬間、動画③が警告する凡庸化が起きる。壁打ちagentは必ず「候補・仮説を返すが、選ぶのは人間」と振る舞う。これを全agentの定義に <code>boundary</code> として焼き込む。</p>
+  </div>
+</div></section>
+
+<!-- ============ 03 SYSTEM ============ -->
+<section id="system"><div class="wrap">
+  <div class="sec-no">03 — システム構成</div>
+  <h2>Design Strategy OS</h2>
+  <p>3つの skill（＝3つのゲート）＋ 順番を強制する orchestrator ＋ 壁打ち2 ＋ 評価4。<strong>Core（必ず作る）</strong>と <strong>Extended（効果が出てから）</strong>に分け、過剰実装を避ける（CLAUDE.md「管理コスト&gt;価値なら提案しない」／CR-4）。</p>
+
+  <h3>Skills（手順・人間が回す）— Core</h3>
+  <div class="comp">
+    <div class="ccard">
+      <div class="top"><h4>design-strategy</h4><span class="pill skill">SKILL · Gate0</span></div>
+      <p class="role">動画③。戦略の確定。</p>
+      <p>誰のため（一文）／欲望チェーン／凡庸さ警告／PRFAQ／競合／プリンシプル。</p>
+      <p>出力 <code>strategy.md</code></p>
+      <ul><li>合格＝3点（誰/どこまで価値/プリンシプル）が自分の言葉で埋まる</li><li>スローガン原則・「みんなのため」を弾く</li></ul>
+    </div>
+    <div class="ccard">
+      <div class="top"><h4>ux-context-design</h4><span class="pill skill">SKILL · Gate1</span></div>
+      <p class="role">動画②。感情の道筋の設計。</p>
+      <p>文脈の設計＋4ステージ（知る/アクセス/使う/結果）＋エンパシー＋PRD1枚。</p>
+      <p>出力 <code>prd.md</code> / journey</p>
+      <ul><li>合格＝4ステージ全記述・結果が「設計された感情」で終わる</li><li>制約スタートになっていない</li></ul>
+    </div>
+    <div class="ccard">
+      <div class="top"><h4>design-system-md</h4><span class="pill skill">SKILL · Gate2</span></div>
+      <p class="role">動画①。ブランドDNA→トークン。</p>
+      <p>color(semantic)/font/spacing(4の倍数)/motion/radius、アトミック、Claude Designハンドオフ。</p>
+      <p>出力 <code>design.md</code> + <code>tokens.css</code></p>
+      <ul><li>合格＝design.md完成・一貫性基準が通る</li><li>プロトタイプが"側だけ"で成立</li></ul>
+    </div>
+    <div class="ccard" style="border-color:var(--ink-soft)">
+      <div class="top"><h4>design-os</h4><span class="pill meta">ORCHESTRATOR</span></div>
+      <p class="role">全体原則と順番の強制。</p>
+      <p>「ツールを開く前に勝負はついてる／順番を間違えると何を使っても違う」をメタ原則として保持。ゲート未通過で次に進ませない。</p>
+      <ul><li>AI不可境界（神髄は人間）を全工程に注入</li><li>ツール非依存で記述（来年ツールが変わる前提）</li></ul>
+    </div>
+  </div>
+
+  <h3>Agents — 壁打ち（発散）<span style="font-weight:500;color:var(--ink-soft);font-size:15px"> · Extended</span></h3>
+  <div class="comp">
+    <div class="ccard">
+      <div class="top"><h4>target-sharpener</h4><span class="pill spar">壁打ち</span></div>
+      <p>曖昧な対象・「みんなのため」を検出し尖らせる。刺さる相手の候補を発散（動画③が明示的にAI可とした領域）。凡庸さ警報。<strong>選ぶのは人間</strong>。</p>
+    </div>
+    <div class="ccard">
+      <div class="top"><h4>desire-digger</h4><span class="pill spar">壁打ち</span></div>
+      <p>わらしべ長者式に「その先に何を？」を反復し、根の欲望まで掘る。手段（金/時間/承認）と本質を分離。仮説を返すのみ。</p>
+    </div>
+  </div>
+
+  <h3>Agents — 評価（採点・監査）<span style="font-weight:500;color:var(--ink-soft);font-size:15px"> · ★consistency-auditor のみ Core</span></h3>
+  <div class="comp">
+    <div class="ccard" style="border-color:#e0bcbc">
+      <div class="top"><h4>consistency-auditor ★</h4><span class="pill eval">評価 · Core</span></div>
+      <p>最も"評価エージェント"らしい一つ。プロトタイプ/画面/CSSを <code>design.md</code> と突き合わせ、色ズレ・余白・4の倍数違反・radius不一致・コントラスト割れを機械的に検出。「並べた瞬間気持ち悪い」の自動化。</p>
+    </div>
+    <div class="ccard">
+      <div class="top"><h4>prfaq-evaluator</h4><span class="pill eval">評価</span></div>
+      <p>PRFAQを採点：価値ラインが明確か／スコープが有界か／感動が具体か／制約スタートになっていないか。</p>
+    </div>
+    <div class="ccard">
+      <div class="top"><h4>emotion-journey-critic</h4><span class="pill eval">評価</span></div>
+      <p>4ステージjourneyを監査：全ステージ埋まっているか／結果が感情で終わるか／知る・アクセスの混同／尺・文脈整合。</p>
+    </div>
+    <div class="ccard">
+      <div class="top"><h4>design-principle-referee</h4><span class="pill eval">評価</span></div>
+      <p>横槍・トレードオフ衝突時にプリンシプルを適用して裁定。スローガン原則（「ユーザー第一」）を無効と弾く。</p>
+    </div>
+  </div>
+
+  <div class="call">
+    <span class="tag t">Core / Extended の線引き</span>
+    <p style="margin:0"><strong>Core（5つ）</strong>＝3 skills ＋ design-os ＋ consistency-auditor。これだけで「上流の9割」を体系化し、唯一機械化できる評価（一貫性）を持つ。<strong>Extended（5つ）</strong>＝壁打ち2＋評価3。実運用で「ここが手薄」と分かってから足す。最初から10個作るのはYAGNI。</p>
+  </div>
+</div></section>
+
+<!-- ============ 04 PIPELINE ============ -->
+<section id="pipeline"><div class="wrap">
+  <div class="sec-no">04 — ゲート・パイプライン</div>
+  <h2>順番を間違えると、何を使っても違う</h2>
+  <p>3動画が口を揃える「順番」を、通過しないと進めないゲートとして固定する。各ゲートは <strong>成果物（artifact）</strong>と<strong>合格基準</strong>を持つ。</p>
+  <div class="pipe">
+    <div class="gate g0"><div class="g">0</div><div>
+      <h4>戦略 — design-strategy <span class="pill spar">target-sharpener</span> <span class="pill spar">desire-digger</span> <span class="pill eval">prfaq-evaluator</span></h4>
+      <div class="crit">誰のため（一文）／欲望チェーン／PRFAQ／競合ライン／デザインプリンシプル。</div>
+      <div class="out">→ strategy.md ＋ prfaq.md ＋ principles.md</div>
+      <div class="crit"><b>合格：</b>3点が自分の言葉で固まり、「みんなのため」とスローガン原則が無い。</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="gate g1"><div class="g">1</div><div>
+      <h4>UX文脈 — ux-context-design <span class="pill eval">emotion-journey-critic</span></h4>
+      <div class="crit">文脈の設計＋4ステージ（知る/アクセス/使う/結果）。アクター別。</div>
+      <div class="out">→ prd.md（感情ジャーニー込み）</div>
+      <div class="crit"><b>合格：</b>4ステージが埋まり、結果が「設計された感情」で終わる。</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="gate g2"><div class="g">2</div><div>
+      <h4>デザインシステム — design-system-md <span class="pill eval">consistency-auditor</span></h4>
+      <div class="crit">ブランドDNA注入→color/font/spacing/motion/radius をトークン化。アトミック。</div>
+      <div class="out">→ design.md ＋ tokens.css</div>
+      <div class="crit"><b>合格：</b>design.md完成・一貫性監査をパス。</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="gate g3"><div class="g">3</div><div>
+      <h4>プロトタイプ（側だけ）→ 本実装ハンドオフ</h4>
+      <div class="crit">Claude Design等で"側だけ動く"を反復。「本データ/バックエンド入れていい」確信が出てからコードへ。</div>
+      <div class="out">→ prototype ＋ consistency-report → Claude Code / Codex</div>
+      <div class="crit"><b>合格：</b>体験として迷わない・一貫性が通る。ここで初めて本実装。</div>
+    </div></div>
+  </div>
+  <p style="color:var(--ink-soft);font-size:14px">※ Gate0–2 では一度もデザインツールを開かない。これが動画②③の「ツールを開く前に勝負がついている」の実体。</p>
+</div></section>
+
+<!-- ============ 05 WORKED EXAMPLE ============ -->
+<section id="worked"><div class="wrap">
+  <div class="sec-no">05 — ふわふわランド 実適用</div>
+  <h2>机上の空論にしない</h2>
+  <p>同じパイプラインを、実在する <strong>すーすーわーわー ふわふわランド</strong>（YourTIME 2026-08-02）に通す。既存docには要件・アーキ・テストは厚いが、<strong>この上流3層がほぼ空白</strong>だった。ここを埋めるのが実価値。</p>
+
+  <div class="work">
+    <h3>Gate 0 — 戦略</h3>
+
+    <h4>誰のため（一文・尖らせる）</h4>
+    <p>主役は二者いるが、<strong>感情設計は子ども一点に絞る</strong>（動画③：尖らせろ）。親とスタッフは"制約条件"として扱う。</p>
+    <p class="prfaq" style="border-style:solid;border-color:#bcd8cd"><small>成功の一文</small>「YourTIMEに来た<strong>5〜9歳の子ども</strong>が、自分が塗った絵が大画面のふわふわ世界で生きて泳いでいるのを見つけ、親に『見て！あれ私の！』と叫ぶ。」<br><span style="font-family:var(--sans);font-size:13px;color:var(--ink-soft)">＝言葉と行動で定義された成功。これに寄与しないものは全部後回し。</span></p>
+
+    <h4>欲望チェーン（わらしべ長者・desire-digger）</h4>
+    <div class="chain"><span>子ども：自分の絵が動く</span><i>→</i><b>自分が作ったものが世界に認められた</b><i>→</i><span>承認・万能感</span><i>→</i><b>「自分は特別だと感じたい・見てもらいたい」</b></div>
+    <div class="chain"><span>親：子の笑顔・作品が残る</span><i>→</i><b>いい時間を過ごせた・創造性を伸ばせた</b><i>→</i><b>「子に良いものを与えている安心」</b></div>
+    <p style="font-size:14px">→ <strong>口腔育成は親の欲望（子の健康）経由で、遊びの中に接続</strong>。説教にしない（成功条件「押しつけにならない」と一致）。</p>
+
+    <h4>どこまでやれば価値（PRFAQ・プレスリリース ドラフト）</h4>
+    <p class="prfaq"><small>Press Release（未来の発表文）</small>本日、YourTIME会場に「すーすーわーわー ふわふわランド」が登場。子どもが塗り絵で描いたキャラクターが、その場で大画面のふわふわ世界へ飛び込み泳ぎ出します。子どもは自分の絵をすぐ見つけ「私の絵が動いてる！」と歓声。親子の会話が生まれ、遊びの延長で鼻呼吸・口腔育成にやさしく触れられます。</p>
+    <p style="font-size:14px"><strong>価値ライン＝</strong>「塗る→その場で登場→自分の絵を見つける→歓声」が成立すれば勝ち。AIコメント/AI動画/SNS自動投稿はGate後。<br>👉 これは既存 <code>01_project-overview.md</code> の「MVPでやらないこと」と完全一致＝<strong>この案件は無自覚にPRFAQ的スコープ切りが出来ていた</strong>（良い兆候）。</p>
+
+    <h4>競合（順番：PRFAQの後）</h4>
+    <p style="font-size:14px">参加型「塗り絵→その場でデジタル展示」は直接競合が薄い空白領域。動画③：<strong>空白領域は質ラインが低くても成立、存在自体が価値</strong>。→ 過剰作り込み不要、薄く速いGate方針が戦略的に正しい。逆に汎用お絵かきアプリ（過密）と戦ってはいけない。</p>
+
+    <h4>デザインプリンシプル（優先順位型・スローガン禁止）</h4>
+    <table class="tbl" style="margin-top:.6em">
+      <thead><tr><th>#</th><th>プリンシプル（A &gt; B）</th><th>裁定できる横槍の例</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>歓声 &gt; 網羅</strong>：登場の一瞬の質を機能数より優先</td><td>「機能をもっと足そう」→ 一瞬を磨く方へ</td></tr>
+        <tr><td>2</td><td><strong>スタッフのタップ数 &gt; 演出の凝り</strong></td><td>「演出を派手に」→ 60秒運用が崩れるなら却下（D-10と整合）</td></tr>
+        <tr><td>3</td><td><strong>その場性 &gt; 後加工</strong></td><td>「AIで綺麗に変換」→ MVPは後回し（やらないことと整合）</td></tr>
+        <tr><td>4</td><td><strong>安心（顔なし・名前最小）&gt; 拡散</strong></td><td>「名前を大きく出そう」→ 却下（D-3/D-9と整合）</td></tr>
+        <tr><td>5</td><td><strong>壊れない &gt; 美しい</strong></td><td>「凝った演出を常時」→ 6h安定/30秒復旧を優先</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="work">
+    <h3>Gate 1 — UX文脈（4ステージ × 2アクター）</h3>
+    <p style="font-size:14px;margin-top:0"><strong>子ども（感情の主役）</strong></p>
+    <div class="stage"><div class="s">①知る<small>DISCOVER</small></div><div class="b">遠くから見える<em>大画面のふわふわ世界</em>と塗り絵台、他の子の歓声→「何あれやりたい」。入り口を太く：画面を会場の目線に、台紙の存在を明快に。</div></div>
+    <div class="stage"><div class="s">②アクセス<small>ACCESS</small></div><div class="b">台紙＋クレヨンで塗る（主）／タブレットの最小キャンバス（フォールバック）。文脈＝会場で立ったまま・親と・短時間→<em>短時間で塗れる線画</em>・握りやすさ。</div></div>
+    <div class="stage"><div class="s">③使う<small>USE</small></div><div class="b">スタッフ撮影→数秒で<em>自分のキャラが登場</em>→自分の絵を探して見つける。核＝登場の瞬間＋探索。実装上は <code>FuwafuwaWorld</code> / featured / secretMode がこの層。</div></div>
+    <div class="stage"><div class="s">④結果<small>EMOTION</small></div><div class="b"><em>「自分の絵が世界で生きてた」＝誇り・万能感</em>、親に見せる。残るもの＝記憶＋台紙のお土産。作り手側結果（口コミ／満足度／認知／SNS素材）は全部この感情の後についてくる。</div></div>
+    <p style="font-size:14px;margin-top:1.4em"><strong>スタッフ（運用の成否＝制約条件だが感情も設計対象）</strong></p>
+    <div class="stage"><div class="s">③使う<small>USE</small></div><div class="b">撮影→マーカー切り出し→<em>60秒で登録</em>、リセット/指定/非表示。タップ数最小（自動プレビューD-10）。</div></div>
+    <div class="stage"><div class="s">④結果<small>EMOTION</small></div><div class="b"><em>「詰まらず回せた・自分一人でも運用できた」安心</em>。これも設計対象（運用成功条件）。</div></div>
+
+    <div class="call human" style="margin-bottom:0">
+      <span class="tag">この設計から出る判断</span>
+      <p style="margin:0">感情ピーク＝<strong>「自分の絵を初めて見つける登場の瞬間」</strong>。→ <strong>実装リソースをここに集中せよ</strong>という設計判断が機械的に出る。現状の実装はここ専用の演出（初回ハイライト／登場サウンド／親の視線誘導）が要件化されていない（→ §06）。</p>
+    </div>
+  </div>
+
+  <div class="work">
+    <h3>Gate 2 — デザインシステム seed（既存コードから束ね直す）</h3>
+    <p style="font-size:14px;margin-top:0">動画①の「散らばった決定を束ねる」を地で行く。<strong>視覚的決定はすでに <code>styles.css</code> と <code>config.ts</code> に存在する</strong>が、design.md として束ねられていない。抽出して de-facto トークンを確定する。</p>
+
+    <h4>de-facto パレット（実コードから抽出）</h4>
+    <div class="tok">
+      <div class="sw"><i style="background:#b8e5f7"></i>sky/water<br>#b8e5f7</div>
+      <div class="sw"><i style="background:#0f766e"></i>primary<br>#0f766e</div>
+      <div class="sw"><i style="background:#14b8a6"></i>primary-2<br>#14b8a6</div>
+      <div class="sw"><i style="background:#ccfbf1"></i>primary-soft<br>#ccfbf1</div>
+      <div class="sw"><i style="background:#17324d"></i>ink<br>#17324d</div>
+      <div class="sw"><i style="background:#1d2939"></i>ink-2<br>#1d2939</div>
+      <div class="sw"><i style="background:#fbbf24"></i>featured/主役<br>#fbbf24</div>
+      <div class="sw"><i style="background:#7dd3fc"></i>card-border<br>#7dd3fc</div>
+      <div class="sw"><i style="background:#dc2626"></i>danger<br>#dc2626</div>
+      <div class="sw"><i style="background:#fffdf8;border-color:#ccc"></i>surface<br>#fff*</div>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>トークン</th><th>実コードの現状</th><th>seed判断</th></tr></thead>
+      <tbody>
+        <tr><td>color</td><td>semantic分けは無いが値は揃っている（teal系/ink/sky/gold主役/danger）</td><td>そのままセマンティック名を付与（primary/ink/water/featured/danger）</td></tr>
+        <tr><td>font</td><td><code>system-ui</code> のみ＝<strong>未設計</strong></td><td>⚠️ ブランドDNA未注入。やわらかい丸ゴシック系を1つ選定（動画①：本来ブランドの肝）</td></tr>
+        <tr><td>spacing</td><td><code>clamp()</code> 多用で4の倍数規律が緩い</td><td>4/8/12/16/24/32 のトークン化（動画①：要素より大事）</td></tr>
+        <tr><td>radius</td><td>CSS=8px統一だが <code>config.card.cornerRadius:22</code> と<strong>不一致</strong>、他に 2/6/999 が散在</td><td>⚠️ 一貫性違反の実例。キーライン/ルールを定義し統一</td></tr>
+        <tr><td>motion</td><td>bob 4.2–4.4s / drift 5.2s が config と CSS に分散</td><td>「ふわふわ」を<strong>ブランド中核モーション</strong>として明文化、数値を一元化</td></tr>
+      </tbody>
+    </table>
+
+    <h4>アトミック対応（既存実装はこの階層に綺麗に乗る）</h4>
+    <div class="chain"><span>原子＝上記トークン</span><i>→</i><span>分子＝float-card / mode-tabs / primary-action</span><i>→</i><span>生物＝StaffPanel / DisplayScreen / Home</span></div>
+  </div>
+</div></section>
+
+<!-- ============ 06 IMPL REVIEW ============ -->
+<section id="impl"><div class="wrap">
+  <div class="sec-no">06 — 実装レビュー所見</div>
+  <h2>実装も見た（約3700行の実体）</h2>
+  <p>React 19 ＋ PixiJS 8 ＋ Supabase ＋ IndexedDB。store / capture / renderer の分離は綺麗。ただし<strong>エンジニアリング先行で上流を飛ばした症状</strong>が見える＝動画群の警告そのもの。</p>
+
+  <div class="twocol">
+    <div>
+      <h4 style="color:var(--teal-deep)">良い（残す）</h4>
+      <ul style="font-size:14px;color:var(--ink-soft)">
+        <li>store/capture/renderer の責務分離が明確</li>
+        <li>視覚的な値が <code>config.ts</code> に集約され始めている（トークン化の素地）</li>
+        <li>レスポンシブ／safe-area／touch-action 対応済</li>
+        <li>計測オーバーレイ（FPS/メモリ/容量）＝Gate判定の実測証拠（D-8）</li>
+        <li>「MVPでやらないこと」が明確＝無自覚なPRFAQスコープ切り</li>
+      </ul>
+    </div>
+    <div>
+      <h4 style="color:var(--rose)">retrofit ギャップ（このOSが埋める）</h4>
+      <ul style="font-size:14px;color:var(--ink-soft)">
+        <li><strong>design.md / tokens.css が無い</strong>。視覚決定がCSS/configに散在し実害（radius 22 vs 8 不一致）</li>
+        <li><strong>フォント未設計</strong>（system-ui）＝ブランドDNA未注入</li>
+        <li><strong>感情ピーク「登場の瞬間」が要件化されていない</strong>（featuredはあるが「自分の絵を初めて見つける」専用演出が無い）</li>
+        <li><strong>ジャーニーが暗黙</strong>（子ども/スタッフ別の4ステージが文書化されていない）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="call warn">
+    <span class="tag">consistency-auditor を今走らせたら出る指摘（デモ）</span>
+    <p style="margin:0;font-size:14px"><code>config.card.cornerRadius:22</code> が CSS の <code>border-radius:8px</code> と矛盾 ／ radius が 2/6/8/999 で散在しキーライン未定義 ／ フォントがブランド未設計 ／ spacing が <code>clamp()</code> で非トークン化。——これらが動画①の言う「並べた瞬間に気持ち悪い」候補。<strong>retrofitで回収可能</strong>だが、すでにCSSに焼かれた分の手直しコストは残る（→ §08 懸念2）。</p>
+  </div>
+</div></section>
+
+<!-- ============ 07 MONEY ============ -->
+<section id="money"><div class="wrap">
+  <div class="sec-no">07 — マネタイズ</div>
+  <h2>クライアント業務の標準装備として</h2>
+  <p>選択：<strong>自分の案件（Liberate / SouHa / dental / nijiiro 等）で毎回回す「設計戦略 in a box」</strong>。再現性とスピードが商品価値（memory の bo-ops-cockpit / capafy と同じ「型を商品化」路線）。</p>
+
+  <table class="tbl">
+    <thead><tr><th>納品物</th><th>誰に出すか</th><th>生む工程</th></tr></thead>
+    <tbody>
+      <tr><td><code>strategy.md</code>（誰のため/欲望/PRFAQ/プリンシプル）</td><td>クライアント・自分</td><td>Gate0 design-strategy</td></tr>
+      <tr><td><code>prd.md</code>（感情ジャーニー込み）</td><td>クライアント・実装者</td><td>Gate1 ux-context-design</td></tr>
+      <tr><td><code>design.md</code> + <code>tokens.css</code></td><td>実装者・Claude Design</td><td>Gate2 design-system-md</td></tr>
+      <tr><td>prototype（側だけ）＋ consistency-report</td><td>クライアント承認</td><td>Gate3 ＋ consistency-auditor</td></tr>
+    </tbody>
+  </table>
+
+  <h3>既存資産との接続（衝突しない）</h3>
+  <p>このOSは CLAUDE.md の <strong>SDAG / specification-first-design</strong> の上に綺麗に乗る：</p>
+  <ul style="font-size:14px;color:var(--ink-soft)">
+    <li><strong>CR-0</strong>「誰の・何の課題を・どう解決」＝ Gate0「誰のため」</li>
+    <li><strong>CR-1</strong> 仕様書先行 ＝ PRD / design.md がその仕様書</li>
+    <li><strong>CR-2</strong> 推測でなくA/B提示 ＝ 壁打ちagentの振る舞いそのもの</li>
+    <li>UX→API→型定義 の Spec-First Mandate の「UX」前段を、このOSが体系化</li>
+  </ul>
+
+  <h3>ポジション・値付け</h3>
+  <p style="font-size:14px">案件の<strong>「設計戦略フェーズ」</strong>として切り出して請求（既存のHTML納品文化に乗せる）。差別化は<strong>「ツールを開く前の9割」をゲートで強制＋AIで加速、だが神髄は人間に残す誠実さ</strong>。最初の尖った文脈は「日本の中小企業向けBPO/会計/医療系UX」——汎用SaaS UX教科書を無批判に積まない（CLAUDE.md：大組織ベストプラクティスを0→1に適用するな）。</p>
+</div></section>
+
+<!-- ============ 08 CONCERNS ============ -->
+<section id="concerns"><div class="wrap">
+  <div class="sec-no">08 — 懸念</div>
+  <h2>遠慮なく、7つ</h2>
+
+  <ol class="steps">
+    <li><strong>AIに任せてはいけない境界（最重要）。</strong>動画③が明言「刺さるかの神髄はAIだとろくな結果にならない」。だから壁打ち/評価agentは"発散と減点"に限定し、「誰に刺さるか／どの感情か」の最終決定は人間（木幡さん/クライアント）に残す設計にした。ここを破ってagentに決めさせると凡庸化する。<span style="color:var(--ochre)">→ 全agentに <code>boundary</code> を焼き込む。</span></li>
+    <li><strong>後付け retrofit の限界。</strong>ふわふわランドは実装3700行が先行。design.mdを後から作っても、すでにCSSに焼かれた決定（radius不一致等）の手直しコストが残る。<span style="color:var(--ochre)">→ ふわふわは「retrofitの実例」として価値があるが、本来の順序効果は<strong>次の新規案件から</strong>得る。</span></li>
+    <li><strong>過剰エンジニアリング（CR-4 / KISS / YAGNI）。</strong>10コンポーネントは多い。<span style="color:var(--ochre)">→ Core 5つ（3 skills＋orchestrator＋consistency-auditor）から始め、効果が出てからExtendedへ。CLAUDE.md「管理コスト&gt;価値なら提案しない」に従う。</span></li>
+    <li><strong>ゲート規律が形骸化しやすい。</strong>「早く作りたい」圧で上流を飛ばすのが人間の常（ふわふわが実例）。<span style="color:var(--ochre)">→ orchestratorに未通過で進ませない強制力を。ただし強すぎると鬱陶しい→0→1とPMF後でゲート厳しさを変える（CLAUDE.mdのフェーズ認識と整合）。</span></li>
+    <li><strong>「自分のための製品」も凡庸さの罠。</strong>このOS自体を"全クライアント汎用"に広げすぎると、動画③の警告通りぼやける。<span style="color:var(--ochre)">→ まず木幡さんの実案件という尖った文脈に最適化する。</span></li>
+    <li><strong>Claude Design 依存。</strong>動画①の実演はClaude Design前提。design.mdは標準規格でツール非依存だが、プロトタイプ工程はツール選択が残る。<span style="color:var(--ochre)">→ skillはツール非依存で書く（動画①の「不変の真理」に従う）。来年ツールが変わっても順番は変えない。</span></li>
+    <li><strong>二者ユーザーの綱引き。</strong>ふわふわは子ども（感情）とスタッフ（運用）が利益相反しうる（演出を凝る＝タップ増）。<span style="color:var(--ochre)">→ プリンシプルで優先順位を固定し、Gate1で両者を別ジャーニーとして可視化した。現場で揺れたらプリンシプルに立ち戻る。</span></li>
+  </ol>
+</div></section>
+
+<!-- ============ 09 NEXT ============ -->
+<section id="next" style="border-bottom:none"><div class="wrap">
+  <div class="sec-no">09 — 次アクション</div>
+  <h2>承認後に作るファイル（Core優先）</h2>
+  <p>この設計図を承認いただいたら、動画①の教え通り「固まってからコーディングエージェントに渡す」＝実ファイル化に進む。<strong>CR-4遵守で20ファイルを超えないよう Core から</strong>。</p>
+  <table class="tbl">
+    <thead><tr><th>パス</th><th>役割</th><th>区分</th></tr></thead>
+    <tbody>
+      <tr><td><code>~/.claude/skills/design-os/SKILL.md</code></td><td>orchestrator（ゲート強制・全体原則）</td><td><span class="pill meta">Core</span></td></tr>
+      <tr><td><code>~/.claude/skills/design-strategy/SKILL.md</code> ＋ templates/</td><td>Gate0：strategy / prfaq / principles 雛形</td><td><span class="pill skill">Core</span></td></tr>
+      <tr><td><code>~/.claude/skills/ux-context-design/SKILL.md</code> ＋ templates/</td><td>Gate1：prd / journey 雛形</td><td><span class="pill skill">Core</span></td></tr>
+      <tr><td><code>~/.claude/skills/design-system-md/SKILL.md</code> ＋ templates/</td><td>Gate2：design.md / tokens.css 雛形</td><td><span class="pill skill">Core</span></td></tr>
+      <tr><td><code>~/.claude/agents/consistency-auditor.md</code></td><td>一貫性監査（唯一の機械化評価）</td><td><span class="pill eval">Core</span></td></tr>
+      <tr><td>target-sharpener / desire-digger / prfaq-evaluator / emotion-journey-critic / design-principle-referee</td><td>壁打ち2＋評価3</td><td><span class="pill spar">Extended</span></td></tr>
+      <tr><td><code>suwapuyo/docs/10_fuwafuwa-land/02_basic-design/08_design-system.md</code></td><td>ふわふわランド向け design.md（本§05のseedを正式化）</td><td><span class="pill skill">案件成果物</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="call human">
+    <span class="tag">決めてほしい一点</span>
+    <p style="margin:0">プロダクトの置き場所：<strong>(A)</strong> <code>~/.claude/</code> に直接入れて全セッションで使う／<strong>(B)</strong> 独立リポ <code>~/projects/design-strategy-os/</code> として商品化（将来外販も視野・自分のクライアント標準装備としては A が軽い）。推奨は<strong>A で始めて、磨けたら B に切り出し</strong>。</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <hr class="soft">
+  <p><strong>Design Strategy OS</strong> · 設計図 v0.1 · 2026-06-25 · worked example = すーすーわーわー ふわふわランド<br>
+  出典：3動画（①AI時代のプロのデザインワークフロー ②感動を設計する ③なぜデザインスキルが万人向け教養に）／ 実装 <code>suwapuyo/src/fuwafuwa-land/</code> ・正本 <code>05_summary/04</code><br>
+  次：この設計図を承認 → Core 5コンポーネントをファイル化 → ふわふわランドの design.md を正式化。</p>
+</div></footer>
+
+</body>
+</html>

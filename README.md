@@ -1,73 +1,28 @@
-# React + TypeScript + Vite
+# すわぷよ / ふわふわランド — YourTIME 2026-08-02
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+1つの Vite + React + TypeScript アプリに、YourTIME 向けの **3プロダクト**が同居しています。
 
-Currently, two official plugins are available:
+| プロダクト | 実装 | ドキュメント |
+|---|---|---|
+| ふわふわランド（本命・参加型展示） | `src/fuwafuwa-land/` | `docs/10_fuwafuwa-land/` |
+| すわぷよ（パズルデモ） | `src/App.tsx` ほか | `docs/30_suwapuyo/` |
+| YOUR TIME Platform Demo | `src/components/YourTimeReflectionDemo.tsx` | `docs/40_yourtime-platform/` |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## はじめに読む
 
-## React Compiler
+👉 **[`docs/00_overview/01_repo-map.md`](docs/00_overview/01_repo-map.md)** — 全体地図・正本の在り処・ディレクトリ規約。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 開発
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev      # 開発サーバ
+npm run build    # tsc -b && vite build
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+ルーティングはURLハッシュ分岐: `/`（すわぷよ）, `#/fuwafuwa/staff`, `#/fuwafuwa/display`, `#/fuwafuwa/debug`。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ドキュメント
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+`docs/` は番号で読む順序が固定されています（`00_overview` → `10_fuwafuwa-land` → `20_business` …）。`_archive/` は旧版退避、`_snapshots/` は凍結HTML。詳細は地図を参照。
