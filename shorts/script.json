@@ -1,0 +1,24 @@
+{
+  "title": "oguchi-de-asobo",
+  "size": [1080, 1920],
+  "fps": 30,
+  "background": "public/assets/ui/village_bg.png",
+  "topTitle": "お口で遊ぼう",
+  "topIllust": "public/assets/characters/14_はぐりん.png",
+  "characters": {
+    "mogu": { "img": "public/assets/characters/07_もぐぴよ.png", "side": "left",  "pitch": 680, "color": [56, 152, 224] },
+    "wawa": { "img": "public/assets/characters/02_わーわー.png", "side": "right", "pitch": 920, "color": [222, 120, 44] }
+  },
+  "cta": { "color": [214, 158, 44] },
+  "audio": { "bgm": true, "animalese": true },
+  "debugSafezone": false,
+  "lines": [
+    { "who": "mogu", "text": "わーわー、お口であそぼ！",       "dur": 2.4 },
+    { "who": "wawa", "text": "あそぶ！どうやって？",           "dur": 2.2 },
+    { "who": "mogu", "text": "ほっぺ ぷーっ、べー、にっこり！", "dur": 2.8 },
+    { "who": "wawa", "text": "ぷーっ！べー！にっこり！",       "dur": 2.6 },
+    { "who": "mogu", "text": "もぐもぐ、ごっくんも たいせつ",   "dur": 2.8 },
+    { "who": "wawa", "text": "たのしい！もっとあそぶ！",       "dur": 2.4 },
+    { "who": "cta",  "text": "お口であそぼ",                   "dur": 2.2 }
+  ]
+}

@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .vercel
 supabase/.temp/
+
+# ショート動画の書き出し（script.json+render.pyから再生成可能）
+shorts/out/

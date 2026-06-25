@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ショート量産の仕組み — どうやって作っているか</title>
+<style>
+  :root{
+    --paper:#f7f4ec;--ink:#1c1b17;--soft:#4a463c;--line:#ddd5c2;--card:#fffdf8;
+    --blue:#3898e0;--orange:#de782c;--teal:#0f6e63;--gold:#d69e2c;
+    --serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+    --sans:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,"Segoe UI",system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.75;font-size:16.5px;
+    background-image:radial-gradient(rgba(28,27,23,.022) 1px,transparent 1px);background-size:4px 4px}
+  .wrap{max-width:920px;margin:0 auto;padding:0 clamp(18px,5vw,48px)}
+  header{padding:clamp(44px,8vw,96px) 0 36px;border-bottom:3px solid var(--ink)}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  h1{font-family:var(--serif);font-size:clamp(34px,7vw,68px);line-height:1.05;margin:.3em 0 .25em;letter-spacing:-.01em}
+  .lede{font-size:clamp(17px,2.3vw,21px);max-width:32em;color:var(--soft)}
+  section{padding:clamp(34px,6vw,68px) 0;border-bottom:1px solid var(--line)}
+  .sec-no{font-family:var(--mono);font-size:12.5px;color:var(--orange);font-weight:700;letter-spacing:.1em}
+  h2{font-family:var(--serif);font-size:clamp(25px,4vw,40px);line-height:1.1;margin:.15em 0 .5em}
+  h3{font-size:clamp(18px,2.4vw,22px);margin:1.8em 0 .4em;font-weight:800}
+  p{margin:.7em 0;max-width:40em}
+  code{font-family:var(--mono);font-size:.86em;background:#efe9dc;padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+  .tbl{width:100%;border-collapse:collapse;margin:1.1em 0;font-size:14.5px;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th,.tbl td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl thead th{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+  .tbl tbody tr:last-child td{border-bottom:none}
+  .tbl tbody tr:nth-child(even){background:rgba(231,239,233,.4)}
+  .big{font-family:var(--serif);font-size:clamp(22px,3.6vw,34px);line-height:1.25;margin:.2em 0;letter-spacing:-.01em}
+  .big b{color:var(--teal)}
+  .pipe{display:grid;gap:0;margin:1.4em 0}
+  .layer{display:grid;grid-template-columns:54px 1fr;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--teal);padding:14px 18px;margin-bottom:8px;border-radius:0 10px 10px 0}
+  .layer .n{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--teal);text-align:center}
+  .layer h4{margin:0 0 2px;font-size:16px}
+  .layer p{margin:0;font-size:13.5px;color:var(--soft);max-width:none}
+  .layer.l5{border-left-color:var(--orange)} .layer.l5 .n{color:var(--orange)}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:1.2em 0;font-size:14px}
+  .flow span{background:var(--card);border:1px solid var(--line);padding:8px 13px;border-radius:8px;font-weight:700}
+  .flow i{color:var(--line);font-style:normal;font-size:18px}
+  .flow .hot{border-color:var(--teal);background:#e7efe9;color:var(--teal)}
+  pre{background:#1c1b17;color:#f3eedd;padding:16px 18px;border-radius:12px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.6}
+  pre .c{color:#9a9376}
+  .call{border-left:4px solid var(--teal);background:var(--card);padding:16px 20px;border-radius:0 12px 12px 0;margin:1.4em 0;box-shadow:0 14px 40px -28px rgba(0,0,0,.5)}
+  .call .tag{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:1em 0}
+  .chip{font-family:var(--mono);font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:#e7efe9;color:var(--teal);border:1px solid #bcd8cd}
+  .chip.free{background:#eef7ee;color:#2f7d32;border-color:#bcdcbc}
+  footer{padding:50px 0 80px;color:var(--soft);font-size:13.5px}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="eyebrow">Shorts Studio · how it works</div>
+  <h1>これ、どうやって<br>作ってるのか</h1>
+  <p class="lede">結論：<strong>特定のOSS製品ではありません</strong>。無料の部品4つを、約200行の小さな自作スクリプトで貼り合わせているだけ。だから軽くて、ブラウザも要らず、量産にそのまま化けます。</p>
+</div></header>
+
+<section><div class="wrap">
+  <div class="sec-no">01 — 一言で</div>
+  <p class="big">1コマずつ<b>画像として描いて</b>、それを<b>ffmpegで動画に綴じる</b>。<br>音は<b>数式で合成</b>。それだけ。</p>
+  <p>Remotion でも Revideo でも CapCut でもありません。「動画編集ソフト」を一切使わず、プログラムが紙芝居を1枚ずつ描いて、最後にパラパラ漫画として綴じています。</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-no">02 — 使っている部品（全部無料・大半は最初から入っていた）</div>
+  <table class="tbl">
+    <thead><tr><th>部品</th><th>役割</th><th>正体</th></tr></thead>
+    <tbody>
+      <tr><td><b>Python</b></td><td>全体の指揮</td><td>標準。スクリプト言語</td></tr>
+      <tr><td><b>Pillow (PIL)</b></td><td>1コマを画像として描く（背景・キャラ・字幕を重ねる）</td><td>OSS画像ライブラリ</td></tr>
+      <tr><td><b>NumPy</b></td><td>画像のピクセル計算＋<b>音の波形を合成</b></td><td>OSS数値計算</td></tr>
+      <tr><td><b>ffmpeg</b></td><td>コマ→mp4 に符号化＋音と映像の結合</td><td>OSS動画処理の定番</td></tr>
+      <tr><td><b>Noto CJK フォント</b></td><td>日本語字幕の描画</td><td>Google製・無料フォント（OSに同梱）</td></tr>
+    </tbody>
+  </table>
+  <div class="chips">
+    <span class="chip free">$0</span><span class="chip free">追加インストール不要だった</span>
+    <span class="chip">ブラウザ不要</span><span class="chip">ヘッドレス（画面なしで動く）</span><span class="chip">商用OK</span>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-no">03 — 核心の仕掛け</div>
+  <h2>「動画」を作っていない。<br>画像を大量に作っている。</h2>
+  <p>動画は本質的に「1秒30枚の静止画」。だから難しく考えず——<b>毎コマ、背景の上にキャラと字幕を置いた画像を1枚作り、ffmpegに流し込む</b>。30fps×17秒なら522枚。これをパラパラ漫画として綴じれば動画になります。</p>
+  <div class="flow">
+    <span class="hot">script.json</span><i>→</i><span>Pythonが522コマを描画</span><i>→</i><span>ffmpegへ流す</span><i>→</i><span>mp4</span><i>+</i><span>合成した音</span><i>→</i><span class="hot">完成</span>
+  </div>
+  <p>“可愛い・生きてる”は、毎コマでキャラの位置をほんの少しずらすこと（ふわふわ＝サイン波、喋る子＝ぴょこ跳ね）と、字幕のポップインから出ています。生成AIでキャラを描き直しているのではなく、<b>あなたの絵をそのまま動かしている</b>＝ブランドが崩れない。</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-no">04 — 5つのレイヤー</div>
+  <p>1コマは、この5層の重ね合わせです（下ほど手前）。</p>
+  <div class="pipe">
+    <div class="layer"><div class="n">1</div><div><h4>背景</h4><p>村のイラストを画面いっぱいに。背景はキャラ一貫性が要らないのでAI生成もOK。</p></div></div>
+    <div class="layer"><div class="n">2</div><div><h4>キャラ</h4><p>立ち絵を左右に。常時ふわふわ（サイン波）＋喋る子はぴょこ跳ね。</p></div></div>
+    <div class="layer"><div class="n">3</div><div><h4>上部タイトル＋常設イラスト</h4><p>「お口で遊ぼう」の帯と、はぐりんを毎コマ描画。</p></div></div>
+    <div class="layer"><div class="n">4</div><div><h4>字幕</h4><p>角丸の帯＋日本語。<b style="color:var(--blue)">もぐぴよ＝青枠</b>／<b style="color:var(--orange)">わーわー＝オレンジ枠</b>と話者で色分け。ポップイン。</p></div></div>
+    <div class="layer l5"><div class="n">5</div><div><h4>音（あとで結合）</h4><p>animalese（すーすーわーわー語）＋ほんわかBGMを<b>数式で自前合成</b>。著作権フリー。</p></div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-no">05 — 量産の背骨</div>
+  <h2><code>script.json</code> を差し替えるだけ</h2>
+  <p>絵の描き方（render.py）は固定。<b>台本・キャラ・色・タイトルは全部 <code>script.json</code> という"データ"に分離</b>してあります。だから新作は、このデータを書き換えて1コマンド走らせるだけ。出展者紹介ショートも同じ型に流し込めます。</p>
+  <pre><span class="c"># script.json（抜粋）— ここを変えれば別動画</span>
+"characters": {
+  "mogu": { "img": "...もぐぴよ.png", "side": "left",  "color": [56,152,224] },  <span class="c">// 青</span>
+  "wawa": { "img": "...わーわー.png", "side": "right", "color": [222,120,44] }   <span class="c">// オレンジ</span>
+},
+"lines": [
+  { "who": "mogu", "text": "わーわー、お口であそぼ！", "dur": 2.4 },
+  { "who": "wawa", "text": "あそぶ！どうやって？",     "dur": 2.2 }
+]</pre>
+  <div class="flow">
+    <span>台本を書く</span><i>→</i><span class="hot">python3 shorts/render.py</span><i>→</i><span>mp4が出る</span>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-no">06 — 音も“買って”いない</div>
+  <h2>animalese と BGM は自前合成</h2>
+  <p><b>声＝animalese</b>：字幕の文字数だけ短い電子音（ブリップ）を、キャラごとのピッチで鳴らす＝どうぶつの森風の可愛い喋り。中身の啓蒙メッセージは<b>字幕</b>が担うので、健康効果を“声で言わない”＝医療広告の事故も避けやすい。</p>
+  <p><b>BGM＝ほんわかパッド</b>：I–V–vi–IV のやさしい和音を NumPy のサイン波で生成。市販曲を使わないので<b>著作権の心配ゼロ</b>。声の下で小さく流れます。どちらも後で本物の素材に差し替え可能。</p>
+  <div class="call"><span class="tag">なぜ自前合成か</span>
+    <p style="margin:.4em 0 0">子ども×健康×商用ブランドでは、市販曲・TikTok音源は一発アウト。<b>自分で作った音なら権利が100%クリーン</b>。しかもキャラ別ピッチは“すーすーわーわーの声”というブランド資産になります。</p>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-no">07 — なぜこの作り方にしたか</div>
+  <table class="tbl">
+    <thead><tr><th>候補</th><th>判定</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr><td>Remotion</td><td>不採用</td><td>企業利用が有料・頭数管理（既存方針 D-7）</td></tr>
+      <tr><td>Revideo / Motion Canvas</td><td>保留</td><td>良いがブラウザ(chromium)が必要で重い・環境依存</td></tr>
+      <tr><td>CapCut / 動画編集ソフト</td><td>不採用</td><td>手作業で毎回ゼロから＝量産できない・OSSでない</td></tr>
+      <tr><td><b>Python+PIL+ffmpeg（採用）</b></td><td><b>採用</b></td><td>ヘッドレスで確実・$0・ブラウザ不要・データ駆動で量産・全部自前で権利クリーン</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<section style="border-bottom:none"><div class="wrap">
+  <div class="sec-no">08 — ファイルの地図</div>
+  <table class="tbl">
+    <thead><tr><th>ファイル</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><td><code>shorts/render.py</code></td><td>レンダラ本体（約200行）。絵の描き方＋音合成＋結合。基本いじらない</td></tr>
+      <tr><td><code>shorts/script.json</code></td><td>台本データ。<b>新作はここだけ変える</b></td></tr>
+      <tr><td><code>public/assets/characters/</code></td><td>小夏さんの実キャラ23体（透過PNG）</td></tr>
+      <tr><td><code>public/assets/ui/village_bg.png</code></td><td>背景</td></tr>
+      <tr><td><code>shorts/out/*.mp4</code></td><td>書き出した動画</td></tr>
+      <tr><td><code>docs/60_shorts-studio/01_first-video-recipe.md</code></td><td>作り方の手順書（正）</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:1.4em">要するに——<b>「動画編集」ではなく「プログラムで紙芝居を量産する」</b>仕組み。台本を変えるたびに、世界観を保ったショートが1本、確実に生まれます。</p>
+</div></section>
+
+<footer><div class="wrap">
+  Shorts Studio · 仕組み解説 · 2026-06-25 · すーすーわーわー / ふわふわランド<br>
+  実物: <code>shorts/out/oguchi-de-asobo.mp4</code>（わーわー×もぐぴよ「お口で遊ぼう」）
+</div></footer>
+</body>
+</html>
