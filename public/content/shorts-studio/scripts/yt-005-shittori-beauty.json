@@ -1,0 +1,127 @@
+{
+  "title": "yt-005-shittori-beauty",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "backgroundVariant": "sparkle-clinic: mirror, gentle water drops, tooth brush bubbles, soft stars",
+  "topTitle": "小ケア美容",
+  "titleStyle": "きらっと桃",
+  "targetAudience": {
+    "primary": "health_literacy",
+    "secondary": "general_discomfort"
+  },
+  "viewerState": "美容や未病に興味があり、責めないケアを知りたい",
+  "theme": "きれいを責める道具にせず、小さな口のケアへつなげる",
+  "behaviorGoal": "夜にやさしくみがき、水分と睡眠を意識する",
+  "cognitiveHook": "晴れの日なのに熱い炎症わーわーが出てくる",
+  "marketingPhilosophy": "YourTIMEは、自分を責めずに整える選択肢と出会う場",
+  "weather": "晴れ",
+  "topIllust": "public/content/fuwafuwa-land/characters/display/rapiko.png",
+  "characters": {
+    "rapi": {
+      "img": "public/content/fuwafuwa-land/characters/display/rapiko.png",
+      "side": "left",
+      "pitch": 980,
+      "color": [
+        210,
+        132,
+        156
+      ]
+    },
+    "ensho": {
+      "img": "public/content/fuwafuwa-land/characters/display/enshou.png",
+      "side": "right",
+      "pitch": 880,
+      "color": [
+        226,
+        126,
+        70
+      ]
+    }
+  },
+  "cta": {
+    "color": [
+      214,
+      158,
+      44
+    ]
+  },
+  "audio": {
+    "bgm": true,
+    "animalese": true
+  },
+  "debugSafezone": false,
+  "eventAnimation": [
+    "mirror-sparkle",
+    "bubble-fire-out",
+    "self-care-heart"
+  ],
+  "emotion": {
+    "rapi": "sparkly self-care, never shaming",
+    "ensho": "panicked small fire, then calm and relieved"
+  },
+  "lines": [
+    {
+      "who": "rapi",
+      "text": "おはようございます！",
+      "dur": 2.2
+    },
+    {
+      "who": "rapi",
+      "text": "今日のふわふわランドの天気は、、、",
+      "dur": 3.0
+    },
+    {
+      "who": "rapi",
+      "text": "晴れです！",
+      "dur": 2.0
+    },
+    {
+      "who": "ensho",
+      "text": "晴れなのに、ぼくは少し熱い！",
+      "dur": 3.0
+    },
+    {
+      "who": "rapi",
+      "text": "大丈夫。きれいは責めるためじゃないよ",
+      "dur": 3.8
+    },
+    {
+      "who": "ensho",
+      "text": "ぼく、急いでゴシゴシしがち",
+      "dur": 3.0
+    },
+    {
+      "who": "rapi",
+      "text": "やさしくみがく。水分をとる。眠る",
+      "dur": 3.8
+    },
+    {
+      "who": "ensho",
+      "text": "ぽふっ。火が小さくなってきた",
+      "dur": 3.2
+    },
+    {
+      "who": "rapi",
+      "text": "未病美容は、未来の自分への小さな親切",
+      "dur": 4.2
+    },
+    {
+      "who": "ensho",
+      "text": "親切なら、今日もできるかも",
+      "dur": 3.0
+    },
+    {
+      "who": "rapi",
+      "text": "YourTIMEは、責めないケアに出会う場所",
+      "dur": 4.0
+    },
+    {
+      "who": "cta",
+      "text": "きれいは今日の小ケア",
+      "dur": 3.0
+    }
+  ]
+}

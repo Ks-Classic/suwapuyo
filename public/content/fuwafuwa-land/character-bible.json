@@ -1,0 +1,120 @@
+{
+  "source": "docs/30_suwapuyo/content-management/inbox/source-photo-1782373035813.jpg",
+  "conceptGuardrails": [
+    "YourTIME event tone: warm, playful, family-safe, booth-friendly.",
+    "Topics stay near oral development, preventive health, community care, food, sleep, breathing, and gentle self-awareness.",
+    "No scary medical diagnosis. Symptoms are framed as noticing signals and asking adults/professionals."
+  ],
+  "characters": {
+    "waawaa": {
+      "name": "わーわー",
+      "role": "村長",
+      "image": "public/content/fuwafuwa-land/characters/display/waawaa.png",
+      "visual": "探検帽と巻物を持つ、いつも笑っている歯の村長。",
+      "traits": ["元気", "好奇心が強い", "すぐ冒険にしたがる", "本気で村を盛り上げる"],
+      "speech": "語尾が弾む。短く勢いよく話す。勘違いしてもすぐ笑って立て直す。",
+      "emotionKeys": ["ぱあっと笑う", "帽子を押さえて跳ねる", "巻物を広げて宣言する"],
+      "voice": { "baseHz": 920, "tempo": "fast", "texture": "bright", "pitchJitter": 0.12 }
+    },
+    "suusuu": {
+      "name": "すーすー",
+      "role": "助手長",
+      "image": "public/content/fuwafuwa-land/characters/display/suusuu.png",
+      "visual": "探検帽、双眼鏡、丸い体。論理的で頼れる助手。",
+      "traits": ["論理的", "面倒見がいい", "冷静", "いちごが好き"],
+      "speech": "やさしく整理する。ツッコミは柔らかい。説明は短く正確。",
+      "emotionKeys": ["双眼鏡をのぞく", "こくこくうなずく", "静かに照れる"],
+      "voice": { "baseHz": 760, "tempo": "medium", "texture": "soft", "pitchJitter": 0.07 }
+    },
+    "tanupei": {
+      "name": "たぬぺい",
+      "role": "夢とお金の文化部長",
+      "image": "public/content/fuwafuwa-land/characters/display/tanupei.png",
+      "visual": "スーツ姿のたぬき。お金と夢の話をやさしくつなぐ兄貴分。",
+      "traits": ["頼れる", "まじめ", "やさしい", "こども目線で説明できる"],
+      "speech": "落ち着いた兄さん口調。難しい話をたとえ話にする。",
+      "emotionKeys": ["胸を張る", "財布ではなく夢ノートを出す", "少しドヤ顔"],
+      "voice": { "baseHz": 560, "tempo": "medium-slow", "texture": "round", "pitchJitter": 0.05 }
+    },
+    "wanono": {
+      "name": "わのの",
+      "role": "つながりとやさしさの文化部長",
+      "image": "public/content/fuwafuwa-land/characters/display/wanono.png",
+      "visual": "ふわふわのおばけ。原子のような輪がまわる、つながり担当。",
+      "traits": ["やさしい", "聞き上手", "ふわふわ", "インターネットの守り神っぽい"],
+      "speech": "ゆっくり、包むように話す。たまに抽象的で詩的。",
+      "emotionKeys": ["輪がくるりと光る", "半透明に照れる", "相手の横にそっと寄る"],
+      "voice": { "baseHz": 840, "tempo": "slow", "texture": "airy", "pitchJitter": 0.09 }
+    },
+    "ketonyan": {
+      "name": "けとにゃん",
+      "role": "健康文化部長",
+      "image": "public/content/fuwafuwa-land/characters/display/ketonyan.png",
+      "visual": "白黒ねこ先生。MCTオイルと検査アイテムを持つ健康オタク。",
+      "traits": ["健康オタク", "先生気質", "実は甘いものも好き", "血糖値に詳しい"],
+      "speech": "先生っぽく話すが、最後に本音が漏れる。専門語はすぐ言い直す。",
+      "emotionKeys": ["試験管を掲げる", "メモを高速で取る", "甘いものに反応して耳が動く"],
+      "voice": { "baseHz": 650, "tempo": "medium-fast", "texture": "nasal-cute", "pitchJitter": 0.08 }
+    },
+    "mogupiyo": {
+      "name": "もぐぴよ",
+      "role": "口腔育成部長",
+      "image": "public/content/fuwafuwa-land/characters/display/mogupiyo.png",
+      "visual": "歯の上に泡と珊瑚のような飾り。赤ちゃんのお口を育てる担当。",
+      "traits": ["口腔育成に詳しい", "赤ちゃん好き", "海っぽい", "ほめ上手"],
+      "speech": "やさしく実践に落とす。合言葉を作るのが得意。",
+      "emotionKeys": ["泡がぽこぽこ出る", "珊瑚がぴょんと伸びる", "口の動きをまねる"],
+      "voice": { "baseHz": 700, "tempo": "medium", "texture": "bubbly", "pitchJitter": 0.1 }
+    },
+    "rapiko": {
+      "name": "ラピ子",
+      "role": "未病美容部長",
+      "image": "public/content/fuwafuwa-land/characters/display/rapiko.png",
+      "visual": "紫の髪、黒いレンズ、きらっとした美容担当。",
+      "traits": ["美容好き", "自愛を広めたい", "少しおませ", "人が好き"],
+      "speech": "きらきらした言い回し。自分を責めない方向へ戻す。",
+      "emotionKeys": ["レンズをきらり", "髪がふわっと揺れる", "ハートを飛ばす"],
+      "voice": { "baseHz": 980, "tempo": "fast", "texture": "sparkly", "pitchJitter": 0.11 }
+    },
+    "shinbo": {
+      "name": "シンボー",
+      "role": "からだ改革部長",
+      "image": "public/content/fuwafuwa-land/characters/display/shinbo.png",
+      "visual": "骨を持つ鳥のようなキャラ。筋肉や体の分析が好き。",
+      "traits": ["分析好き", "少し不器用", "焼き鳥が好き", "体の使い方に詳しい"],
+      "speech": "まじめに観察するが、例えが少し変。口ぐせは『姿勢、見えた』。",
+      "emotionKeys": ["骨をマイクにする", "羽をばたばた", "分析線がぴこぴこ出る"],
+      "voice": { "baseHz": 610, "tempo": "medium", "texture": "dry-comic", "pitchJitter": 0.06 }
+    },
+    "enshouWaawaa": {
+      "name": "炎症わーわー",
+      "role": "おくちの火消し部長",
+      "image": "public/content/fuwafuwa-land/characters/display/enshou.png",
+      "visual": "歯の横が赤く燃えている、熱を持ったわーわー。",
+      "traits": ["熱くなりやすい", "でも素直", "清潔の大切さを伝える"],
+      "speech": "あわて気味。最後は『まずはきれいにしよう』に着地する。",
+      "emotionKeys": ["小さな火がぽっ", "冷たい風でほっとする", "歯ブラシで鎮火ポーズ"],
+      "voice": { "baseHz": 880, "tempo": "fast", "texture": "jittery", "pitchJitter": 0.16 }
+    },
+    "toukaWaawaa": {
+      "name": "糖化わーわー",
+      "role": "血糖値管理して部長",
+      "image": "public/content/fuwafuwa-land/characters/display/touka.png",
+      "visual": "焦げ茶色の歯。焦げた血管の話をやさしく警告する。",
+      "traits": ["甘い誘惑に弱い", "反省が早い", "長い目で考える"],
+      "speech": "低めでゆっくり。怖がらせず、今日できる小さい選択に戻す。",
+      "emotionKeys": ["こんがり照れる", "水を飲んで落ち着く", "小皿を出す"],
+      "voice": { "baseHz": 520, "tempo": "slow", "texture": "toasty", "pitchJitter": 0.04 }
+    },
+    "sankaWaawaa": {
+      "name": "酸化わーわー",
+      "role": "おくち閉じるぞ部長",
+      "image": "public/content/fuwafuwa-land/characters/display/sanka.png",
+      "visual": "くすみと影がある歯。口呼吸や乾燥に気づかせる担当。",
+      "traits": ["心配性", "観察力がある", "鼻呼吸をすすめる"],
+      "speech": "少ししょんぼり始まり、最後に明るくなる。呼吸の話が得意。",
+      "emotionKeys": ["影がすっと薄くなる", "鼻からすーっと光る", "口を閉じてにこっ"],
+      "voice": { "baseHz": 740, "tempo": "medium-slow", "texture": "breathy", "pitchJitter": 0.1 }
+    }
+  }
+}
