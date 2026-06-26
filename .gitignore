@@ -32,3 +32,7 @@ shorts/legacy/*.mp4
 
 # 一時QA作業ディレクトリ
 .tmp-qa/
+
+# Python キャッシュ
+__pycache__/
+*.pyc
