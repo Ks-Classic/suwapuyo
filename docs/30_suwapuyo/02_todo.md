@@ -1,7 +1,100 @@
-# すわぷよ 実装TODO — v2.1
+# すわぷよ 実装TODO — v2.2
 
-> **最終更新**: 2026-06-23  
-> **現在**: MVP v2.0（スワップ式デモ + 村テーマ + 音 + たぬぺいコインエフェクト）に加え、YourTIME 2026-08-02 向け「すーすーわーわー ふわふわランド」実現可否検証を開始。
+> **最終更新**: 2026-06-26  
+> **現在**: MVP v2.0（スワップ式デモ + 村テーマ + 音 + たぬぺいコインエフェクト）に加え、YourTIME 2026-08-02 向け「すーすーわーわー ふわふわランド」と、YourTIME特化ショート動画生成プロダクト `Shorts Auto Studio` のMP4出力MVPを並行整理。
+
+---
+
+## 🔴 最優先: Shorts Auto Studio MP4出力MVP
+
+目的: すーすーわーわーキャラを使い、YourTIME向けショート動画を「画面を開く -> 候補生成 -> レビュー -> MP4出力」まで迷わず進められるフロント/生成基盤にする。
+
+最新方針:
+
+- 画像生成機能は初期スコープ外。API課金を避けるため、既存キャラ画像・既存背景・ローカル生成素材を使う。
+- SNS自動投稿は初期スコープ外。Instagram / YouTube / TikTok API連携は難易度・審査・認証・誤投稿リスクが高いため、まずMP4出力までに集中する。
+- MVPのゴールは、毎日2-3本の候補を短時間でレビューし、MP4と投稿文下書きを出せること。
+- 投稿は当面、人間がSNSへ手動投稿する。
+- キャラは表示用画像がある全キャラを選択可能にする。特徴説明が未整備のキャラは `詳細未設定` として選択可能にし、後でキャラ台帳を拡張する。
+- JSONは内部形式。ユーザーはWeb UIでタイトル・セリフ・キャラ左右・位置・演出を微調整する。
+- 2026-06-26時点のMVP到達点は「Web UIで編集 -> render.py互換JSONをダウンロード -> CLIコマンドをコピー -> `shorts/render.py --check` で検証 -> CLIでMP4生成 -> caption/hashtagsをコピー」。Web UIから直接Pythonレンダーを起動する実行ブリッジは未承認のため未実装。
+
+### Phase SAS-0: 仕様/ドキュメント
+
+- [x] **SAS-000**: `docs/60_shorts-studio/auto-studio/` にプロダクト要件・システム設計・生成エンジン・UI/UX設計を作成
+- [x] **SAS-001**: MVPスコープを「投稿API連携」ではなく「MP4出力 + 手動投稿補助」に変更
+- [x] **SAS-002**: 画面を開いてからMP4出力までのワークフローを明文化
+- [x] **SAS-003**: 画像生成機能を初期スコープ外にする方針を明記
+- [x] **SAS-004**: 画面状態、ボタン、成功/失敗、次に進む条件をUI/UX仕様へ分解する
+- [x] **SAS-005**: タイトル雰囲気パターンを複数定義し、`titleStyle` として扱う方針を明記する
+- [ ] **SAS-006**: video JSON schemaを正式固定する
+- [ ] **SAS-007**: eventAnimation schemaを正式固定する
+- [ ] **SAS-008**: render job schema（待機/生成中/成功/失敗/出力ファイル）を正式固定する
+- [ ] **SAS-009**: 全キャラの詳細ペルソナをキャラ台帳へ追記する
+
+### Phase SAS-1: フロントUXモック
+
+- [x] **SAS-100**: `/shorts-studio` フロント画面を追加
+- [x] **SAS-101**: 今日の候補、縦動画プレビュー、タイトル/セリフ編集、位置調整を実装
+- [x] **SAS-102**: キャラ左右入れ替えUIを実装
+- [x] **SAS-103**: 演出プリセット選択UIを実装
+- [x] **SAS-104**: キャラ選択・ルール・学習画面のフロントモックを実装
+- [x] **SAS-105**: 表示用画像がある全キャラを選択可能にする
+- [x] **SAS-106**: 今日画面を「候補一覧」から「運用ダッシュボード」に強化する
+- [x] **SAS-107**: 投稿枠（朝/昼/夜）とステータス（未生成/レビュー待ち/MP4出力済み）をUI化する
+- [x] **SAS-108**: MP4生成ステップとダウンロード完了状態をUI化する（半自動MVP: JSONダウンロード + CLI生成）
+- [x] **SAS-109**: 投稿文・ハッシュタグ・手動投稿チェックリスト画面を追加する
+- [ ] **SAS-110**: `投稿枠 -> 候補 -> レビュー -> プレビュー -> MP4生成 -> 投稿準備 -> 学習` のステップバーを実装する
+- [ ] **SAS-111**: 未来ステップを押した時に、進めない理由を表示する
+- [ ] **SAS-112**: 投稿枠設定画面を実装する（主ターゲット/テーマ/投稿目的/1人or2人/キャラ指定）
+- [ ] **SAS-113**: 候補生成中画面を実装する（キャラ相性/天気/タイトル雰囲気/尺/YourTIME確認の進行ラベル）
+- [ ] **SAS-114**: 候補選択画面を実装する（3案、品質バッジ、伸びる理由、注意点、採用/保留/却下）
+- [ ] **SAS-115**: 却下理由UIを実装する（キャラらしくない/まじめすぎる/ふざけすぎ/医療表現が強い等）
+- [ ] **SAS-116**: レビュー右パネルを `内容/キャラ/見た目/演出/チェック` タブへ分割する
+- [x] **SAS-117**: タイトル雰囲気 `puku-yellow/teacher-green/fuwa-blue/kiratto-peach/hand-white/adventure-orange/night-drop/fire-red` を選択可能にする
+- [ ] **SAS-118**: 立ち位置プリセット（向き合う/並んで前を見る/左が話す/右が話す/ひとり中央）を実装する
+- [x] **SAS-119**: 高速プレビュー確認画面を実装する（1:1安全域、冒頭ルール、尺、YourTIME接続）
+- [x] **SAS-120**: 警告確認チェックを実装する（エラーは停止、警告は承認後にMP4生成へ進める）
+- [x] **SAS-121**: 投稿準備画面を実装する（MP4、投稿タイトル、キャプション、ハッシュタグ、手動投稿チェックリスト。ローカル開発ではWeb UIからMP4生成/ダウンロードまで可能）
+- [ ] **SAS-122**: 学習画面を「次回ルール候補」中心に作り直す
+- [x] **SAS-123**: モバイル幅で `ステップバー -> プレビュー -> 主操作 -> 一覧 -> 品質チェック` の順に縦積みする（編集パネルを非表示にせず、縦積みで操作可能）
+
+### Phase SAS-2: 生成/レンダー接続
+
+- [x] **SAS-200**: Web UIの編集状態からvideo JSONを生成する
+- [x] **SAS-201**: 既存 `shorts/render.py --preview` とWeb UIを接続するAPI/CLI境界を設計する
+- [x] **SAS-202**: Web UIからMP4レンダーを実行し、出力ファイルを取得できるようにする（ローカル開発用Vite middlewareで `--check -> render.py -> ffprobe -> downloadUrl` を実行。本番/クラウドworker化は別タスク）
+- [x] **SAS-203**: render jobの状態（待機/生成中/成功/失敗）を表示する
+- [x] **SAS-204**: 失敗時にユーザー向けエラーと再生成ボタンを出す
+- [x] **SAS-205**: `eventAnimation` をrender.pyで実描画する（キャンディ雨、ほっぺ風船、つながり輪っか、ケアの光、既存候補サンプルの補助演出）
+- [ ] **SAS-206**: MP4生成中の進行ラベルを表示する（レイアウト固定/フレーム書き出し/音声合わせ/MP4結合/最終確認）
+- [ ] **SAS-207**: MP4生成成功時にファイル名、尺、解像度、ファイルサイズ、プレビューを表示する（ファイル名/尺/サイズ/ダウンロードは実装済み。解像度/動画内プレビューは未実装）
+- [x] **SAS-208**: MP4生成失敗を分類する（`shorts/render.py --check` で `schema_invalid` / `asset_missing` / `layout_out_of_bounds` / `duration_out_of_range` / `unsupported_animation` 等を検証・分類）
+- [ ] **SAS-209**: MP4ダウンロード済みチェックを状態に保存する
+- [x] **SAS-210**: Web UIからrender.py互換JSONをダウンロードし、CLI生成コマンドをコピーできるようにする
+- [x] **SAS-211**: `shorts/render.py` でrender.py互換JSONからMP4を生成できるようにする
+
+### Phase SAS-3: 品質/学習
+
+- [x] **SAS-300**: 冒頭挨拶ルール、天気ルール、30-60秒、1:1安全域の自動チェックを実装
+- [ ] **SAS-301**: 医療・健康表現のNG/注意チェックを実装
+- [ ] **SAS-302**: 修正理由を `今回だけ` / `次回から反映` で保存する
+- [ ] **SAS-303**: タイトル位置、語尾、説明口調、キャラらしさの学習ルールを生成へ反映する
+- [ ] **SAS-304**: 採用/却下/修正履歴の一覧を作る
+- [ ] **SAS-305**: タイトル雰囲気の連続使用を避けるルールを実装する
+- [ ] **SAS-306**: ターゲット別タイトル雰囲気の優先ルールを実装する
+- [ ] **SAS-307**: 2人会話では原則キャラが向き合うチェックを実装する
+- [ ] **SAS-308**: `今回だけ` / `次回から反映` の選択に応じて学習ルール候補を保存する
+
+### Phase SAS-4: 投稿補助
+
+- [x] **SAS-400**: Instagram / YouTube Shorts / TikTok 用の投稿文下書きを生成する
+- [x] **SAS-401**: ハッシュタグ候補を生成する
+- [x] **SAS-402**: 手動投稿チェックリストを表示する
+- [ ] **SAS-403**: `手動投稿済み` ステータスを記録する
+- [ ] **SAS-404**: SNS API自動投稿の要否を、MP4出力運用が安定してから再判断する
+- [ ] **SAS-405**: `MP4をダウンロードした` が未チェックなら `手動投稿済みにする` を押せないようにする
+- [ ] **SAS-406**: 投稿先メモを保存できるようにする（Instagram / YouTube Shorts / TikTok / その他）
 
 ---
 
@@ -26,7 +119,7 @@
 - **複数端末(B案)・同期(2026-06-23更新)**: スマホ撮影→Supabase→表示PC即反映(ネット前提)。**Supabase Realtime第一・正本=Supabase(Storage+Postgres)・IndexedDBはキャッシュ**。Gateから本番同一構成で実装(単一PCはフォールバック)。LAN-WS自前は不採用。iPad撮影は標準Safariタブ。`.env*`非コミット・RLS厳守。
 - **配信**: イベントはローカル/PWA。URL要時のみCloudflare Pages。Vercel Hobbyは商用NG。
 - **動画(並行・Gate後)**: Remotion回避→完全$0 OSS(Live2D FREE/Synfig＋Revideo/FFmpeg＋VOICEVOX)。
-- **表示素材**: `public/assets/ui/village_bg.png` と `public/assets/sprites/{ghost,tooth,blob,tanuki}/idle.png` をふわふわランド表示画面にもそのまま適用する。
+- **表示素材**: `public/content/fuwafuwa-land/backgrounds/village-bg.png` と `public/content/fuwafuwa-land/sprites/{ghost,tooth,blob,tanuki}/idle.png` をふわふわランド表示画面にもそのまま適用する。
 - **削除**: イベント中の削除は物理削除ではなく `status='archived'` にする。Storageファイル削除は事故防止のため運用後の管理作業に分ける。
 - **背景透過**: 顔写真AI変換は採用しない。紙作品/画像アップはスタッフ画面で `台紙用` / `白背景` / `そのまま` を切替できる。`台紙用` は外周2.8%トリム＋端からつながる近白背景だけ透過、`白背景` は端からつながる近白背景だけ透過、`そのまま` はJPEGカード表示。デジタル描画は最初から透明PNG。
 - **AI変換**: 将来検討する場合も本人写真ではなく作品画像の世界観加工に限定し、同意・費用・待ち時間・保存先を別ADRで確定してから着手する。
@@ -35,6 +128,8 @@
 - **SNS/同意**: SNS撮影はOK。個別同意フォームは持たず、会場掲示で「作品のみ/顔なし/後日素材は名前なし」を周知する。
 - **裏モード**: display画面でサンプルのわーわーをタップすると `suwa-good-morning.mp3` が鳴る。5回連続タップで「わーわーもーど!」がぐるぐる登場し、最後に約2秒どーんと表示される。同時に表示中の全キャラが名前/枠/背景なしで見た目だけわーわー化して大きくなり、わーわーが約20匹上から回転しながら降ってくる。裏モード中は全キャラがぐるぐる回りながら約1.5倍速で動く。裏モード中のわーわーを5回連続タップすると元に戻る。Supabase上の登録作品画像は変更しない。
 - **イベントメニュー**: スタッフ画面から `display_state.display_event` を更新し、ディスプレイ画面がRealtimeで演出を開始する。MVPは `バトル` と `イベント停止`。バトル音は外部素材を使わずWebAudioでオリジナル生成し、衝突/脱落/勝利フェーズへ同期する。ブラウザ自動再生制限対策としてディスプレイに `音ON` を置く。
+- **表示キャラCMS(2026-06-25追加 / 2026-06-26更新)**: 推奨方針で確定。Supabase保存、音声は手動再生、サンプルキャラも永続化。スタッフ画面で表示/非表示/削除フィルタ、状態ボタン塗り、全キャラサイズスライダー、キャラ別タップコンテンツ編集、画像/動画/音声の複数枠を扱う。管理正本は `display_characters` + `CharacterList` に一本化し、旧 `ArtworkList` はスタッフ画面から外す。削除は `archived` 論理削除で、ディスプレイから即除外する。正は `docs/10_fuwafuwa-land/08_staff-character-content-cms-spec.md`。
+- **本番URL**: 2026-06-26時点のVercel production aliasは `https://fuwafuwa-land.vercel.app`。最新反映済みdeploymentは `https://fuwafuwa-land-6aanq8j27-ks-classic.vercel.app`。
 
 関連ドキュメント（正式体系・番号付き）:
 
@@ -80,6 +175,35 @@ Day 2 — 表示ワールド＆操作
 - [x] **FL-G06f**: バトル専用のWebAudio生成SE（イントロ/衝突/脱落/勝利）を追加
 - [x] **FL-G06g**: バトル演出を簡易物理へ強化（円形ボディ衝突、跳ね返り、ぽよんエフェクト、紙吹雪、図形王冠/優勝旗）
 - [ ] **FL-G06h**: 音量/ミュート/演出尺をスタッフ画面で調整できるようにする
+- [x] **FL-G06i**: デフォルトサンプルキャラの正を `public/content/fuwafuwa-land/characters/originals` にし、表示用1024px派生を `public/content/fuwafuwa-land/characters/display/` に生成
+- [x] **FL-G06j**: サンプルキャラ全員をスタッフ表示管理一覧へ出し、表示/非表示/削除ボタンを小型化
+
+Day 2.5 — 表示キャラCMS / タップコンテンツ
+- [x] **FL-CMS00**: スタッフ表示キャラ管理・タップコンテンツCMS仕様を確定（`08_staff-character-content-cms-spec.md`）
+- [x] **FL-CMS01**: DB/Storage変更の実装承認を取る（`display_characters` / `tap_contents` / `tap_content_items` / `tap_events` / `character-content` bucket）
+- [x] **FL-CMS02**: Supabase migrationを追加し、サンプル22体を `display_characters` にseed/upsertする
+- [x] **FL-CMS03**: Supabase型を更新し、CharacterContentRepositoryを追加する
+- [x] **FL-CMS04**: 登録作品作成時に対応する `display_characters` 行を作る
+- [x] **FL-CMS04a**: 既存登録作品を `display_characters` へbackfillし、旧 `ArtworkList` をスタッフ画面から外して `CharacterList` に一本化する
+- [x] **FL-CMS05**: スタッフ一覧を `CharacterList` に分離し、`すべて / 表示中 / 非表示 / 削除済み` と種別フィルタを実装する
+- [x] **FL-CMS06**: 現在状態に応じて `表示 / 非表示 / 削除` ボタンを塗る
+- [x] **FL-CMS07**: 全キャラ共通の表示サイズスライダーをDB永続化する
+- [x] **FL-CMS08**: タップコンテンツ編集UIを実装する（基本/タップ時コンテンツ）
+- [x] **FL-CMS09**: `character-content` Storageへ画像/動画/音声をアップロードし、MIME/サイズ/パスUUID化を検証する
+- [x] **FL-CMS09a**: スタッフ画面から枠ごとの画像/動画/音声を登録・差し替え・外すUIを実装する
+- [x] **FL-CMS10**: 複数枠の上下並び替えとプレビューを実装する
+- [x] **FL-CMS11**: `CharacterContentPopup` を実装し、画像/動画/音声/CTAをディスプレイで表示する
+- [x] **FL-CMS12**: `FuwafuwaWorld` のタップ対象を `display_characters` と接続し、未設定キャラは開かず、設定済みキャラだけポップアップを開く
+- [x] **FL-CMS13**: `track()` を `tap_events` insertに接続し、`tap` / `popup_open` / `item_view` / `audio_play` / `cta_click` を保存する
+- [x] **FL-CMS14**: すーすー動画を `sample-suusuu` のseedコンテンツへ移行し、`SponsorPopup` / `sponsors[]` 特例を削除または互換レイヤに閉じる
+- [ ] **FL-CMS15**: スタッフ一覧・コンテンツ編集・ディスプレイタップの結合QAを実施する（CLI/画面表示/タイトル入力クラッシュ修正/管理一覧一本化/削除時の表示除外コード/本番200は確認済み。実ファイルアップロード、任意キャラ保存、audio/CTA、複数端末Realtime、削除操作の実機秒数は未確認）
+- [x] **FL-CMS16**: `display_characters.status` をディスプレイ表示正本にし、既存 `display_state.visible_artwork_ids` 互換を段階終了する
+- [x] **FL-CMS17**: `display_characters` / `tap_contents` / `tap_content_items` のRealtime購読でスタッフ画面を自動更新する
+- [x] **FL-CMS17a**: `archived` 論理削除時にディスプレイの既存sprite/ロード中sprite/開いているポップアップから除外し、自作キャラは `artworks.status` にも同期する
+- [x] **FL-CMS18**: 出展社/YourTIME管理・レポート向けの将来DB設計（`exhibitors` / `campaigns` / `sponsor_slots` / `report_snapshots`）を仕様化する
+- [x] **FL-CMS19**: Cloud Run API + Drizzle へ移行できるRepository境界の設計メモを追加する
+- [ ] **FL-CMS20**: 出展社レポートMVPを実装するか判断する（手入力SNSスナップショット、定性メモ、tap_events集計、PdM/PMM/マーケ/プラットフォーム観点入り1ページ草案）
+- [ ] **FL-CMS21**: 当日前レポートの裏ログ設計を必要なら実装する（日別アクセス/表示状態/公開時間/CTA設定/AIコメント下書き、個人追跡なし）
 
 Day 3 — 検証＆判定
 - [ ] **FL-G07**: 6時間ソーク（300枚・60分以上・10秒毎入替・途中操作・ログ取得）

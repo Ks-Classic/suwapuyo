@@ -128,7 +128,7 @@ MVP実装では境界フェザーはまだ入れない。紙端のギザつき�
 
 ## 8. 表示画面との整合
 
-- 既存の村背景 `public/assets/ui/village_bg.png` を常に使う。
+- 既存の村背景 `public/content/fuwafuwa-land/backgrounds/village-bg.png` を常に使う。
 - 既存4キャラは作品登録後も消さず、世界観の住人として残す。
 - 登録作品はサンプルより前面・少し大きめに表示する。
 - 透過PNG/デジタル描画はカード枠なしで自然に浮かせ、非透過JPEGは角丸カードとして扱う。

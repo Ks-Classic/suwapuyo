@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すーすーわーわー村 エコシステム地図 — 表(YourTIME)×裏(木幡AI)連動モデル</title>
+<style>
+  :root{
+    --paper:#f6f3ea;--ink:#1b1a16;--soft:#4a463c;--line:#dcd4c1;--card:#fffdf8;
+    --sky:#3a9bd6;--teal:#0f6e63;--gold:#d39a2c;--orange:#de782c;--rose:#a23b3b;--grape:#6c5aa6;
+    --serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+    --sans:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,"Segoe UI",system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.7;font-size:16px;
+    background-image:radial-gradient(rgba(27,26,22,.02) 1px,transparent 1px);background-size:4px 4px}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+  header{padding:clamp(40px,7vw,84px) 0 32px;border-bottom:3px solid var(--ink)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  h1{font-family:var(--serif);font-size:clamp(30px,6vw,60px);line-height:1.05;margin:.3em 0 .25em;letter-spacing:-.01em}
+  .lede{font-size:clamp(16px,2.2vw,20px);max-width:34em;color:var(--soft)}
+  section{padding:clamp(30px,5vw,60px) 0;border-bottom:1px solid var(--line)}
+  .sec-no{font-family:var(--mono);font-size:12px;color:var(--orange);font-weight:700;letter-spacing:.1em}
+  h2{font-family:var(--serif);font-size:clamp(23px,3.6vw,38px);line-height:1.1;margin:.15em 0 .5em}
+  h3{font-size:clamp(17px,2.2vw,21px);margin:1.6em 0 .4em;font-weight:800}
+  p{margin:.6em 0;max-width:42em}
+  code{font-family:var(--mono);font-size:.85em;background:#efe9dc;padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+  strong{font-weight:800}
+  .tbl{width:100%;border-collapse:collapse;margin:1em 0;font-size:13.5px;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl thead th{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+  .tbl tbody tr:last-child td{border-bottom:none}
+  .tbl tbody tr:nth-child(even){background:rgba(231,239,233,.4)}
+  .big{font-family:var(--serif);font-size:clamp(20px,3.2vw,30px);line-height:1.25;margin:.2em 0}
+  .big b{color:var(--teal)}
+  .pos{display:grid;gap:10px;margin:1.2em 0}
+  .pos div{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--teal);border-radius:0 10px 10px 0;padding:12px 16px}
+  .pos div b{font-family:var(--serif);font-size:18px}
+  .pos div.ex{border-left-color:var(--gold)} .pos div.ura{border-left-color:var(--grape)}
+  .pos small{display:block;font-family:var(--mono);font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+
+  /* ecosystem diagram */
+  .stage{border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:12px 0;background:var(--card);box-shadow:0 16px 44px -30px rgba(0,0,0,.5)}
+  .stage.omote{border-top:6px solid var(--sky)}
+  .stage.ura{border-top:6px solid var(--grape)}
+  .stage h4{margin:.1em 0 .2em;font-size:17px}
+  .stage .who{font-family:var(--mono);font-size:11px;color:var(--soft);font-weight:700}
+  .nodes{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .node{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;flex:1;min-width:130px}
+  .node span{display:block;font-weight:500;font-size:11.5px;color:var(--soft);margin-top:2px}
+  .bridge{text-align:center;font-family:var(--mono);font-size:12px;color:var(--orange);font-weight:700;margin:6px 0;letter-spacing:.05em}
+  .flyloop{display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center;margin:1em 0;font-size:13px}
+  .flyloop span{background:var(--card);border:1px solid #bcd8cd;border-radius:999px;padding:6px 12px;font-weight:700;color:var(--teal)}
+  .flyloop i{color:var(--line);font-style:normal;font-size:16px}
+  .ns{display:inline-block;background:var(--teal);color:#fff;font-weight:800;padding:8px 16px;border-radius:999px;font-size:15px}
+
+  .own{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1em 0}
+  .own div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .own div b{display:block;font-size:15px;margin-bottom:3px}
+  .own div p{font-size:13px;margin:.2em 0;color:var(--soft);max-width:none}
+  .own .yt{border-top:4px solid var(--sky)} .own .kn{border-top:4px solid var(--rose)}
+  .own .km{border-top:4px solid var(--grape)} .own .ex{border-top:4px solid var(--gold)}
+
+  .call{border-left:4px solid var(--teal);background:var(--card);padding:14px 18px;border-radius:0 12px 12px 0;margin:1.2em 0}
+  .call.warn{border-color:var(--rose)}
+  .call .tag{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+  .call.warn .tag{color:var(--rose)}
+  pre{background:#1b1a16;color:#f3eedd;padding:16px;border-radius:12px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.55}
+  pre .c{color:#9a9376}
+  .must{display:grid;gap:8px;margin:1em 0}
+  .must div{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .must .n{font-family:var(--serif);font-weight:700;color:var(--teal)}
+  .must .e{font-family:var(--mono);font-size:11px;color:var(--soft);font-weight:700}
+  .must div.cut{opacity:.6;border-style:dashed}
+  .promptbox{background:#16201c;color:#e8f3ec;border-radius:12px;padding:18px;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+  footer{padding:46px 0 80px;color:var(--soft);font-size:13px}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="eyebrow">Village Ecosystem Map · 表(YourTIME)×裏(木幡AI) 連動モデル</div>
+  <h1>すーすーわーわー村の<br>事業地図</h1>
+  <p class="lede">村は <strong>諏訪さんのYourTIME（SOV＝Suwa Oral Village）</strong>。木幡はその上に「絵が動く・ロゴが浮く・ショートが出る」エンジンを載せ、<strong>裏のAIキャラ</strong>で自分の案件につなげる。表と裏が1つの村で連動する地図。</p>
+</div></header>
+
+<!-- 01 anchor -->
+<section><div class="wrap">
+  <div class="sec-no">01 — 帰属（ここを間違えない）</div>
+  <p class="big">村は木幡のものではない。<br><b>村＝YourTIME＝諏訪さんのSOV構想</b>を、小夏さんのキャラで可視化した世界。</p>
+  <table class="tbl">
+    <thead><tr><th>確定事実（一次調査）</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td>イベント</td><td>Your TIME.第8回 / 2026-08-02 / 東京流通センター / 約100ブース / 親子＋専門職 / 有料</td></tr>
+      <tr><td>主催・代表</td><td>Niw研究会・交流会 / 諏訪敬太郎氏（歯科医師）</td></tr>
+      <tr><td>理念・構想</td><td><strong>「未病に抗う」 / SOV＝Suwa Oral Village（健康な人が歯科に通う文化）</strong></td></tr>
+      <tr><td>形式</td><td>職業体験 × 文化祭 ／ 多職種連携・共創</td></tr>
+      <tr><td>出展者</td><td>“からだのプロ”多職種（歯科・衛生士・医師・PT/ST・管理栄養士・保育士…）</td></tr>
+    </tbody>
+  </table>
+  <div class="call warn"><span class="tag">要・三者合意（ここを握らないと崩れる）</span>
+    <p style="margin:.3em 0 0">「すーすーわーわー村＝YourTIMEの公式世界観」という位置づけは<strong>本提案モデル</strong>。<strong>諏訪さん（村＝YourTIME/SOVのオーナー）× 小夏さん（キャラの生みの親）× 木幡（エンジン・裏アカ）</strong>の役割とIPの線を、紙でなくとも口頭で握る。村のメッセージ（未病/SOV）は諏訪さんの理念に従属させ、木幡が勝手に村を私物化しない。</p>
+  </div>
+</div></section>
+
+<!-- 02 positioning -->
+<section><div class="wrap">
+  <div class="sec-no">02 — 3秒で伝わる一言（相手別）</div>
+  <div class="pos">
+    <div><small>来場親子・YourTIMEへ</small><b>「未病を、親子が“遊んで”好きになる村。」</b><br>説教の前に、好きにさせる。</div>
+    <div class="ex"><small>出展者へ</small><b>「あなたの専門を、子どもが駆け寄るキャラにする。」</b><br>遊べる広告＋送客を、無料の1本から。</div>
+    <div class="ura"><small>裏アカ（木幡AI）→ 企業・事業者へ</small><b>「この村、ぜんぶAIで回してます。あなたの会社でも。」</b><br>作り方と企業AI活用を見せて、相談につなぐ。</div>
+  </div>
+</div></section>
+
+<!-- 03 ecosystem -->
+<section><div class="wrap">
+  <div class="sec-no">03 — エコシステム全体図（表×裏）</div>
+
+  <div class="stage omote">
+    <div class="who">表ステージ ｜ オーナー＝YourTIME（諏訪/Niw）・キャラ＝小夏 ・エンジン＝木幡</div>
+    <h4>すーすーわーわー村（YourTIME / SOV）</h4>
+    <div class="nodes">
+      <div class="node">会場ふわふわランド<span>塗った絵がその場で大画面に登場＝歓声</span></div>
+      <div class="node">すわぷよ（option）<span>描いた絵がパズルに出る・保留中</span></div>
+      <div class="node">出展者ロゴ浮遊<span>タップ→ブース/事業のかわいいポップアップ→送客</span></div>
+      <div class="node">事前展開<span>ロゴを事前公開し、みんながスマホで触れる</span></div>
+      <div class="node">SNS表アカ（ススワワ公式）<span>IG/Xでブース紹介・お口の健康ショー配信</span></div>
+    </div>
+    <div class="flyloop">
+      <span>子が塗る</span><i>→</i><span>会場で歓声</span><i>→</i><span>作品が自動でショート化</span><i>→</i><span>出展者タグ＆健康ショー</span><i>→</i><span>送客＆新規来場</span><i>↺</i>
+    </div>
+  </div>
+
+  <div class="bridge">▲ 表で「作れる力」を実演 ／ ▼ 裏で「作り方・AI活用」を発信 ＝ プロセスエコノミーの橋</div>
+
+  <div class="stage ura">
+    <div class="who">裏ステージ ｜ オーナー＝木幡（個人ブランド・裏アカ）</div>
+    <h4>木幡AIキャラ「ススワワ開発室（仮）」</h4>
+    <div class="nodes">
+      <div class="node">裏アカ ショート<span>「これ、どう作ってるの？」舞台裏</span></div>
+      <div class="node">本格動画<span>企業・組織のAI活用の解説</span></div>
+      <div class="node">Note / X 連載<span>設計・運用・ナレッジの言語化</span></div>
+      <div class="node">→ 木幡案件導線<span>AIコンサル / 顧問 / 受託の相談入口</span></div>
+    </div>
+  </div>
+
+  <p style="text-align:center;margin-top:1.4em">North-star（村全体の北極星）＝ <span class="ns">タップ → 出展者送客 数</span></p>
+  <p style="text-align:center;font-size:13px;color:var(--soft)">この1指標が〈製品の効果・出展者の効果レポート・諏訪さんを落とす数字・課金の根拠〉を同時に満たす。</p>
+</div></section>
+
+<!-- 04 ownership -->
+<section><div class="wrap">
+  <div class="sec-no">04 — 誰の何か（座組とIP）</div>
+  <div class="own">
+    <div class="yt"><b>諏訪さん / YourTIME</b><p>村＝SOVのオーナー。理念（未病）。会場・出展者ネットワーク・公式の旗。木幡は“運営裏方パートナー”を狙う。</p></div>
+    <div class="kn"><b>小夏さん（こなっちゃん）</b><p>すーすーわーわーキャラの生みの親。村が広がる＝IP価値・デザイン相談業。利用はYourTIMEならOK（紙未契約・都度相談）。</p></div>
+    <div class="km"><b>木幡</b><p>エンジン（ふわふわランド/ショート量産/計測）＋裏AIアカ。勝ち筋＝AI受託・顧問。村を私物化せず、価値で貢献。</p></div>
+    <div class="ex"><b>出展者（スポンサー枠）</b><p>ロゴ浮遊＋紹介ショートで露出・送客。coralup（もぐぴよ＝口腔育成部長）が1号。効果数字→受託→顧問へ。</p></div>
+  </div>
+</div></section>
+
+<!-- 05 character matrix -->
+<section><div class="wrap">
+  <div class="sec-no">05 — キャラ×市場マトリクス（村を“現金とコンテンツ”に変換）</div>
+  <p>11キャラ＝<strong>11のコンテンツ枠 かつ 11業種の営業ウェッジ</strong>。各キャラに「テーマ／対応出展者(買い手)／シリーズ／収益」の仕事を付与する。</p>
+  <table class="tbl">
+    <thead><tr><th>キャラ（役職）</th><th>テーマ</th><th>対応出展者（買い手）</th><th>コンテンツシリーズ</th><th>収益経路</th></tr></thead>
+    <tbody>
+      <tr><td>わーわー（村長）</td><td>村の顔・司会</td><td>—（全体）</td><td>全ショートのMC</td><td>ブランド中核</td></tr>
+      <tr><td>すーすー（副村長）</td><td>鼻呼吸・論理</td><td>—（全体サポート）</td><td>すーすー豆知識</td><td>ブランド中核</td></tr>
+      <tr><td>もぐぴよ（口腔育成部長）</td><td>口腔育成</td><td>小児歯科（coralup）</td><td>お口で遊ぼう</td><td>顧問</td></tr>
+      <tr><td>けとにゃん（健康文化部長）</td><td>健康・栄養</td><td>管理栄養士/サプリ</td><td>けとにゃん健康ラボ</td><td>顧問</td></tr>
+      <tr><td>ラピ子（未病美容部長）</td><td>未病美容</td><td>美容/エステ</td><td>ラピ子の“ご自愛”</td><td>受託＋顧問</td></tr>
+      <tr><td>シンボー（からだ改革部長）</td><td>呼吸・姿勢</td><td>整体/療法士</td><td>すーすー呼吸部</td><td>顧問</td></tr>
+      <tr><td>わのの（つながり部長）</td><td>つながり・やさしさ</td><td>コミュニティ/福祉</td><td>村のつながり便り</td><td>スポンサー</td></tr>
+      <tr><td>たぬぺい（夢とお金部長）</td><td>お金・教育</td><td>FP/保険</td><td>たぬぺいマネー</td><td>スポンサー</td></tr>
+      <tr><td>炎症/糖化/酸化わーわー（悪役）</td><td>敵＝動機づけ</td><td>全職種共通</td><td>“わーわー討伐”</td><td>全シリーズの燃料</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px;color:var(--soft)">※残りキャラ（すくまる/かむむ/マミュー等）は役割未定。小夏さんと確定して本表に追記＝キャラバイブルの正にする。</p>
+</div></section>
+
+<!-- 06 顧問メニュー -->
+<section><div class="wrap">
+  <div class="sec-no">06 — AI顧問メニュー（専門職クリニック向け・壁打ち叩き）</div>
+  <p>2本柱＝<strong>①ススワワ発信運用 ②事業のAI業務改善（＝木幡本業）</strong>。最初に売らず、感動→効果レポート→単発→月額へ。</p>
+  <table class="tbl">
+    <thead><tr><th>Tier</th><th>月額（叩き）</th><th>含む</th></tr></thead>
+    <tbody>
+      <tr><td>おためし（GIVE）</td><td>¥0〜5万/単発</td><td>ススワワ紹介ショート1本＋効果レポート（入口）</td></tr>
+      <tr><td>発信ライト</td><td>¥5万</td><td>月4本量産＋投稿運用＋月次レポート</td></tr>
+      <tr><td>発信スタンダード</td><td>¥10〜13万</td><td>月8〜12本＋台本企画＋医療広告コンプラ監修＋LINE誘導＋簡易ダッシュボード</td></tr>
+      <tr><td><strong>AI伴走（本命顧問）</strong></td><td>¥20〜35万</td><td>上記＋事業のAI業務改善（予約/問診/会計/顧客対応の自動化）＋月次戦略MTG</td></tr>
+      <tr><td>スポット受託</td><td>都度 数十万</td><td>遊べる広告/参加型装置/イベント演出</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px"><strong>リテンション</strong>＝キャラ資産が積み上がる（やめると蓄積が止まる）／月次レポート＋次の一手提案。<strong>値ごろ</strong>＝自費診療1件(≈10万)でスタンダードの元。規制を分かった上でのキャラ代行＋業務AI化は代替がいない＝価格弾力性が低い。</p>
+</div></section>
+
+<!-- 07 B spec -->
+<section><div class="wrap">
+  <div class="sec-no">07 — 槍B 実装スペック（並行着手用・もぐぴよtap＝汎用枠＋計測）</div>
+  <p>4視点が独立に「最高レバレッジ手」に挙げた核。<strong>1機能で〈連動・計測・マネタイズの証拠〉が同時に立つ。</strong> coralup特例にせず最初から汎用スポンサー枠に。</p>
+  <pre><span class="c"># Supabase: 出展者を「ゲスト出演キャラ」として一般化</span>
+sponsors(
+  id, name, character_img, logo, popup_title, popup_body,
+  cta_url, qr_url, theme, active
+)
+events(
+  id, type, sponsor_id, artwork_id, session_id, ts
+)   <span class="c"># type: artwork_register | appear | tap | popup_open | cta_click</span>
+
+<span class="c"># PixiJS: 世界はPixi / UIはReact、責務分離</span>
+sprite.eventMode = 'static'
+sprite.on('pointertap', () =&gt; { track('tap', sponsorId); openPopupReact(sponsor) })
+<span class="c"># 当たり判定は透過PNGのalphaに合わせる（見た目と判定のズレを世界一は即見抜く）</span>
+
+<span class="c"># 送客は必ずリダイレクト経由で実数化 → 効果レポートの源泉</span>
+cta_url = "/r/coralup?src=fuwafuwa"   <span class="c"># /r/* で cta_click を記録してから外部遷移</span></pre>
+  <div class="call"><span class="tag">UX補正（重要）</span><p style="margin:.3em 0 0">大画面モニターは子も親も<strong>触れない</strong>／スタッフが触るとショーが止まる。→ <strong>送客は「親のスマホ」で完結</strong>：もぐぴよがfeatured時に「coralupブースこっち→」吹き出し＋QR。<strong>事前展開（ロゴを事前公開しスマホで触れる）</strong>はこのタップ面の主戦場になり得る＝会場前から計測が回る。</p></div>
+  <p><strong>north-star＝tap→送客数</strong>を最初の機能から計装。これ無しでは何を作っても「で、効果は数字で？」に答えられない。</p>
+</div></section>
+
+<!-- 08 must ship -->
+<section><div class="wrap">
+  <div class="sec-no">08 — 8/2 must-ship クリティカルパス（ソロ5.5週・全部70%が最大の敵）</div>
+  <div class="must">
+    <div><span class="n">0</span><div><strong>村の事業地図（この1枚）</strong>＝ポジショニング/マトリクス/顧問/計画を確定</div><span class="e">DONE</span></div>
+    <div><span class="n">1</span><div><strong>槍B：もぐぴよtap→popup→送客＋track()</strong>（汎用sponsor枠・redirect計測）</div><span class="e">M</span></div>
+    <div><span class="n">2</span><div><strong>槍A：登場演出シーケンス</strong>（ズーム＋きらめき＋ピロン＋名前＋5秒ハイライトリング）＝感動の本体</div><span class="e">M</span></div>
+    <div><span class="n">3</span><div><strong>coralup GIVE短編1本＋お披露目</strong>（動画は既にある／coralup版＋許諾）</div><span class="e">S</span></div>
+    <div><span class="n">+</span><div><strong>design quick win：fontを丸ゴ1本に差替</strong>（app＋ショート両方／全サーフェスの品質が跳ねる）</div><span class="e">S</span></div>
+    <div class="cut"><span class="n">v2</span><div>塗り絵→自動ショート（UGC自走）／裏アカ連載/FuwafuwaWorld分割/6hソーク/チャネル運用カデンス</div><span class="e">後</span></div>
+  </div>
+  <p style="font-size:13px;color:var(--soft)">原則：感動(槍A)と金の源泉(槍B)を“飾り込み”に押し出さない。事前に諏訪さん（ブース・公式チャネル）とcoralup（出展・許諾）を確認＝律速。</p>
+</div></section>
+
+<!-- 09 image prompt -->
+<section style="border-bottom:none"><div class="wrap">
+  <div class="sec-no">09 — gpt-image-2 用プロンプト（この地図をかわいい1枚絵に）</div>
+  <p>下をそのまま gpt-image-2 に投げる→Canvaで微編集。日本語ラベルOK。</p>
+  <div class="promptbox">かわいいパステル調の俯瞰インフォグラフィック・ポスター（横長16:9）。テーマは「すーすーわーわー村のエコシステム」。
+
+上半分＝明るい晴れた村「すーすーわーわー村（YourTIME / Suwa Oral Village）」。やわらかい水色の空、緑の丘、ふわふわ漂う雲。歯のキャラ（村長わーわー）、双眼鏡の歯（すーすー）、サンゴ頭の白いおばけ（もぐぴよ）、白衣のネコ（けとにゃん）など丸くて可愛い未病テーマのマスコットたち。中央に大きなモニターがあり、子どもが描いた塗り絵がふわふわ動いて出てきて、子どもたちが「わー！」と指さして喜んでいる。空に企業ロゴの吹き出しがいくつか浮き、近くに小さなスマホとQRコードのアイコン（タップで店の説明、の意）。村の周りを丸い矢印のループ（フライホイール）が回る。
+
+下半分＝落ち着いた色の「AI開発室（裏側）」。木幡を表すAIキャラ（やさしいロボット風）がパソコンで動画を作っている。机から「Note」「X」「YouTube」「企業のAI活用」へ矢印が伸びる。上の明るい村と下の開発室を、点線の矢印が上下につなぐ（プロセスエコノミーの橋）。
+
+全体：kawaii日本のマスコット絵本タッチ、太めの輪郭線、角丸、紙のような温かみ、彩度ひかえめのパステル（空色・ティール・クリーム・少しの山吹色）。日本語ラベルを少しだけ（「村＝YourTIME」「タップで送客」「裏：AIで作ってます」）。文字は読みやすく最小限。フラットイラスト、影は柔らかく。</div>
+  <p style="font-size:13px;color:var(--soft)">※実在ロゴや実写は入れない（権利）。キャラは“それっぽい新規”で生成し、本番は小夏さんの実アートに差し替え。</p>
+</div></section>
+
+<footer><div class="wrap">
+  すーすーわーわー村 エコシステム地図 · 2026-06-25 · 表(YourTIME/諏訪)×裏(木幡AI)連動モデル<br>
+  正本: <code>docs/20_business/strategy-2026-06-23.md</code>（10章）／ 出典: YourTIME一次調査・4視点敵対レビュー（PdM/UX/Eng/PMM）の収束。
+</div></footer>
+</body>
+</html>

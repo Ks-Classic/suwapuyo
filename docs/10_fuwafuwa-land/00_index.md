@@ -66,6 +66,9 @@
 | No | ドキュメント | 目的 |
 |---|---|---|
 | 06 | `06_build-bible.md` | **Codex向け実装バイブル。スタック/ファイル木/型/関数/アルゴリズム/受け入れ基準。実装の正** |
+| 07 | `07_sponsor-tap-popup-spec.md` | すーすーtap→動画/メディアポップアップの第1スライス仕様 |
+| 08 | `08_staff-character-content-cms-spec.md` | スタッフ表示キャラ管理・タップコンテンツCMSの仕様 |
+| 09 | `09_exhibitor-report-and-platform-growth-spec.md` | 出展社レポート、SNS/LINE/YouTube接続、将来Cloud Run/Drizzle化の土台 |
 
 > ⚠️ **2026-06-23 以降の正は `05_summary/04_decision-log-and-gate-plan.md`(決定) と `06_build-bible.md`(実装)**。ストレージ(Supabase正本＋IndexedDBキャッシュ)、入力方式(塗り絵台紙＋マーカー/デジタル併用)、氏名表示、B案同期、配信、6hソーク、動画OSSの決定はそこに集約。各番号付き文書は順次これに追従させる。
 >

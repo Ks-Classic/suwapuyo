@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>すーすーわーわー ふわふわランド ｜ つなやす 企画</title>
+<meta name="description" content="出展の価値を、当日だけで終わらせない。子どもが主役の体験を入口に、出展者と来場者が会期前・当日・会期後ずっとつながるYourTIMEのプラットフォーム企画。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --teal:#0f766e; --teal-2:#14b8a6; --teal-soft:#5eead4;
+    --ink:#17324d; --ink-soft:#41618a;
+    --cream:#fbf7ef; --cream-2:#fff;
+    --peach:#ffe5d2; --pink:#ffd9e6; --sun:#ffe7a3; --sky:#d6f3ef;
+    --card:#ffffff; --line:rgba(15,118,110,.16);
+    --shadow:0 18px 50px rgba(15,40,60,.12);
+    --shadow-sm:0 8px 24px rgba(15,40,60,.10);
+    --radius:26px;
+    --maxw:1080px;
+    --serif:'Zen Maru Gothic', system-ui, sans-serif;
+    --sans:'M PLUS Rounded 1c', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans); color:var(--ink); line-height:1.85;
+    background:
+      radial-gradient(1200px 600px at 80% -5%, var(--sky), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, #fff4ea, transparent 55%),
+      var(--cream);
+    overflow-x:hidden;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  h1,h2,h3{font-family:var(--serif);line-height:1.35;letter-spacing:.01em}
+  .eyebrow{
+    display:inline-block;font-family:var(--serif);font-weight:700;font-size:.78rem;
+    letter-spacing:.18em;color:var(--teal);background:var(--sky);
+    padding:7px 16px;border-radius:999px;margin-bottom:22px;
+  }
+  .sec{padding:104px 0;position:relative}
+  .sec h2{font-size:clamp(1.7rem,4.4vw,2.7rem);color:var(--ink);font-weight:900}
+  .sec .lead{font-size:1.06rem;color:var(--ink-soft);max-width:680px;margin-top:16px}
+  .accent{color:var(--teal)}
+  .mark{background:linear-gradient(transparent 62%, var(--sun) 62%);padding:0 .1em}
+
+  /* ---------- floating decorative blobs ---------- */
+  .blob{position:absolute;border-radius:50%;filter:blur(2px);opacity:.5;z-index:0;pointer-events:none}
+
+  /* ---------- HERO ---------- */
+  header.hero{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden}
+  .hero-inner{position:relative;z-index:3;text-align:center;width:100%}
+  .hero .badge{margin-bottom:26px}
+  .hero h1{font-size:clamp(2.3rem,7vw,4.5rem);font-weight:900;color:var(--ink)}
+  .hero h1 .grad{
+    background:linear-gradient(120deg,var(--teal),var(--teal-2) 60%,#22b3a3);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .sub{font-size:clamp(1.1rem,2.6vw,1.5rem);font-weight:700;color:var(--ink);margin-top:22px;font-family:var(--serif)}
+  .hero .tag{font-size:1rem;color:var(--ink-soft);margin-top:16px}
+  .hero .cta-row{margin-top:38px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .btn{
+    font-family:var(--serif);font-weight:700;font-size:.98rem;border:none;cursor:pointer;
+    padding:15px 30px;border-radius:999px;text-decoration:none;display:inline-block;transition:.25s;
+  }
+  .btn.primary{background:var(--teal);color:#fff;box-shadow:0 10px 26px rgba(15,118,110,.35)}
+  .btn.primary:hover{transform:translateY(-3px);background:#0c6259}
+  .btn.ghost{background:#fff;color:var(--teal);box-shadow:var(--shadow-sm)}
+  .btn.ghost:hover{transform:translateY(-3px)}
+
+  .hero-char{position:absolute;z-index:2;width:clamp(78px,11vw,150px);pointer-events:none;
+    filter:drop-shadow(0 14px 20px rgba(15,40,60,.18))}
+  .hero-char img{width:100%;height:auto;display:block}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-26px) rotate(calc(var(--r,0deg) * -1))}}
+  .float{animation:floaty var(--d,7s) ease-in-out infinite;animation-delay:var(--dl,0s)}
+
+  .scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:4;color:var(--teal);font-size:.8rem;font-family:var(--serif);font-weight:700;text-align:center}
+  .scrollcue .dot{width:26px;height:42px;border:2px solid var(--teal);border-radius:14px;margin:0 auto 8px;position:relative}
+  .scrollcue .dot::after{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--teal);animation:cue 1.5s infinite}
+  @keyframes cue{0%{opacity:0;top:7px}40%{opacity:1}100%{opacity:0;top:22px}}
+
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid;gap:20px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px 26px;box-shadow:var(--shadow-sm);transition:.3s}
+  .card:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+  .card .ico{font-size:2rem;margin-bottom:12px}
+  .card h3{font-size:1.18rem;color:var(--ink);margin-bottom:8px;font-weight:700}
+  .card p{font-size:.96rem;color:var(--ink-soft)}
+  .num{font-family:var(--serif);font-weight:900;font-size:1.05rem;color:#fff;background:var(--teal);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;margin-bottom:14px}
+
+  .band{background:linear-gradient(180deg,#fff,#f4fbf9);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .band-teal{background:linear-gradient(160deg,#0f766e,#0b5e57);color:#fff}
+  .band-teal h2,.band-teal .lead{color:#fff}
+  .band-teal .lead{color:#cdeee9}
+
+  /* ---------- interactive demo ---------- */
+  .stage{position:relative;background:linear-gradient(180deg,#eafaf7,#d3f1ec);border-radius:var(--radius);
+    min-height:330px;display:flex;align-items:center;justify-content:center;gap:min(6vw,60px);flex-wrap:wrap;
+    padding:42px 24px;overflow:hidden;border:1px solid var(--line)}
+  .stage .hint{position:absolute;top:16px;left:0;right:0;text-align:center;font-family:var(--serif);font-weight:700;color:var(--teal);font-size:.9rem}
+  .tapchar{width:clamp(92px,13vw,140px);cursor:pointer;background:none;border:none;transition:transform .25s;position:relative}
+  .tapchar img{width:100%;filter:drop-shadow(0 12px 16px rgba(15,40,60,.18));animation:floaty 6s ease-in-out infinite}
+  .tapchar:hover{transform:scale(1.07)}
+  .tapchar .ring{position:absolute;inset:-6px;border:2px dashed var(--teal);border-radius:50%;opacity:.0;animation:spin 9s linear infinite}
+  .tapchar:hover .ring{opacity:.5}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .tapchar .lbl{display:block;font-family:var(--serif);font-weight:700;font-size:.8rem;color:var(--teal);margin-top:6px}
+
+  .popup-mask{position:fixed;inset:0;background:rgba(16,24,40,.5);display:none;place-items:center;z-index:50;padding:20px}
+  .popup-mask.show{display:grid}
+  .popup{background:#fff;border-radius:24px;max-width:380px;width:100%;box-shadow:var(--shadow);overflow:hidden;animation:pop .35s cubic-bezier(.2,.9,.3,1.2);position:relative}
+  @keyframes pop{from{transform:scale(.85) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+  .popup .pophead{background:linear-gradient(160deg,#eafaf7,#d3f1ec);padding:26px;text-align:center}
+  .popup .pophead img{width:120px;filter:drop-shadow(0 10px 14px rgba(15,40,60,.2))}
+  .popup .popbody{padding:24px 26px 28px}
+  .popup .popbody h3{color:var(--ink);font-size:1.25rem;margin-bottom:6px}
+  .popup .popbody .role{color:var(--teal);font-weight:700;font-size:.86rem;margin-bottom:12px;font-family:var(--serif)}
+  .popup .popbody p{font-size:.92rem;color:var(--ink-soft);margin-bottom:18px}
+  .popup .popcta{display:flex;gap:10px;flex-wrap:wrap}
+  .popup .popcta a{flex:1;text-align:center;background:var(--teal);color:#fff;border-radius:999px;padding:11px;font-family:var(--serif);font-weight:700;text-decoration:none;font-size:.86rem}
+  .popup .popcta a.alt{background:#fff;color:var(--teal);box-shadow:inset 0 0 0 2px var(--teal)}
+  .popclose{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.85);cursor:pointer;font-size:1.1rem;color:var(--ink);z-index:2}
+
+  /* ---------- village vision ---------- */
+  .vision-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:30px}
+  .clinic{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:18px;padding:16px 18px;text-align:center;min-width:120px;backdrop-filter:blur(4px)}
+  .clinic .e{font-size:1.6rem}
+  .clinic .n{font-size:.82rem;color:#dff4f0;margin-top:4px}
+  .link-line{height:2px;width:34px;background:repeating-linear-gradient(90deg,var(--teal-soft),var(--teal-soft) 6px,transparent 6px,transparent 12px);align-self:center}
+  .phase{display:grid;grid-template-columns:auto 1fr;gap:18px 20px;margin-top:30px}
+  .phase .p{font-family:var(--serif);font-weight:900;color:#fff;background:rgba(255,255,255,.18);border-radius:14px;padding:10px 16px;height:fit-content;white-space:nowrap}
+  .phase .pt{align-self:center}
+  .phase .pt b{color:#fff}.phase .pt span{color:#bfe9e3}
+
+  /* ---------- gallery ---------- */
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:14px;margin-top:30px}
+  .villager{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px 8px;text-align:center;transition:.25s}
+  .villager:hover{transform:translateY(-6px) rotate(-2deg);box-shadow:var(--shadow-sm)}
+  .villager img{width:74px;height:74px;object-fit:contain}
+  .villager:hover img{animation:floaty 2.2s ease-in-out infinite}
+  .villager .vn{font-family:var(--serif);font-weight:700;font-size:.76rem;color:var(--ink);margin-top:6px}
+
+  /* ---------- principles ---------- */
+  .pri{display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 24px;box-shadow:var(--shadow-sm)}
+  .pri .k{font-size:1.7rem;line-height:1}
+  .pri h3{font-size:1.06rem;color:var(--ink);margin-bottom:4px}
+  .pri p{font-size:.92rem;color:var(--ink-soft)}
+
+  /* ---------- founders ---------- */
+  .founders{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:10px}
+  .founder{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow-sm)}
+  .founder .role{font-family:var(--serif);font-weight:900;color:var(--teal);font-size:1.3rem}
+  .founder .who{color:var(--ink);font-weight:700;margin:4px 0 10px}
+  .founder p{font-size:.94rem;color:var(--ink-soft)}
+  .meta-note{margin-top:34px;background:linear-gradient(160deg,#fff7ed,#ffe9d6);border:1px dashed #f0a868;border-radius:var(--radius);padding:30px;text-align:center}
+  .meta-note h3{color:#b4541a;font-size:1.3rem;margin-bottom:8px}
+  .meta-note p{color:#8a4a1e;font-size:1rem}
+
+  /* ---------- ask / cta ---------- */
+  .ask{display:grid;gap:14px;margin-top:28px}
+  .ask .item{display:flex;gap:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:18px 22px}
+  .ask .item .n{font-family:var(--serif);font-weight:900;color:#fff;background:rgba(255,255,255,.2);min-width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+  .ask .item p{color:#eafaf7;font-size:.98rem}
+
+  footer{padding:60px 0 80px;text-align:center;color:var(--ink-soft)}
+  footer .logo{font-family:var(--serif);font-weight:900;font-size:1.5rem;color:var(--teal)}
+  footer .small{font-size:.82rem;margin-top:10px;opacity:.7}
+
+  @media(max-width:780px){
+    .g3,.g4,.g2,.founders{grid-template-columns:1fr}
+    .sec{padding:74px 0}
+    .hero-char{display:none}
+    .phase{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ====================== HERO ====================== -->
+<header class="hero">
+  <div class="blob" style="width:280px;height:280px;background:var(--pink);top:8%;left:-60px"></div>
+  <div class="blob" style="width:220px;height:220px;background:var(--sun);bottom:6%;right:-40px"></div>
+  <div class="blob" style="width:180px;height:180px;background:var(--sky);bottom:30%;left:12%"></div>
+
+  <div class="hero-char float" style="--d:7s;--r:6deg;top:14%;left:8%"><img src="./assets/suusuu.png" alt="すーすー" /></div>
+  <div class="hero-char float" style="--d:8.5s;--dl:.6s;--r:-8deg;top:20%;right:9%"><img src="./assets/tenpiyo.png" alt="てんぴよ" /></div>
+  <div class="hero-char float" style="--d:6.5s;--dl:.3s;--r:5deg;bottom:16%;left:13%"><img src="./assets/mogupiyo.png" alt="もぐぴよ" /></div>
+  <div class="hero-char float" style="--d:9s;--dl:1s;--r:-6deg;bottom:14%;right:13%"><img src="./assets/ketonyan.png" alt="けとにゃん" /></div>
+  <div class="hero-char float" style="--d:7.8s;--dl:.4s;--r:9deg;top:44%;left:2%"><img src="./assets/hagurin.png" alt="はぐりん" /></div>
+  <div class="hero-char float" style="--d:8.2s;--dl:.8s;--r:-5deg;top:46%;right:3%"><img src="./assets/rapiko.png" alt="ラピ子" /></div>
+
+  <div class="wrap hero-inner">
+    <span class="eyebrow badge">YourTIME.8th ｜ 2026.08.02 ｜ 持ち込み企画</span>
+    <h1>すーすーわーわー<br /><span class="grad">ふわふわランド</span></h1>
+    <p class="sub">出展の価値を、<span class="mark">当日だけ</span>で終わらせない。</p>
+    <p class="tag">子どもが主役の体験を入口に、出展者と来場者が<br />会期前・当日・会期後ずっとつながる、YourTIMEのプラットフォーム。</p>
+    <div class="cta-row">
+      <a href="#what" class="btn primary">企画を見る</a>
+      <a href="#village" class="btn ghost">この先のビジョン</a>
+    </div>
+  </div>
+  <a href="#why" class="scrollcue"><span class="dot"></span>SCROLL</a>
+</header>
+
+<!-- ====================== WHY ====================== -->
+<section class="sec" id="why">
+  <div class="wrap">
+    <span class="eyebrow reveal">なぜ、いま</span>
+    <h2 class="reveal">いまYourTIMEが抱えている、<br />3つの「もったいない」。</h2>
+    <p class="lead reveal d1">この企画は、スースワワーの世界観のまま、この3つを同時に解きます。</p>
+    <div class="grid g3" style="margin-top:46px">
+      <div class="card reveal d1"><div class="ico">🗓️</div><h3>出展者は当日だけ</h3><p>お金を払って出展するのに、来場者とつながれるのは当日その場のワンチャンスだけ。次につながらない。</p></div>
+      <div class="card reveal d2"><div class="ico">🤝</div><h3>運営はボランティアで疲弊</h3><p>前日の朝までの作業も。善意だけで回り続けるのは限界。そろそろ「お金の動き」がないと続かない。</p></div>
+      <div class="card reveal d3"><div class="ico">🌿</div><h3>露骨な広告は世界観に合わない</h3><p>「未病を遊びに、遊びを文化に」。押し売りの広告は、YourTIMEの空気と相性が悪い。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== WHAT ====================== -->
+<section class="sec band" id="what">
+  <div class="wrap">
+    <span class="eyebrow reveal">なにを</span>
+    <h2 class="reveal">遊びの中に、出会いと健康を。<br />やることは、3つ。</h2>
+    <div class="grid g3" style="margin-top:46px">
+      <div class="card reveal d1"><div class="num">1</div><h3>子どもブース</h3><p>タブレットに手描き → その絵がスースワワー村に登場。「自分の絵が出た！」の感動が、すべての入口。</p></div>
+      <div class="card reveal d2"><div class="num">2</div><h3>当日アプリ（タップ送客）</h3><p>会場のキャラ・ロゴをタップ → ブース紹介・地図・スタンプラリー。来場者が遊びながら出展者を発見。</p></div>
+      <div class="card reveal d3"><div class="num">3</div><h3>会期前後の発信</h3><p>スースワワー達が、出展者を会期前から会期後まで“丁寧にご紹介”。広告ではなく、コンテンツとして。</p></div>
+    </div>
+
+    <p class="lead reveal" style="margin-top:54px;text-align:center;margin-left:auto;margin-right:auto">▼ 実際の「タップ→紹介」、触ってみてください。</p>
+    <div class="stage reveal d1" style="margin-top:18px">
+      <span class="hint">キャラをタップ 👆</span>
+      <button class="tapchar" data-char="mogupiyo" data-name="もぐぴよ" data-role="cOral up ブース" data-body="小児口腔育成のプロ。子どもが歯医者を“こわい場所”じゃなく“通いたい場所”に。ブースで実際に体験できます。">
+        <span class="ring"></span><img src="./assets/mogupiyo.png" alt="もぐぴよ" /><span class="lbl">もぐぴよ</span>
+      </button>
+      <button class="tapchar" data-char="haisha-gorisan" data-name="歯医者のごりさん" data-role="かかりつけ歯科ブース" data-body="痛くなる前に通う文化を。未病から予防、そして治療まで。村のかかりつけ、ごりさんに会いに行こう。">
+        <span class="ring"></span><img src="./assets/haisha-gorisan.png" alt="歯医者のごりさん" /><span class="lbl">ごりさん</span>
+      </button>
+      <button class="tapchar" data-char="emahime" data-name="えまひめ" data-role="助産・子育てブース" data-body="お母さんと赤ちゃんの最初の一歩を、やさしく。授乳・呼吸・姿勢…村の助産師チームがそばに。">
+        <span class="ring"></span><img src="./assets/emahime.png" alt="えまひめ" /><span class="lbl">えまひめ</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== WHO BENEFITS ====================== -->
+<section class="sec" id="who">
+  <div class="wrap">
+    <span class="eyebrow reveal">だれが得するか</span>
+    <h2 class="reveal">関わる人、全員がハッピーになる設計。</h2>
+    <div class="grid g4" style="margin-top:46px">
+      <div class="card reveal d1"><div class="ico">🧒</div><h3>子ども・保護者</h3><p>自分の絵が世界に出る感動。遊びの中に、さりげない健康の入口。</p></div>
+      <div class="card reveal d2"><div class="ico">🏥</div><h3>出展者の先生</h3><p>出展の価値が当日で終わらない。事前集客→当日送客→後日フォロー。</p></div>
+      <div class="card reveal d3"><div class="ico">🏘️</div><h3>YourTIME・運営</h3><p>出展者が払う理由ができ、収益が運営に落ちる＝みんなが報われる。</p></div>
+      <div class="card reveal d4"><div class="ico">🎨</div><h3>つくり手</h3><p>「これ作ったの誰？」から、デザイン／AIのお仕事につながる。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== PRINCIPLES ====================== -->
+<section class="sec band" id="principles">
+  <div class="wrap">
+    <span class="eyebrow reveal">ぶらさないこと</span>
+    <h2 class="reveal">ここだけは、絶対に守る。</h2>
+    <div class="grid g2" style="margin-top:40px">
+      <div class="pri reveal d1"><div class="k">⭐</div><div><h3>子どもの体験が、主役。</h3><p>広告や送客は、子どもの感動の“上”に乗る。割り込まない。</p></div></div>
+      <div class="pri reveal d2"><div class="k">👆</div><div><h3>PUSHではなく、PULL。</h3><p>タップして初めて開く。通知爆撃はしない。</p></div></div>
+      <div class="pri reveal d1"><div class="k">📖</div><div><h3>「広告枠」と呼ばない。</h3><p>出展者を“主役にする紹介コンテンツ”として作る。</p></div></div>
+      <div class="pri reveal d2"><div class="k">🩺</div><div><h3>医療内容は、先生が監修。</h3><p>薬機法・医療広告に配慮。PR表記も明示。安心して任せられる見せ方を担保。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== VILLAGE VISION ====================== -->
+<section class="sec band-teal" id="village">
+  <div class="blob" style="width:240px;height:240px;background:rgba(94,234,212,.25);top:-40px;right:6%"></div>
+  <div class="wrap" style="position:relative;z-index:2">
+    <span class="eyebrow reveal" style="background:rgba(255,255,255,.16);color:#fff">この先に見ている景色</span>
+    <h2 class="reveal">8/2は、村の<span class="mark" style="background:linear-gradient(transparent 62%, rgba(255,231,163,.55) 62%)">最初の1日</span>。</h2>
+    <p class="lead reveal d1">医院を「治療しに行く場所」から、「何もなくても遊びに行ける場所」へ。<br />出展者も来場者も、スースワワー村の<b style="color:#fff">村民</b>として末永くつながる。</p>
+
+    <div class="vision-row reveal d2">
+      <div class="clinic"><div class="e">🦷</div><div class="n">歯科</div></div>
+      <span class="link-line"></span>
+      <div class="clinic"><div class="e">🤱</div><div class="n">助産</div></div>
+      <span class="link-line"></span>
+      <div class="clinic"><div class="e">🧘</div><div class="n">理学療法</div></div>
+      <span class="link-line"></span>
+      <div class="clinic"><div class="e">🥗</div><div class="n">栄養</div></div>
+      <span class="link-line"></span>
+      <div class="clinic"><div class="e">🗣️</div><div class="n">言語聴覚</div></div>
+    </div>
+    <p class="lead reveal d2" style="text-align:center;margin:22px auto 0">医療業界の<b style="color:#fff">“縦割り”を、横でつなぐ。</b><br />各医院を<b style="color:#fff">認定店（村の出張所）</b>に。単発のイベントを、全国の持続するネットワークへ。</p>
+
+    <div class="phase reveal d1" style="max-width:760px;margin-left:auto;margin-right:auto">
+      <div class="p">Phase 0</div><div class="pt"><b>〜8/2</b> <span>｜ 子どもの熱狂を本物に＋1社で送客を実証。村の最初の1日。</span></div>
+      <div class="p">Phase 1</div><div class="pt"><b>8月〜</b> <span>｜ 送客実数を可視化し、出展者プラットフォームへ。</span></div>
+      <div class="p">Phase 2</div><div class="pt"><b>その先</b> <span>｜ 認定店／村民登録で、全国へ。日本中が一つの「未病の村」に。</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== VILLAGERS ====================== -->
+<section class="sec" id="villagers">
+  <div class="wrap">
+    <span class="eyebrow reveal">村には、もう仲間がいる</span>
+    <h2 class="reveal">スースワワー村の、村民たち。</h2>
+    <p class="lead reveal d1">一体ずつ意味を込めて生まれたキャラクター。この子たちが、村を案内します。</p>
+    <div class="gallery reveal d1" id="gallery"></div>
+  </div>
+</section>
+
+<!-- ====================== HOW / FOUNDERS ====================== -->
+<section class="sec band" id="who-makes">
+  <div class="wrap">
+    <span class="eyebrow reveal">誰がやるか</span>
+    <h2 class="reveal">チーム<span class="accent">つなやす</span>。</h2>
+    <p class="lead reveal d1">AIとデザイン、2人1組。「これ作ったの誰？」に、ちゃんと名前で答えられるチーム。</p>
+    <div class="founders reveal d1" style="margin-top:30px">
+      <div class="founder"><div class="role">こなっちゃん</div><div class="who">デザイン／スースワワーの生みの親</div><p>キャラクターと世界観を可視化。村に命を吹き込む人。ポスター・チラシ・ブランディングまで。</p></div>
+      <div class="founder"><div class="role">木幡（やす）</div><div class="who">AI開発／マーケティング</div><p>アプリ・ショート動画・送客の仕組み・発信戦略。動くものを、速く、作って見せる人。</p></div>
+    </div>
+
+    <div class="meta-note reveal d1">
+      <h3>…ところで。このサイト自体、つなやすが作りました。</h3>
+      <p>キャラが動いて、タップで開いて、スクロールで物語が進む——<br />こういうの、あなたの医院やサービスでも、作りたくないですか？</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== ASK / CTA ====================== -->
+<section class="sec band-teal" id="ask">
+  <div class="wrap" style="position:relative;z-index:2">
+    <span class="eyebrow reveal" style="background:rgba(255,255,255,.16);color:#fff">6/30 にお願いしたいこと</span>
+    <h2 class="reveal">数字は後でOK。まず“方針”だけ、握らせてください。</h2>
+    <div class="ask reveal d1" style="max-width:760px">
+      <div class="item"><span class="n">1</span><p>スースワワーのキャラを、アプリ・動画・発信で使ってよいか（二次利用の方針）。</p></div>
+      <div class="item"><span class="n">2</span><p>出展者紹介の医療内容を、出展者本人＋諏訪さんに監修いただけるか。</p></div>
+      <div class="item"><span class="n">3</span><p>プラットフォーム収入を、YourTIME（諏訪さん）も含めてどう分けるかの大枠。</p></div>
+      <div class="item"><span class="n">4</span><p>cOral up（通算）でデモを作る許可。</p></div>
+    </div>
+    <p class="lead reveal d2" style="margin-top:30px;color:#eafaf7">当日のデモ（タップ→紹介が動く実物）を、その場でお見せします。<br /><b style="color:#fff">ボツでも全然OKの精神で、持ち込みます。</b></p>
+  </div>
+</section>
+
+<footer>
+  <div class="logo">つなやす</div>
+  <div>すーすーわーわー ふわふわランド ／ YourTIME.8th 持ち込み企画</div>
+  <div class="small">© Oral Village ／ スースワワーのキャラクター・世界観は諏訪さん・こなっちゃんに帰属します。<br />これは社内検討用の叩き台です（2026-06-25）。</div>
+</footer>
+
+<!-- popup -->
+<div class="popup-mask" id="mask">
+  <div class="popup" id="popup">
+    <button class="popclose" id="popclose" aria-label="閉じる">✕</button>
+    <div class="pophead"><img id="pop-img" src="" alt="" /></div>
+    <div class="popbody">
+      <h3 id="pop-name"></h3>
+      <div class="role" id="pop-role"></div>
+      <p id="pop-body"></p>
+      <div class="popcta">
+        <a href="#" onclick="return false">ブースを見る</a>
+        <a href="#" class="alt" onclick="return false">地図 📍</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- villagers data ----
+  const VILLAGERS = [
+    ["suusuu","すーすー"],["waawaa","わーわー"],["tanupei","たぬぺい"],["wanono","わのの"],
+    ["shinbo","シンボー"],["ketonyan","けとにゃん"],["mogupiyo","もぐぴよ"],["chippippi","チッピッピ"],
+    ["sanka","酸化"],["touka","糖化"],["enshou","炎症"],["rapiko","ラピ子"],
+    ["emahime","えまひめ"],["hagurin","はぐりん"],["mieru","ミエル"],["tenpiyo","てんぴよ"],
+    ["kamumu","かむむ"],["sukusuke","すくすけ"],["sukumaru","すくまる"],["seiucchi","セイウッチー"],
+    ["mamyu","マミュー"],["haisha-gorisan","ごりさん"]
+  ];
+  const gal = document.getElementById("gallery");
+  VILLAGERS.forEach(([f,n])=>{
+    const d=document.createElement("div");
+    d.className="villager";
+    d.innerHTML=`<img src="./assets/${f}.png" alt="${n}" loading="lazy"/><div class="vn">${n}</div>`;
+    gal.appendChild(d);
+  });
+
+  // ---- reveal on scroll ----
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+  },{threshold:.14});
+  document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+  // ---- tap demo popup ----
+  const mask=document.getElementById("mask");
+  function openPop(b){
+    document.getElementById("pop-img").src=`./assets/${b.dataset.char}.png`;
+    document.getElementById("pop-name").textContent=b.dataset.name;
+    document.getElementById("pop-role").textContent=b.dataset.role;
+    document.getElementById("pop-body").textContent=b.dataset.body;
+    mask.classList.add("show");
+  }
+  document.querySelectorAll(".tapchar").forEach(b=>b.addEventListener("click",()=>openPop(b)));
+  function closePop(){mask.classList.remove("show");}
+  document.getElementById("popclose").addEventListener("click",closePop);
+  mask.addEventListener("click",(e)=>{if(e.target===mask)closePop();});
+  document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closePop();});
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+# YourTIME Shorts Content Agent Spec
+
+## Objective
+
+親子・健康関心層・医療従事者が混ざるYourTIME来場者に向けて、つい見てしまうがスマホ依存を煽らず、見たあとに口や体を動かしたくなる30-60秒ショートを継続量産する。
+
+## Evidence Notes
+
+- YouTube公式はShortsをスマホだけで作れて、字幕や音、短い縦型表現で視聴者とつながる形式として説明している。Shortsと長尺の併用は全体の視聴時間や登録成長に寄与し得る。
+- 研究ではShortsは娯楽カテゴリで強く、教育カテゴリでは娯楽ほど伸びにくい傾向がある。したがって健康教育は「情報」だけではなく、喜び・キャラ・小さな驚きで包む。
+- CDC Clear Communication Indexは、主メッセージ、行動への呼びかけ、日常語、具体的指示、リスクと便益の明確化を重視する。
+- CDCの包括的コミュニケーション原則は、対象者の文化・状況に合わせ、責めない言葉で伝えることを重視する。
+
+Sources:
+
+- YouTube Creators: `https://www.youtube.com/creators/shorts/`
+- Shorts comparative research: `https://arxiv.org/abs/2403.00454`
+- CDC Clear Communication Index: `https://www.cdc.gov/ccindex/index.html`
+- CDC Inclusive Communication: `https://www.cdc.gov/health-communication/php/toolkit/index.html`
+
+## Audience Segments
+
+| Segment | 説明 | 刺さる入口 | 避けること |
+|---|---|---|---|
+| `general_discomfort` | なんとなく不調がある人 | 「それ、気のせいじゃなく体のサインかも」 | 不安を煽る、病名で決めつける |
+| `health_literacy` | 正しく健康を知りたい人 | 「今日から使える見分け方」 | 専門語だけで終わる |
+| `family_health` | 親子で楽しく健康になりたい人 | 「一緒に10秒やってみよう」 | 親を責める、子どもを怖がらせる |
+| `medical_worker` | 医療従事者・支援者・出展者 | 「伝え方のヒント」「会場での声かけ」 | 一般向け回に専門家内輪ノリを入れる |
+
+## Episode Schema
+
+```json
+{
+  "targetAudience": {
+    "primary": "family_health",
+    "secondary": "health_literacy"
+  },
+  "viewerState": "親子で楽しい健康習慣を探している",
+  "theme": "口腔育成: ほっぺ・舌・笑顔",
+  "behaviorGoal": "視聴後に親子で10秒の口たいそうをする",
+  "cognitiveHook": "見たらすぐ真似できる小さな運動",
+  "marketingPhilosophy": "YourTIMEは、知識を押しつけず体験から次のケアにつなげる場",
+  "freshnessLever": ["titleStyle", "characterPair", "microAnimation", "unexpectedObject"],
+  "healthGuardrail": "診断しない。小さな気づきと相談のきっかけにする。"
+}
+```
+
+## Hook System
+
+毎回固定パターンにはしない。下記から2-3個を組み合わせる。
+
+- `pattern_interrupt`: 普通の朝に少し変な物が出る。
+- `curiosity_gap`: 「これ、実はお口のサインかも」と先を見たくする。
+- `self_relevance`: 「親子で」「今日から」「10秒だけ」と自分ごと化する。
+- `tiny_commitment`: すぐできる小行動を提示する。
+- `emotion_shift`: 不安から安心、混乱から納得へ動かす。
+- `social_proof_soft`: 「会場でもみんなでやってみる」と場の空気を使う。
+- `reward_prediction`: 最後にかわいい動き・音・達成感が来ると予告する。
+
+## Episode Rhythm
+
+30-60秒の標準構成:
+
+1. 0-3秒: `おはようございます！`
+2. 3-7秒: `今日のふわふわランドの天気は、、、`
+3. 7-10秒: `{天気}です！` + その日の小さな違和感
+4. 10-18秒: テーマ提示
+5. 18-38秒: キャラ会話で納得と行動をつくる
+6. 38-52秒: 親子/来場者ができる小行動
+7. 52-60秒: YourTIMEの意味とCTA
+
+## Character Consistency
+
+- `waawaa`: 冒険・勢い・村長。話を前に進める。
+- `suusuu`: 整理・観察・安心。難しい話を短く整える。
+- `mogupiyo`: 口腔育成の実践担当。親子の体験へ落とす。
+- `ketonyan`: 健康知識の先生。専門語を日常語へ言い換える。
+- `rapiko`: 未病美容と自愛。責めずにケアへ戻す。
+- `wanono`: つながり。YourTIMEの哲学を担当する。
+- `shinbo`: 姿勢・体の分析。少し変なたとえで笑わせる。
+- `enshouWaawaa`: 炎症の気づき。あわてるが清潔へ着地。
+- `toukaWaawaa`: 糖化・血糖。小さい選択を促す。
+- `sankaWaawaa`: 酸化・口呼吸。鼻呼吸へ戻す。
+
+## Quality Gate
+
+生成前に全項目を満たす。
+
+- 主ターゲットが1つに定義されている。
+- 冒頭3行が固定ルールに合っている。
+- 尺が30-60秒。
+- 健康行動が1つだけ明確。
+- YourTIMEの価値が1文入っている。
+- キャラの口調が台帳と矛盾しない。
+- タイトルが上部1:1安全範囲に収まる。
+- 視聴後にスマホではなく体験/会話/体の動きへ誘導している。

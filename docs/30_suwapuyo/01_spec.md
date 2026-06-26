@@ -35,10 +35,10 @@
 
 | ID | 表示名 | 見た目 | テーマカラー | スプライトパス |
 |---|---|---|---|---|
-| `ghost` | **わのの** | 原子マーク付きゴースト | `#C8E6F0`（アイスブルー） | `/assets/sprites/ghost/idle.png` |
-| `tooth` | **わーわー** | 笑っている歯のキャラ | `#FFF5E0`（クリーム） | `/assets/sprites/tooth/idle.png` |
-| `blob` | **すーすー** | おしゃぶりしたゴースト | `#E8E8F0`（ラベンダーグレー） | `/assets/sprites/blob/idle.png` |
-| `tanuki` | **たぬぺい** | ネクタイ着用のタヌキ | `#B08860`（タン） | `/assets/sprites/tanuki/idle.png` |
+| `ghost` | **わのの** | 原子マーク付きゴースト | `#C8E6F0`（アイスブルー） | `/content/fuwafuwa-land/sprites/ghost/idle.png` |
+| `tooth` | **わーわー** | 笑っている歯のキャラ | `#FFF5E0`（クリーム） | `/content/fuwafuwa-land/sprites/tooth/idle.png` |
+| `blob` | **すーすー** | おしゃぶりしたゴースト | `#E8E8F0`（ラベンダーグレー） | `/content/fuwafuwa-land/sprites/blob/idle.png` |
+| `tanuki` | **たぬぺい** | ネクタイ着用のタヌキ | `#B08860`（タン） | `/content/fuwafuwa-land/sprites/tanuki/idle.png` |
 
 ### 2.2 キャラクター別ゲーム設定
 
@@ -309,14 +309,18 @@ Layer 4: レジドロワー - triangle波 200→80Hz (0.2s)
 ```
 suwapuyo/
 ├── public/
-│   ├── assets/
-│   │   ├── sprites/          # キャラクタースプライト（PNG）
-│   │   │   ├── ghost/idle.png
-│   │   │   ├── tooth/idle.png
-│   │   │   ├── blob/idle.png
-│   │   │   └── tanuki/idle.png
-│   │   └── ui/
-│   │       └── village_bg.png  # 村背景画像
+│   ├── content/              # コンテンツ資産の正本
+│   │   ├── fuwafuwa-land/
+│   │   │   ├── audio/
+│   │   │   ├── backgrounds/
+│   │   │   ├── characters/
+│   │   │   │   ├── originals/ # 原本画像
+│   │   │   │   └── display/   # アプリ表示用派生
+│   │   │   └── sprites/       # ゲーム用スプライト
+│   │   ├── shorts-studio/
+│   │   │   └── drafts/        # 未確定の動画/提案素材
+│   │   └── yourtime-platform/
+│   │       └── videos/
 │   └── favicon.png
 ├── src/
 │   ├── main.tsx              # エントリーポイント
@@ -342,8 +346,9 @@ suwapuyo/
 ├── tsconfig.json
 ├── package.json
 ├── vercel.json               # Vercel設定（SPA リライト）
-├── SPEC.md                   # ← この仕様書
-├── TODO.md                   # 実装TODO
+├── docs/30_suwapuyo/01_spec.md
+├── docs/30_suwapuyo/02_todo.md
+├── docs/30_suwapuyo/content-management/
 └── .gitignore
 ```
 
