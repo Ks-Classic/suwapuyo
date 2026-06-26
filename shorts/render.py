@@ -636,26 +636,73 @@ def draw_title(canvas, text, font_path, base_size, cx, cy, style):
     canvas.alpha_composite(tmp, (int(cx - tmp.width / 2), int(cy - tmp.height / 2)))
     return canvas
 
+# 字幕の改行ルール（読みやすさ最優先）: 改行はスペース＆句読点だけ（語中で切らない）・均等2行
+_BREAK_AFTER = "、。！？・…"
+_NO_START = "、。！？・…ー）」』】，."                  # これらで行を始めない
+
+def _segments(text):
+    """[chunk, sep] のリスト。sep=後ろの区切り（スペースは ' '、句読点区切りは ''）。行内ではsepを残す。"""
+    segs, cur = [], ""
+    for i, ch in enumerate(text):
+        if ch in "　 ":                                  # スペース＝区切り（行内では維持・改行点では落とす）
+            if cur:
+                segs.append([cur, " "]); cur = ""
+            continue
+        cur += ch
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+        if ch in _BREAK_AFTER and nxt not in _NO_START and nxt not in "　 ":
+            segs.append([cur, ""]); cur = ""
+    if cur:
+        segs.append([cur, ""])
+    return segs
+
+def _join(segs):
+    return "".join(c + s for c, s in segs).rstrip()    # 行末のスペースは落とす
+
 def wrap_text(draw, text, font, max_width):
     if text == "今日のふわふわランドの天気は、、、":
         return ["今日のふわふわランドの", "天気は、、、"]
-    lines, cur = [], ""
-    for ch in text:
-        trial = cur + ch
-        tb = draw.textbbox((0, 0), trial, font=font)
-        if cur and tb[2] - tb[0] > max_width:
-            lines.append(cur)
-            cur = ch
+    def w(s):
+        b = draw.textbbox((0, 0), s, font=font); return b[2] - b[0]
+    segs = _segments(text)
+    full = _join(segs)
+    if w(full) <= max_width:
+        return [full]
+    # まず「均等な2行」: まとまり境界で、両行が幅内・幅差最小の所で割る（語中で切らない・行頭に閉じ記号を出さない）
+    best, best_diff = None, 1e9
+    for k in range(1, len(segs)):
+        a, b = _join(segs[:k]), _join(segs[k:])
+        if w(a) <= max_width and w(b) <= max_width and abs(w(a) - w(b)) < best_diff:
+            best_diff, best = abs(w(a) - w(b)), (a, b)
+    if best is not None:
+        return [best[0], best[1]]
+    # 3行以上必要な長文：まとまりで貪欲詰め → それでも長い行だけ文字貪欲（最後の手段）
+    lines, cur = [], []
+    for seg in segs:
+        if cur and w(_join(cur + [seg])) > max_width:
+            lines.append(_join(cur)); cur = [seg]
         else:
-            cur = trial
+            cur.append(seg)
     if cur:
-        lines.append(cur)
-    return lines
+        lines.append(_join(cur))
+    out = []
+    for ln in lines:
+        if w(ln) <= max_width:
+            out.append(ln); continue
+        c = ""
+        for ch in ln:
+            if c and w(c + ch) > max_width:
+                out.append(c); c = ch
+            else:
+                c += ch
+        if c:
+            out.append(c)
+    return out
 
 def rounded_caption(canvas, text, font, cx, cy, border, fill, pop):
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
-    max_text_w = canvas.width - 150
+    max_text_w = canvas.width - 300        # 1行≒11〜13字に締める（研究: 縦字幕の可読上限）
     lines = wrap_text(d, text, font, max_text_w)
     line_gap = 10
     boxes = [d.textbbox((0, 0), line, font=font) for line in lines]
