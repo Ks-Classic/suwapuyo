@@ -6,10 +6,13 @@ script.json を差し替えるだけで新作 = 量産の背骨。
 
 レイヤー: 背景 / キャラ(bob+喋りhop) / 上部タイトル+常設イラスト / 字幕(話者色) / 音(animalese+BGM)
 
-使い方:  python3 shorts/render.py [script.json]
-        python3 shorts/render.py --preview [script.json] [seconds]
-        python3 shorts/render.py --check [script.json]
-出力:    shorts/out/<title>.mp4   （音声つき最終）
+使い方（安い→高いチェックポイント階段）:
+        python3 shorts/render.py --check      [script.json]          # 検証＋医療広告NG lint（即時）
+        python3 shorts/render.py --preview    [script.json] [秒]     # 指定秒の1枚PNG
+        python3 shorts/render.py --storyboard [script.json] [列数]   # 全カット＋hookを1枚に（通し確認）
+        python3 shorts/render.py --draft      [script.json]          # 半解像度/15fps/KenBurns off の高速ドラフト
+        python3 shorts/render.py              [script.json]          # 本番書き出し（音声つき＋台帳）
+出力:    shorts/out/<title>.mp4 / _draft.mp4 / _storyboard.png / _preview_*.png
 依存:    Pillow, numpy, ffmpeg(PATH), Noto CJK フォント
 """
 import colorsys, csv, hashlib, json, math, os, subprocess, sys, unicodedata, wave, random
@@ -408,6 +411,26 @@ def validate_event_animations(spec, issues):
                 "message": f"unsupported eventAnimation ignored by renderer: {anim_id}",
             })
 
+# 医療広告NG（断定・効能）。出典: docs/20_business/medical-ad-content-policy.md の言い換え集
+COMPLIANCE_NG = ["治る", "治っ", "治り", "治療", "完治", "予防", "効果", "効能", "効く",
+                 "改善", "保証", "日本一", "No.1", "ＮＯ．１"]
+def lint_compliance(spec, issues):
+    """台本テキストを医療広告NG語でlint。warningで報告（子ども×健康×SNSの一発アウトを機械で止める）。"""
+    fields = []
+    if isinstance(spec.get("topTitle"), str): fields.append(("topTitle", spec["topTitle"]))
+    h = spec.get("hook")
+    if isinstance(h, dict) and isinstance(h.get("text"), str): fields.append(("hook.text", h["text"]))
+    for i, ln in enumerate(spec.get("lines", []) or []):
+        if isinstance(ln, dict) and isinstance(ln.get("text"), str):
+            fields.append((f"lines[{i}].text", ln["text"]))
+    for path, text in fields:
+        for ng in COMPLIANCE_NG:
+            if ng in text:
+                issues.append({
+                    "type": "compliance_risk", "severity": "warning", "path": path,
+                    "message": f"医療広告NGの可能性: 「{ng}」（断定・効能）→ 言い換え推奨（docs/20_business/medical-ad-content-policy.md）",
+                })
+
 def validate_spec(spec):
     issues = []
     # titleStyle / layout / background / characters は任意
@@ -470,6 +493,7 @@ def validate_spec(spec):
             d = hook.get("durationSec", 1.5)
             if not isinstance(d, (int, float)) or not (0.5 <= float(d) <= 3.0):
                 add_issue(issues, "schema_invalid", "hook.durationSec", "0.5〜3.0秒で指定してください")
+    lint_compliance(spec, issues)                 # 医療広告NG語 lint（warning）
     total = validate_lines(spec, issues)
     return issues, total
 
@@ -1077,25 +1101,39 @@ def render_frame(spec, scene, font_path, tsec, starts):
         canvas = Image.alpha_composite(canvas, ov)
     return canvas
 
+MODES = {"--check", "--compliance", "--preview", "--storyboard", "--draft"}
 def load_spec_from_args(argv):
-    check = False
-    preview = False
-    seconds = 0.0
+    """戻り値: (mode, extra[list], script_path, spec)。mode は render/check/compliance/preview/storyboard/draft。"""
     args = list(argv)
-    if args and args[0] == "--check":
-        check = True
-        args.pop(0)
-    if args and args[0] == "--preview":
-        preview = True
-        args.pop(0)
-    if args and args[0] == "--check":
-        check = True
-        args.pop(0)
+    mode = "render"
+    if args and args[0] in MODES:
+        mode = args.pop(0)[2:]
     script_path = args[0] if args else os.path.join(HERE, "script.json")
-    if preview and len(args) > 1:
-        seconds = float(args[1])
+    extra = args[1:]
     spec = json.load(open(resolve(script_path) if not os.path.isabs(script_path) else script_path, encoding="utf-8"))
-    return check, preview, seconds, script_path, spec
+    return mode, extra, script_path, spec
+
+def build_storyboard(spec, scene, font_path, starts, out_dir, title, cols=4):
+    """全台詞＋hookを1枚のコンタクトシートに（通しの構図/字幕/配役/背景を秒で一覧）。"""
+    W, H = spec["size"]; lines = spec["lines"]
+    panels = []
+    hd = hook_seconds(spec)
+    if hd > 0:
+        panels.append(("hook", render_frame(spec, scene, font_path, hd * 0.5, starts)))
+    for i, ln in enumerate(lines):
+        t = starts[i] + ln["dur"] * 0.5
+        snip = (ln.get("text", "") or "")[:10]
+        panels.append((f"{i} {ln['who']}: {snip}", render_frame(spec, scene, font_path, t, starts)))
+    cols = max(1, cols); rows = (len(panels) + cols - 1) // cols
+    pw, ph, pad, lab = 250, 444, 8, 20
+    sheet = Image.new("RGB", (cols * pw + (cols + 1) * pad, rows * (ph + lab) + (rows + 1) * pad), (28, 28, 34))
+    d = ImageDraw.Draw(sheet); f = ImageFont.truetype(font_path, 15)
+    for idx, (name, fr) in enumerate(panels):
+        r, c = divmod(idx, cols); x = pad + c * (pw + pad); y = pad + r * (ph + lab + pad)
+        sheet.paste(fr.convert("RGB").resize((pw, ph), Image.LANCZOS), (x, y + lab))
+        d.text((x + 3, y + 2), name[:24], fill=(255, 255, 255), font=f)
+    out = os.path.join(out_dir, f"{title}_storyboard.png"); sheet.save(out)
+    return out
 
 LEDGER_HEAD = ["renderedAt", "file", "title", "series", "topTitle", "hookType", "weather", "theme",
                "charCount", "characters", "speakers", "durationSec", "titleStyle", "background", "events",
@@ -1146,16 +1184,19 @@ def print_check_report(issues, total):
     }, ensure_ascii=False, indent=2))
 
 def main():
-    check, preview, preview_seconds, _script_path, spec = load_spec_from_args(sys.argv[1:])
+    mode, extra, _script_path, spec = load_spec_from_args(sys.argv[1:])
     issues, checked_total = validate_spec(spec)
-    if check:
+    if mode in ("check", "compliance"):
         print_check_report(issues, checked_total)
         sys.exit(1 if any(is_error_issue(issue) for issue in issues) else 0)
     if any(is_error_issue(issue) for issue in issues):
         print_check_report(issues, checked_total)
         sys.exit(1)
-    W, H = spec["size"]; FPS = spec["fps"]; title = spec["title"]
     fp = find_font()
+    draft = (mode == "draft")
+    if draft:  # 半解像度・低fps・KenBurns off で高速ドラフト（動き/間の確認用・2.5分→~30秒）
+        spec = {**spec, "size": [spec["size"][0] // 2, spec["size"][1] // 2], "fps": 15, "kenBurns": False}
+    W, H = spec["size"]; FPS = spec["fps"]; title = spec["title"]
     scene = prepare_scene(spec, fp)
     lines = spec["lines"]
     hook_dur = hook_seconds(spec)
@@ -1163,17 +1204,24 @@ def main():
     nframes = int(total * FPS)
 
     out_dir = os.path.join(HERE, "out"); os.makedirs(out_dir, exist_ok=True)
-    if preview:
-        frame = render_frame(spec, scene, fp, preview_seconds, starts)
-        out = os.path.join(out_dir, f"{title}_preview_{preview_seconds:.1f}s.png")
+    if mode == "preview":
+        sec = float(extra[0]) if extra else 0.0
+        frame = render_frame(spec, scene, fp, sec, starts)
+        out = os.path.join(out_dir, f"{title}_preview_{sec:.1f}s.png")
         frame.save(out)
         print(f"✓ preview: {out}")
         return
+    if mode == "storyboard":
+        cols = int(extra[0]) if extra else 4
+        out = build_storyboard(spec, scene, fp, starts, out_dir, title, cols)
+        print(f"✓ storyboard: {out}  ({len(lines)}カット{'＋hook' if hook_dur>0 else ''})")
+        return
 
-    tmp_tag = f"_{title}_{os.getpid()}"
+    out_title = f"{title}_draft" if draft else title
+    tmp_tag = f"_{out_title}_{os.getpid()}"
     vid_tmp = os.path.join(out_dir, f"{tmp_tag}_video.mp4")
     wav_tmp = os.path.join(out_dir, f"{tmp_tag}_audio.wav")
-    final = os.path.join(out_dir, f"{title}.mp4")
+    final = os.path.join(out_dir, f"{out_title}.mp4")
 
     # --- 音声トラック ---
     aud = bgm_bed(total) if spec.get("audio", {}).get("bgm") else np.zeros(int(SR * total), np.float32)
@@ -1191,9 +1239,10 @@ def main():
     write_wav(wav_tmp, aud)
 
     # --- 映像 ---
+    enc = ["-preset", "ultrafast", "-crf", "30"] if draft else ["-crf", "20"]
     ff = subprocess.Popen(
         ["ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}", "-r", str(FPS),
-         "-i", "-", "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", vid_tmp],
+         "-i", "-", "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", *enc, vid_tmp],
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     for fme in range(nframes):
@@ -1216,7 +1265,10 @@ def main():
     for p in (vid_tmp, wav_tmp):
         try: os.remove(p)
         except OSError: pass
-    print(f"✓ done: {final}  ({total:.1f}s, {nframes} frames, 音声つき)")
+    tag = "DRAFT(確認用)" if draft else "音声つき"
+    print(f"✓ done: {final}  ({total:.1f}s, {nframes} frames, {W}x{H}@{FPS}, {tag})")
+    if draft:           # ドラフトは投稿物ではないので台帳に載せない
+        return
     try:
         print(f"✓ ledger: {write_ledger(spec, scene, total, final)}")
     except Exception as e:

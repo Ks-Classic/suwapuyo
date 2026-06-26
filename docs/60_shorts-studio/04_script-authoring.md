@@ -63,12 +63,17 @@
 ※ `hook` はこの前に**別レイヤー**で乗る（儀式は様式美として維持しつつ、コールド視聴用フックは hook が担う）。
 台詞合計は **30〜60秒**（hook は別計上）。
 
-## コマンド
+## コマンド（安い→高いチェックポイント階段＝本番1回で済ます）
 ```bash
-python3 shorts/render.py --check  <script.json>      # 検証（JSONレポート）
-python3 shorts/render.py --preview <script.json> 7.0 # 7.0秒地点の静止プレビューPNG
-python3 shorts/render.py          <script.json>      # 本番書き出し → shorts/out/<title>.mp4
+python3 shorts/render.py --check      <script.json>     # ①検証＋②医療広告NG lint（即時）
+python3 shorts/render.py --preview    <script.json> 7.0 # ③7.0秒地点の1枚PNG
+python3 shorts/render.py --storyboard <script.json>     # ④全カット＋hookを1枚に（通し確認・~2秒）
+python3 shorts/render.py --draft      <script.json>     # ⑥半解像度/15fps/KenBurns off の高速ドラフト（~30秒）
+python3 shorts/render.py              <script.json>     # ⑦本番書き出し → shorts/out/<title>.mp4（＋台帳）
 ```
+推奨フロー: `--check → --storyboard で構図OK → --draft で動き/間OK → 人間承認 → 本番1回`。
+- **②医療広告NG lint**: `治る/予防/効果/効能/改善/保証…` を台本テキストで自動検出し warning 表示（出典 `docs/20_business/medical-ad-content-policy.md`）。子ども×健康×SNSの一発アウトを機械で止める。
+- `--draft` / `--storyboard` の出力は `_draft.mp4` / `_storyboard.png`（台帳には載らない＝投稿物ではない）。
 
 ## 自動で残る分析データ（台帳）
 本番書き出しのたびに自動生成：
