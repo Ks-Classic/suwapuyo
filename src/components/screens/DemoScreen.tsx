@@ -10,6 +10,7 @@ import {
   Texture,
 } from "pixi.js";
 import { SoundFX } from "../../audio/SoundFX";
+import { YourTimeReflectionDemo } from "../YourTimeReflectionDemo";
 import styles from "../../styles/demo.module.css";
 
 // ═══════════════════════════════════════
@@ -55,10 +56,10 @@ const CHAR_NAMES: Record<PuyoType, string> = {
 };
 
 const SPRITE_PATHS: Record<PuyoType, string> = {
-  ghost: "/assets/sprites/ghost/idle.png",
-  tooth: "/assets/sprites/tooth/idle.png",
-  blob: "/assets/sprites/blob/idle.png",
-  tanuki: "/assets/sprites/tanuki/idle.png",
+  ghost: "/content/fuwafuwa-land/sprites/ghost/idle.png",
+  tooth: "/content/fuwafuwa-land/sprites/tooth/idle.png",
+  blob: "/content/fuwafuwa-land/sprites/blob/idle.png",
+  tanuki: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
 };
 
 // ═══════════════════════════════════════
@@ -1245,6 +1246,7 @@ export function DemoScreen() {
   const [score, setScore] = useState(0);
   const [chain, setChain] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [activeView, setActiveView] = useState<"game" | "reflection">("game");
 
   // Auto-scale canvas to fit available space
   const scaleCanvas = useCallback(() => {
@@ -1304,6 +1306,12 @@ export function DemoScreen() {
     };
   }, [loading, scaleCanvas]);
 
+  useEffect(() => {
+    if (activeView === "game" && !loading) {
+      requestAnimationFrame(scaleCanvas);
+    }
+  }, [activeView, loading, scaleCanvas]);
+
   return (
     <div className={styles.wrapper}>
       {/* Header */}
@@ -1311,60 +1319,101 @@ export function DemoScreen() {
         <h1 className={styles.title}>
           <span className={styles.titleAccent}>すわ</span>ぷよ
         </h1>
-        <p className={styles.subtitle}>MVP Demo</p>
+        <p className={styles.subtitle}>YOUR TIME Platform Demo</p>
       </div>
 
-      {/* Score & Chain */}
-      <div className={styles.statsBar}>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>SCORE</span>
-          <span className={styles.statValue}>{score.toLocaleString()}</span>
-        </div>
-        {chain > 0 && (
-          <div className={`${styles.stat} ${styles.chainStat}`}>
-            <span className={styles.statLabel}>CHAIN</span>
-            <span className={styles.chainValue}>🔥 x{chain}</span>
-          </div>
-        )}
+      <div className={styles.viewSwitch} aria-label="表示切り替え">
+        <button
+          type="button"
+          className={activeView === "game" ? styles.viewSwitchActive : ""}
+          onClick={() => setActiveView("game")}
+        >
+          あそぶ
+        </button>
+        <button
+          type="button"
+          className={activeView === "reflection" ? styles.viewSwitchActive : ""}
+          onClick={() => setActiveView("reflection")}
+        >
+          ふりかえる
+        </button>
       </div>
 
-      {/* Game Board - flex:1 takes remaining space */}
-      <div ref={boardWrapperRef} className={styles.boardWrapper}>
-        {loading && (
-          <div className={styles.loading}>
-            <div className={styles.spinner} />
-            <p>Loading...</p>
-          </div>
-        )}
-        <div ref={containerRef} className={styles.boardContainer} />
-      </div>
-
-      {/* Character Info */}
-      <div className={styles.charInfo}>
-        {TYPES.map((type) => (
-          <div key={type} className={styles.charCard}>
-            <img
-              src={SPRITE_PATHS[type]}
-              alt={CHAR_NAMES[type]}
-              className={styles.charIcon}
-            />
-            <div className={styles.charDetails}>
-              <span className={styles.charName}>{CHAR_NAMES[type]}</span>
-              <span
-                className={styles.charPop}
-                style={{ color: THEME_COLORS_HEX[type] }}
-              >
-                {MIN_POP[type]}個で消滅
-              </span>
+      <div
+        className={`${styles.viewPane} ${
+          activeView === "game" ? styles.viewPaneActive : ""
+        }`}
+        aria-hidden={activeView !== "game"}
+      >
+          {/* Score & Chain */}
+          <div className={styles.statsBar}>
+            <div className={styles.stat}>
+              <span className={styles.statLabel}>SCORE</span>
+              <span className={styles.statValue}>{score.toLocaleString()}</span>
             </div>
+            {chain > 0 && (
+              <div className={`${styles.stat} ${styles.chainStat}`}>
+                <span className={styles.statLabel}>CHAIN</span>
+                <span className={styles.chainValue}>x{chain}</span>
+              </div>
+            )}
           </div>
-        ))}
+
+          {/* Game Board - flex:1 takes remaining space */}
+          <div ref={boardWrapperRef} className={styles.boardWrapper}>
+            {loading && (
+              <div className={styles.loading}>
+                <div className={styles.spinner} />
+                <p>Loading...</p>
+              </div>
+            )}
+            <div ref={containerRef} className={styles.boardContainer} />
+          </div>
+
+          {/* Character Info */}
+          <div className={styles.charInfo}>
+            {TYPES.map((type) => (
+              <div key={type} className={styles.charCard}>
+                <img
+                  src={SPRITE_PATHS[type]}
+                  alt={CHAR_NAMES[type]}
+                  className={styles.charIcon}
+                />
+                <div className={styles.charDetails}>
+                  <span className={styles.charName}>{CHAR_NAMES[type]}</span>
+                  <span
+                    className={styles.charPop}
+                    style={{ color: THEME_COLORS_HEX[type] }}
+                  >
+                    {MIN_POP[type]}個で消滅
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Instructions */}
+          <p className={styles.instructions}>
+            キャラをタップして選択 → 矢印で隣と入れ替え → つながったら消える！
+          </p>
       </div>
 
-      {/* Instructions */}
-      <p className={styles.instructions}>
-        キャラをタップして選択 → 矢印で隣と入れ替え → つながったら消える！
-      </p>
+      <div
+        className={`${styles.viewPane} ${
+          activeView === "reflection" ? styles.viewPaneActive : ""
+        }`}
+        aria-hidden={activeView !== "reflection"}
+      >
+          <div className={styles.reflectionLead}>
+            <p>イベント後の親子を、出展者と公式発信へやさしく再接続するデモ</p>
+            <span>
+              紙のスタンプラリーは残し、アプリは「あとで知る・続ける」を担当します。
+            </span>
+          </div>
+          <div className={styles.reflectionArea}>
+            <YourTimeReflectionDemo />
+          </div>
+      </div>
     </div>
   );
 }

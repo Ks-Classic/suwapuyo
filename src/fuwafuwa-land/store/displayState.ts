@@ -2,11 +2,18 @@ import { DISPLAY_STATE_ID } from "../config";
 import { getSupabaseClient, type FuwafuwaSupabaseClient } from "../lib/supabase";
 import type { Database } from "../types/database.types";
 import type { Artwork, ConnectionStatus, DisplayEvent, DisplayState, DisplayStateService, RealtimeSubscription } from "../types";
+import { SAMPLE_CHARACTERS } from "../renderer/sampleCharacters";
 import { cacheDisplayState, getCachedDisplayState } from "./db";
 import { SupabaseArtworkRepository } from "./artworkStore";
+import { SupabaseCharacterContentRepository } from "./characterContentStore";
 import { appendOperationLog } from "./operationLog";
 
 type DisplayStateRow = Database["public"]["Tables"]["display_state"]["Row"];
+const DEFAULT_SAMPLE_ARTWORK_IDS = SAMPLE_CHARACTERS.map((sample) => sample.id);
+
+function isSampleArtworkId(id: string): boolean {
+  return DEFAULT_SAMPLE_ARTWORK_IDS.includes(id);
+}
 
 function isDisplayEvent(value: unknown): value is DisplayEvent {
   return (
@@ -22,12 +29,14 @@ function isDisplayEvent(value: unknown): value is DisplayEvent {
 }
 
 function stateFromRow(row: DisplayStateRow): DisplayState {
+  const useDefaultSamples = row.visible_artwork_ids.length === 0 && row.mode === "idle";
+  const visibleArtworkIds = useDefaultSamples ? DEFAULT_SAMPLE_ARTWORK_IDS : row.visible_artwork_ids;
   return {
     id: "current",
-    visibleArtworkIds: row.visible_artwork_ids,
+    visibleArtworkIds,
     featuredArtworkId: row.featured_artwork_id ?? undefined,
     mode: row.mode,
-    maxVisibleCount: row.max_visible_count,
+    maxVisibleCount: useDefaultSamples ? Math.max(row.max_visible_count, DEFAULT_SAMPLE_ARTWORK_IDS.length) : row.max_visible_count,
     displayEvent: isDisplayEvent(row.display_event) ? row.display_event : undefined,
     updatedAt: row.updated_at,
   };
@@ -126,7 +135,9 @@ export class SupabaseDisplayStateService implements DisplayStateService {
 
   async showArtwork(id: string, mode: "normal" | "featured"): Promise<DisplayState> {
     const current = await this.getDisplayState();
-    await this.repository.setStatus(id, "visible");
+    if (!isSampleArtworkId(id)) {
+      await this.repository.setStatus(id, "visible");
+    }
     const visibleArtworkIds = [id, ...current.visibleArtworkIds.filter((visibleId) => visibleId !== id)].slice(0, current.maxVisibleCount);
     const state = await this.updateDisplayState({
       visibleArtworkIds,
@@ -139,11 +150,13 @@ export class SupabaseDisplayStateService implements DisplayStateService {
 
   async hideArtwork(id: string): Promise<DisplayState> {
     const current = await this.getDisplayState();
-    await this.repository.setStatus(id, "hidden");
+    if (!isSampleArtworkId(id)) {
+      await this.repository.setStatus(id, "hidden");
+    }
     const state = await this.updateDisplayState({
       visibleArtworkIds: current.visibleArtworkIds.filter((visibleId) => visibleId !== id),
       featuredArtworkId: current.featuredArtworkId === id ? undefined : current.featuredArtworkId,
-      mode: current.featuredArtworkId === id ? "random" : current.mode,
+      mode: current.featuredArtworkId === id || isSampleArtworkId(id) ? "random" : current.mode,
     });
     await appendOperationLog("hide", "hidden", id);
     return state;
@@ -151,18 +164,25 @@ export class SupabaseDisplayStateService implements DisplayStateService {
 
   async archiveArtwork(id: string): Promise<DisplayState> {
     const current = await this.getDisplayState();
-    await this.repository.setStatus(id, "archived");
+    if (!isSampleArtworkId(id)) {
+      await this.repository.setStatus(id, "archived");
+    }
     const state = await this.updateDisplayState({
       visibleArtworkIds: current.visibleArtworkIds.filter((visibleId) => visibleId !== id),
       featuredArtworkId: current.featuredArtworkId === id ? undefined : current.featuredArtworkId,
-      mode: current.featuredArtworkId === id ? "random" : current.mode,
+      mode: current.featuredArtworkId === id || isSampleArtworkId(id) ? "random" : current.mode,
     });
     await appendOperationLog("archive", "archived", id);
     return state;
   }
 
   async resetDisplay(): Promise<DisplayState> {
-    const state = await this.updateDisplayState({ visibleArtworkIds: [], featuredArtworkId: undefined, mode: "idle" });
+    const state = await this.updateDisplayState({
+      visibleArtworkIds: DEFAULT_SAMPLE_ARTWORK_IDS,
+      featuredArtworkId: undefined,
+      mode: "idle",
+      maxVisibleCount: DEFAULT_SAMPLE_ARTWORK_IDS.length,
+    });
     await appendOperationLog("reset", "display_reset");
     return state;
   }
@@ -232,11 +252,12 @@ export class SupabaseDisplayStateService implements DisplayStateService {
   }
 }
 
-export function createFuwafuwaServices(): { repository: SupabaseArtworkRepository; displayState: SupabaseDisplayStateService } {
+export function createFuwafuwaServices(): { repository: SupabaseArtworkRepository; displayState: SupabaseDisplayStateService; characterContent: SupabaseCharacterContentRepository } {
   const clientPromise = ensureClient();
   const repository = new SupabaseArtworkRepository(clientPromise);
   return {
     repository,
     displayState: new SupabaseDisplayStateService(clientPromise, repository),
+    characterContent: new SupabaseCharacterContentRepository(clientPromise),
   };
 }

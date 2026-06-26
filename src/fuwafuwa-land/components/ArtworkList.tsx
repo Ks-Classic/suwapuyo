@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Artwork, ArtworkRepository, DisplayStateService } from "../types";
+import { isSampleCharacterId } from "../renderer/sampleCharacters";
 
 interface ArtworkListProps {
   artworks: Artwork[];
@@ -13,30 +14,48 @@ interface ArtworkThumbnailProps {
   repository: ArtworkRepository;
 }
 
+interface ThumbnailState {
+  artworkId: string;
+  imageUrl: string | null;
+  failed: boolean;
+}
+
 function ArtworkThumbnail({ artwork, repository }: ArtworkThumbnailProps) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [failed, setFailed] = useState(false);
+  const sample = isSampleCharacterId(artwork.id);
+  const [thumbnail, setThumbnail] = useState<ThumbnailState>({ artworkId: artwork.id, imageUrl: null, failed: false });
 
   useEffect(() => {
+    if (sample) {
+      return undefined;
+    }
     let active = true;
-    setImageUrl(null);
-    setFailed(false);
     void repository
       .getImageURL(artwork.id)
       .then((url) => {
         if (active) {
-          setImageUrl(url);
+          setThumbnail({ artworkId: artwork.id, imageUrl: url, failed: false });
         }
       })
       .catch(() => {
         if (active) {
-          setFailed(true);
+          setThumbnail({ artworkId: artwork.id, imageUrl: null, failed: true });
         }
       });
     return () => {
       active = false;
     };
-  }, [artwork.id, repository]);
+  }, [artwork.id, repository, sample]);
+
+  if (sample) {
+    return (
+      <div className="fuwafuwa-artwork-thumb" aria-hidden="true">
+        <img src={artwork.imageBlobKey} alt="" />
+      </div>
+    );
+  }
+
+  const imageUrl = thumbnail.artworkId === artwork.id ? thumbnail.imageUrl : null;
+  const failed = thumbnail.artworkId === artwork.id && thumbnail.failed;
 
   return (
     <div className="fuwafuwa-artwork-thumb" aria-hidden="true">
@@ -51,7 +70,7 @@ export function ArtworkList({ artworks, repository, displayState, onRefresh }: A
   const visible = artworks
     .filter((artwork) => artwork.status !== "archived")
     .filter((artwork) => artwork.id.toLowerCase().includes(query.toLowerCase()) || artwork.givenName?.toLowerCase().includes(query.toLowerCase()) === true)
-    .slice(0, 20);
+    .slice(0, 80);
 
   return (
     <section className="fuwafuwa-panel fuwafuwa-list-panel">
@@ -98,20 +117,22 @@ export function ArtworkList({ artworks, repository, displayState, onRefresh }: A
                 {confirmArchiveId === artwork.id ? "削除する" : "削除"}
               </button>
             </div>
-            <label className="fuwafuwa-scale-control">
-              <span>サイズ {artwork.displayScale.toFixed(1)}x</span>
-              <input
-                type="range"
-                min="0.1"
-                max="1.0"
-                step="0.1"
-                value={artwork.displayScale}
-                onChange={(event) => {
-                  const scale = Number(event.currentTarget.value);
-                  void repository.setDisplayScale(artwork.id, scale).then(onRefresh);
-                }}
-              />
-            </label>
+            {isSampleCharacterId(artwork.id) ? null : (
+              <label className="fuwafuwa-scale-control">
+                <span>サイズ {artwork.displayScale.toFixed(1)}x</span>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1.0"
+                  step="0.1"
+                  value={artwork.displayScale}
+                  onChange={(event) => {
+                    const scale = Number(event.currentTarget.value);
+                    void repository.setDisplayScale(artwork.id, scale).then(onRefresh);
+                  }}
+                />
+              </label>
+            )}
           </article>
         ))}
       </div>

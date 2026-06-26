@@ -388,7 +388,7 @@ export class SoundFX {
     if (!this.toothBuffer && !this.toothLoading) {
       this.toothLoading = true;
       try {
-        const resp = await fetch("/assets/audio/suwa-good-morning.mp3");
+        const resp = await fetch("/content/fuwafuwa-land/audio/suwa-good-morning.mp3");
         const arrayBuf = await resp.arrayBuffer();
         this.toothBuffer = await ctx.decodeAudioData(arrayBuf);
       } catch (e) {

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Artwork, ConsentScope, DisplayStateService, ProcessedArtwork, RegisterArtworkInput, ArtworkRepository, TransparencyMode } from "../types";
+import type { Artwork, CharacterContentRepository, ConsentScope, ProcessedArtwork, RegisterArtworkInput, ArtworkRepository, TransparencyMode } from "../types";
 import { captureVideoFrame, fileToCanvas, startEnvironmentCamera, stopCamera, waitForDrawableVideoFrame } from "../capture/camera";
 import { processArtworkCanvas } from "../capture/processArtwork";
 import { DigitalCanvas } from "../digital/DigitalCanvas";
@@ -7,7 +7,7 @@ import { normalizeGivenName } from "../utils/id";
 
 interface RegisterFormProps {
   repository: ArtworkRepository;
-  displayState: DisplayStateService;
+  characterContent: CharacterContentRepository;
   onRegistered: (artwork: Artwork) => void;
 }
 
@@ -19,7 +19,7 @@ const TRANSPARENCY_OPTIONS: { mode: TransparencyMode; label: string; description
   { mode: "none", label: "そのまま", description: "透過せず四角画像で登録" },
 ];
 
-export function RegisterForm({ repository, displayState, onRegistered }: RegisterFormProps) {
+export function RegisterForm({ repository, characterContent, onRegistered }: RegisterFormProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -113,7 +113,7 @@ export function RegisterForm({ repository, displayState, onRegistered }: Registe
     await processCanvas(sourceCanvasRef.current, sourceFallbackRef.current, sourceMessageRef.current, nextMode);
   }
 
-  async function register(featured: boolean): Promise<void> {
+  async function register(showOnDisplay: boolean): Promise<void> {
     if (processed === null) {
       return;
     }
@@ -128,11 +128,13 @@ export function RegisterForm({ repository, displayState, onRegistered }: Registe
         consentScope,
       };
       const artwork = await repository.register(input);
-      const state = await displayState.showArtwork(artwork.id, featured ? "featured" : "normal");
+      if (!showOnDisplay) {
+        await characterContent.setCharacterStatus(artwork.id, "hidden");
+      }
       onRegistered(artwork);
       clearPreview();
       setGivenName("");
-      setMessage(state.visibleArtworkIds.includes(artwork.id) ? (featured ? "登録して主役表示しました" : "登録して表示しました") : "登録しました。表示リスト更新を確認してください。");
+      setMessage(showOnDisplay ? "登録して表示キャラ一覧に追加しました" : "登録して非表示キャラ一覧に追加しました");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "register_failed");
     } finally {
@@ -287,7 +289,7 @@ export function RegisterForm({ repository, displayState, onRegistered }: Registe
       </div>
       <div className="fuwafuwa-submit-bar">
         <button type="button" disabled={busy || !hasPreview} onClick={() => void register(true)} className="fuwafuwa-primary-action">
-          登録して主役表示
+          登録して表示
         </button>
         <button type="button" disabled={busy || !hasPreview} onClick={() => void register(false)}>
           登録のみ

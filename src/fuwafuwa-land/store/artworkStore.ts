@@ -119,6 +119,24 @@ export class SupabaseArtworkRepository implements ArtworkRepository {
     }
 
     const artwork = artworkFromRow(insert.data);
+    const displayCharacter = await client.from("display_characters").upsert(
+      {
+        id: artwork.id,
+        source_type: "artwork",
+        source_id: artwork.id,
+        label: artwork.givenName ?? artwork.displayLabel,
+        image_path: artwork.imageBlobKey,
+        status: "visible",
+        display_scale: artwork.displayScale,
+        tap_enabled: false,
+        sort_order: Math.floor(Date.now() / 1000),
+      },
+      { onConflict: "source_type,source_id" },
+    );
+    if (displayCharacter.error !== null) {
+      await appendOperationLog("error", displayCharacter.error.message, artwork.id);
+      throw displayCharacter.error;
+    }
     await cacheArtwork(artwork);
     await cacheImage(artwork.id, input.imageBlob);
     await appendOperationLog("register", "registered", artwork.id);

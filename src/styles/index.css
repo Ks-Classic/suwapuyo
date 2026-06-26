@@ -114,7 +114,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 
   /* Village background */
-  background: url('/assets/ui/village_bg.png') center center / cover no-repeat fixed;
+  background: url('/content/fuwafuwa-land/backgrounds/village-bg.png') center center / cover no-repeat fixed;
   background-color: var(--color-sky-top);
 }
 

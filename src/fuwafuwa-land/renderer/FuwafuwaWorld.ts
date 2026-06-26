@@ -61,7 +61,7 @@ interface BattleState {
   spotlight?: Graphics;
 }
 
-const WAAWAA_SAMPLE_ID = "sample-tooth";
+const WAAWAA_SAMPLE_ID = "sample-waawaa";
 const SECRET_MODE_TEXT_SPIN_MS = 1000;
 const SECRET_MODE_TEXT_HOLD_MS = 2000;
 
@@ -77,10 +77,12 @@ export class FuwafuwaWorld {
   private app: Application | null = null;
   private readonly items = new Map<string, WorldItem>();
   private readonly loadingIds = new Set<string>();
+  private desiredVisibleIds = new Set<string>();
   private readonly config: FuwafuwaConfig;
   private background: Sprite | null = null;
   private paused = false;
   private fpsListener: ((fps: number) => void) | null = null;
+  private characterTapListener: ((characterId: string) => void) | null = null;
   private waawaaTapCount = 0;
   private lastWaawaaTapAt = 0;
   private waawaaMode = false;
@@ -130,6 +132,10 @@ export class FuwafuwaWorld {
 
   onFps(listener: (fps: number) => void): void {
     this.fpsListener = listener;
+  }
+
+  onCharacterTap(listener: (characterId: string) => void): void {
+    this.characterTapListener = listener;
   }
 
   async unlockAudio(): Promise<boolean> {
@@ -212,14 +218,15 @@ export class FuwafuwaWorld {
     this.paused = state.mode === "paused";
     const ids = state.visibleArtworkIds.slice(0, state.maxVisibleCount);
     const visible = new Set(ids);
+    this.desiredVisibleIds = visible;
     this.items.forEach((item, id) => {
-      if (!visible.has(id) && !id.startsWith("sample-")) {
+      if (!visible.has(id)) {
         this.app?.stage.removeChild(item.container);
         item.container.destroy({ children: true });
         this.items.delete(id);
       }
     });
-    this.ensureSamples();
+    this.ensureSamples(ids.filter(isSampleId));
     if (ids.length === 0) {
       return;
     }
@@ -238,8 +245,14 @@ export class FuwafuwaWorld {
         try {
           const url = await getImageURL(id);
           const texture = await this.loadTexture(url);
+          if (!this.desiredVisibleIds.has(id)) {
+            return;
+          }
           this.addSprite(id, texture, artwork, state.featuredArtworkId === id);
         } catch {
+          if (!this.desiredVisibleIds.has(id)) {
+            return;
+          }
           this.addPlaceholder(id, artwork, state.featuredArtworkId === id);
         } finally {
           this.loadingIds.delete(id);
@@ -248,8 +261,9 @@ export class FuwafuwaWorld {
     );
     this.items.forEach((item, id) => {
       if (isSampleId(id)) {
+        const artwork = artworks.find((candidate) => candidate.id === id);
         item.container.alpha = 0.92;
-        item.container.scale.set(0.92);
+        item.container.scale.set(0.92 * ((artwork?.displayScale ?? 0.6) / 0.6));
         return;
       }
       const featured = state.featuredArtworkId === id;
@@ -280,6 +294,7 @@ export class FuwafuwaWorld {
     }
     const container = new Container();
     this.populateSprite(container, texture, artwork, featured);
+    this.applyCharacterTapBehavior(container, id);
     container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
     this.app.stage.addChild(container);
     this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, texture, featured });
@@ -356,6 +371,7 @@ export class FuwafuwaWorld {
     const container = new Container();
     if (this.waawaaMode) {
       void this.populateSample(container, WAAWAA_SAMPLE_ID);
+      this.applyCharacterTapBehavior(container, id);
       container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
       this.app.stage.addChild(container);
       this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured });
@@ -368,20 +384,21 @@ export class FuwafuwaWorld {
     label.anchor.set(0.5);
     label.y = 42;
     container.addChild(card, mark, label);
+    this.applyCharacterTapBehavior(container, id);
     container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
     this.app.stage.addChild(container);
     this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured });
   }
 
-  private ensureSamples(): void {
+  private ensureSamples(sampleIds: string[]): void {
     if (this.app === null) {
       return;
     }
-    const hasAllSamples = SAMPLE_CHARACTERS.every((sample) => this.items.has(sample.id));
-    if (hasAllSamples) {
-      return;
-    }
-    SAMPLE_CHARACTERS.forEach((sample) => {
+    sampleIds.forEach((sampleId) => {
+      const sample = SAMPLE_CHARACTERS.find((candidate) => candidate.id === sampleId);
+      if (sample === undefined) {
+        return;
+      }
       if (this.items.has(sample.id)) {
         return;
       }
@@ -520,11 +537,27 @@ export class FuwafuwaWorld {
 
   private applySampleTapBehavior(container: Container, sampleId: string): void {
     container.removeAllListeners("pointertap");
-    const canTap = sampleId === this.config.secretMode.triggerSampleId || this.waawaaMode;
+    const canTap = sampleId === this.config.secretMode.triggerSampleId || this.waawaaMode || this.characterTapListener !== null;
     container.eventMode = canTap ? "static" : "none";
     container.cursor = canTap ? "pointer" : "default";
     if (canTap) {
-      container.on("pointertap", () => this.handleWaawaaTap());
+      container.on("pointertap", () => {
+        if (sampleId === this.config.secretMode.triggerSampleId || this.waawaaMode) {
+          this.handleWaawaaTap();
+          return;
+        }
+        this.characterTapListener?.(sampleId);
+      });
+    }
+  }
+
+  private applyCharacterTapBehavior(container: Container, characterId: string): void {
+    container.removeAllListeners("pointertap");
+    const canTap = this.characterTapListener !== null;
+    container.eventMode = canTap ? "static" : "none";
+    container.cursor = canTap ? "pointer" : "default";
+    if (canTap) {
+      container.on("pointertap", () => this.characterTapListener?.(characterId));
     }
   }
 

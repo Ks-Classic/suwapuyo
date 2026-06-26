@@ -1,7 +1,26 @@
+import { SAMPLE_CHARACTERS } from "./renderer/sampleCharacters";
+
+export interface SponsorSlide {
+  src: string;
+  kind?: "image" | "video";
+  alt?: string;
+}
+
+export interface TappableSponsor {
+  id: string;
+  name: string;
+  characterImg: string;
+  slides: SponsorSlide[];
+  body?: string;
+  cta?: { label: string; url: string } | null;
+  scale?: number;
+}
+
 export interface FuwafuwaConfig {
   brandId: string;
   background: { imageUrl?: string; color: number };
   sampleCharacters: { id: string; imageUrl: string }[];
+  sponsors: TappableSponsor[];
   display: {
     standardCount: 12;
     maxCount: 30;
@@ -41,12 +60,19 @@ export interface FuwafuwaConfig {
 
 export const SUUSUU_CONFIG: FuwafuwaConfig = {
   brandId: "suusuu-waawaa",
-  background: { imageUrl: "/assets/ui/village_bg.png", color: 0xb8e5f7 },
-  sampleCharacters: [
-    { id: "sample-ghost", imageUrl: "/assets/sprites/ghost/idle.png" },
-    { id: "sample-tooth", imageUrl: "/assets/sprites/tooth/idle.png" },
-    { id: "sample-blob", imageUrl: "/assets/sprites/blob/idle.png" },
-    { id: "sample-tanuki", imageUrl: "/assets/sprites/tanuki/idle.png" },
+  background: { imageUrl: "/content/fuwafuwa-land/backgrounds/village-bg.png", color: 0xb8e5f7 },
+  sampleCharacters: SAMPLE_CHARACTERS.map(({ id, imageUrl }) => ({ id, imageUrl })),
+  sponsors: [
+    {
+      id: "suusuu",
+      name: "すーすー",
+      characterImg: "/content/fuwafuwa-land/characters/display/suusuu.png",
+      slides: [
+        { src: "/content/yourtime-platform/videos/booth-introduction.mp4", kind: "video", alt: "ブースで流す紹介動画" },
+      ],
+      cta: null,
+      scale: 1,
+    },
   ],
   display: {
     standardCount: 12,
@@ -71,10 +97,10 @@ export const SUUSUU_CONFIG: FuwafuwaConfig = {
     shadow: true,
   },
   secretMode: {
-    triggerSampleId: "sample-tooth",
+    triggerSampleId: "sample-waawaa",
     tapCount: 5,
     tapWindowMs: 2500,
-    audioUrl: "/assets/audio/suwa-good-morning.mp3",
+    audioUrl: "/content/fuwafuwa-land/audio/suwa-good-morning.mp3",
     modeText: "わーわーもーど!",
     speedMultiplier: 1.5,
     rainCount: 20,
@@ -86,4 +112,5 @@ export const SUUSUU_CONFIG: FuwafuwaConfig = {
 };
 
 export const ARTWORK_BUCKET = "artworks";
+export const CHARACTER_CONTENT_BUCKET = "character-content";
 export const DISPLAY_STATE_ID = "current";

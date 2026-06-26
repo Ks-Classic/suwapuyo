@@ -52,17 +52,17 @@ function FuwafuwaHome() {
 
       <nav className="fuwafuwa-home-nav" aria-label="ふわふわランドメニュー">
         <a className="fuwafuwa-home-link is-primary" href="/staff">
-          <img src="/assets/sprites/blob/preview.png" alt="" />
+          <img src="/content/fuwafuwa-land/sprites/blob/preview.png" alt="" />
           <strong>スタッフ</strong>
           <span>撮る・選ぶ・描く・登録する</span>
         </a>
         <a className="fuwafuwa-home-link" href="/display">
-          <img src="/assets/sprites/ghost/preview.png" alt="" />
+          <img src="/content/fuwafuwa-land/sprites/ghost/preview.png" alt="" />
           <strong>ディスプレイ</strong>
           <span>モニターにふわふわ表示する</span>
         </a>
         <a className="fuwafuwa-home-link" href="/debug">
-          <img src="/assets/sprites/tooth/preview.png" alt="" />
+          <img src="/content/fuwafuwa-land/sprites/tooth/preview.png" alt="" />
           <strong>チェック</strong>
           <span>FPS・件数・接続状態を見る</span>
         </a>

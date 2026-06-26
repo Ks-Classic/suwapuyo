@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SUUSUU_CONFIG } from "../config";
 import { FuwafuwaWorld } from "../renderer/FuwafuwaWorld";
-import type { Artwork, ConnectionStatus, DisplayState, FuwafuwaServices, MetricsSnapshot } from "../types";
+import type { Artwork, CharacterContentBundle, ConnectionStatus, DisplayCharacter, DisplayState, FuwafuwaServices, MetricsSnapshot } from "../types";
+import { CharacterContentPopup } from "./CharacterContentPopup";
 import { MetricsOverlay } from "./MetricsOverlay";
 
 interface DisplayScreenProps {
@@ -35,16 +36,58 @@ interface MemoryWithPerformance extends Performance {
   memory?: { usedJSHeapSize: number };
 }
 
+function artworkFromCharacter(character: DisplayCharacter, artwork?: Artwork): Artwork {
+  if (artwork !== undefined) {
+    return {
+      ...artwork,
+      displayLabel: character.label,
+      givenName: character.label,
+      status: character.status === "visible" ? "visible" : character.status,
+      displayScale: character.displayScale,
+    };
+  }
+  return {
+    id: character.id,
+    displayLabel: character.label,
+    givenName: character.label,
+    source: "digital",
+    imageBlobKey: character.imagePath,
+    width: 1,
+    height: 1,
+    displayScale: character.displayScale,
+    status: character.status === "visible" ? "visible" : character.status,
+    consentScope: "unknown",
+    createdAt: character.createdAt,
+    updatedAt: character.updatedAt,
+    showCount: 0,
+  };
+}
+
+function stateFromCharacters(base: DisplayState, characters: DisplayCharacter[] | null): DisplayState {
+  if (characters === null) {
+    return base;
+  }
+  const visibleArtworkIds = characters.filter((character) => character.status === "visible").map((character) => character.id);
+  return {
+    ...base,
+    visibleArtworkIds,
+    featuredArtworkId: base.featuredArtworkId !== undefined && visibleArtworkIds.includes(base.featuredArtworkId) ? base.featuredArtworkId : undefined,
+    maxVisibleCount: Math.max(1, Math.min(30, visibleArtworkIds.length)),
+  };
+}
+
 export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const worldRef = useRef<FuwafuwaWorld | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [displayCharacters, setDisplayCharacters] = useState<DisplayCharacter[] | null>(null);
   const [displayState, setDisplayState] = useState<DisplayState>(INITIAL_STATE);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const [fps, setFps] = useState(0);
   const [storageEstimate, setStorageEstimate] = useState<{ usage?: number; quota?: number }>({});
   const [worldReady, setWorldReady] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [activeContent, setActiveContent] = useState<CharacterContentBundle | null>(null);
   const lastEventIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -61,6 +104,18 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
       }
       worldRef.current = nextWorld;
       nextWorld.onFps(setFps);
+      nextWorld.onCharacterTap((characterId) => {
+        void services.characterContent
+          .track({ type: "tap", characterId })
+          .catch(() => undefined)
+          .then(() => services.characterContent.getCharacterContent(characterId))
+          .then((bundle) => {
+            if (bundle?.character.tapEnabled === true && bundle.content?.isPublished === true && bundle.items.length > 0) {
+              setActiveContent(bundle);
+            }
+          })
+          .catch(() => undefined);
+      });
       setWorldReady(true);
     });
     return () => {
@@ -69,13 +124,14 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
       nextWorld.destroy();
       worldRef.current = null;
     };
-  }, []);
+  }, [services.characterContent]);
 
   useEffect(() => {
-    void Promise.all([services.repository.list(), services.displayState.getDisplayState()])
-      .then(([loadedArtworks, loadedState]) => {
+    void Promise.all([services.repository.list(), services.displayState.getDisplayState(), services.characterContent.listCharacters()])
+      .then(([loadedArtworks, loadedState, loadedCharacters]) => {
         setArtworks(loadedArtworks);
         setDisplayState(loadedState);
+        setDisplayCharacters(loadedCharacters);
       })
       .catch(() => {
         setConnectionStatus("error");
@@ -85,59 +141,102 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
       setConnectionStatus,
     );
     const stateSub = services.displayState.subscribeDisplayState(setDisplayState, setConnectionStatus);
+    const characterSub = services.characterContent.subscribeCharacterChanges(
+      (character) =>
+        setDisplayCharacters((current) => {
+          if (current === null) {
+            return [character];
+          }
+          return [...current.filter((item) => item.id !== character.id), character].sort((left, right) => left.sortOrder - right.sortOrder || Date.parse(left.createdAt) - Date.parse(right.createdAt));
+        }),
+      setConnectionStatus,
+    );
     return () => {
       void artworkSub.unsubscribe();
       void stateSub.unsubscribe();
+      void characterSub.unsubscribe();
     };
-  }, [services.displayState, services.repository]);
+  }, [services.characterContent, services.displayState, services.repository]);
+
+  const effectiveDisplayState = useMemo(() => stateFromCharacters(displayState, displayCharacters), [displayCharacters, displayState]);
+  const worldArtworks = useMemo(() => {
+    if (displayCharacters === null) {
+      return artworks;
+    }
+    return displayCharacters
+      .filter((character) => character.status !== "archived")
+      .map((character) => artworkFromCharacter(character, artworks.find((artwork) => artwork.id === character.sourceId || artwork.id === character.id)));
+  }, [artworks, displayCharacters]);
+
+  const visibleActiveContent = useMemo(() => {
+    if (activeContent === null || displayCharacters === null) {
+      return activeContent;
+    }
+    const character = displayCharacters.find((item) => item.id === activeContent.character.id);
+    return character?.status === "visible" ? activeContent : null;
+  }, [activeContent, displayCharacters]);
 
   useEffect(() => {
     if (!worldReady) {
       return;
     }
-    void worldRef.current?.sync(artworks, displayState, (id) => services.repository.getImageURL(id));
-  }, [artworks, displayState, services.repository, worldReady]);
+    void worldRef.current?.sync(worldArtworks, effectiveDisplayState, (id) => {
+      const character = displayCharacters?.find((item) => item.id === id);
+      if (character?.sourceType === "artwork") {
+        return services.repository.getImageURL(character.sourceId);
+      }
+      if (character !== undefined) {
+        return Promise.resolve(services.characterContent.getMediaPublicUrl(character.imagePath));
+      }
+      return services.repository.getImageURL(id);
+    });
+  }, [displayCharacters, effectiveDisplayState, services.characterContent, services.repository, worldArtworks, worldReady]);
 
   useEffect(() => {
     if (!worldReady) {
       return;
     }
-    if (displayState.displayEvent?.type !== "battle") {
+    if (effectiveDisplayState.displayEvent?.type !== "battle") {
       lastEventIdRef.current = null;
       worldRef.current?.stopDisplayEvent();
       return;
     }
-    if (lastEventIdRef.current === displayState.displayEvent.id) {
+    if (lastEventIdRef.current === effectiveDisplayState.displayEvent.id) {
       return;
     }
-    lastEventIdRef.current = displayState.displayEvent.id;
-    worldRef.current?.startBattleEvent(displayState.displayEvent.id);
-  }, [displayState.displayEvent, worldReady]);
+    lastEventIdRef.current = effectiveDisplayState.displayEvent.id;
+    worldRef.current?.startBattleEvent(effectiveDisplayState.displayEvent.id);
+  }, [effectiveDisplayState.displayEvent, worldReady]);
 
   useEffect(() => {
     let active = true;
-    const missingIds = displayState.visibleArtworkIds.filter((id) => !artworks.some((artwork) => artwork.id === id));
+    const missingIds = effectiveDisplayState.visibleArtworkIds.filter((id) => !artworks.some((artwork) => artwork.id === id));
     if (missingIds.length === 0) {
       return undefined;
     }
-    void Promise.all(missingIds.map((id) => services.repository.getById(id))).then((loaded) => {
+    void Promise.all(
+      missingIds.map((id) => {
+        const character = displayCharacters?.find((item) => item.id === id);
+        return services.repository.getById(character?.sourceType === "artwork" ? character.sourceId : id);
+      }),
+    ).then((loaded) => {
       if (!active) {
         return;
       }
       const found = loaded.filter((artwork): artwork is Artwork => artwork !== null);
       if (found.length > 0) {
-        setArtworks((current) => sortByDisplayState([...found, ...current], displayState.visibleArtworkIds));
+        setArtworks((current) => sortByDisplayState([...found, ...current], effectiveDisplayState.visibleArtworkIds));
       }
     });
     return () => {
       active = false;
     };
-  }, [artworks, displayState.visibleArtworkIds, services.repository]);
+  }, [artworks, displayCharacters, effectiveDisplayState.visibleArtworkIds, services.repository]);
 
   const metrics: MetricsSnapshot = {
     fps,
-    artworkCount: artworks.length,
-    visibleCount: displayState.visibleArtworkIds.length,
+    artworkCount: worldArtworks.length,
+    visibleCount: effectiveDisplayState.visibleArtworkIds.length,
     connectionStatus,
     storageUsageBytes: storageEstimate.usage,
     storageQuotaBytes: storageEstimate.quota,
@@ -156,7 +255,7 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
     return () => {
       active = false;
     };
-  }, [artworks.length]);
+  }, [worldArtworks.length]);
 
   return (
     <main className="fuwafuwa-display">
@@ -164,6 +263,7 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
         <a href="/">ホーム</a>
         <a href="/staff">スタッフ</a>
       </nav>
+      <h1 className="fuwafuwa-display-title">ふわふわランド</h1>
       {!audioUnlocked ? (
         <button
           type="button"
@@ -176,16 +276,17 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
         </button>
       ) : null}
       <div ref={hostRef} className="fuwafuwa-world" />
+      <CharacterContentPopup bundle={visibleActiveContent} repository={services.characterContent} onClose={() => setActiveContent(null)} />
       {debug ? (
         <div className="fuwafuwa-html-layer">
-          {displayState.visibleArtworkIds.map((id, index) => {
-          const artwork = artworks.find((item) => item.id === id);
+          {effectiveDisplayState.visibleArtworkIds.map((id, index) => {
+          const artwork = worldArtworks.find((item) => item.id === id);
           const left = 18 + ((index * 23) % 64);
           const top = 22 + ((index * 31) % 52);
           return (
             <figure
               key={id}
-              className={displayState.featuredArtworkId === id ? "fuwafuwa-float-card is-featured" : "fuwafuwa-float-card"}
+              className={effectiveDisplayState.featuredArtworkId === id ? "fuwafuwa-float-card is-featured" : "fuwafuwa-float-card"}
               style={{
                 left: `clamp(140px, ${left}%, calc(100vw - 140px))`,
                 top: `clamp(150px, ${top}%, calc(100vh - 150px))`,
@@ -199,7 +300,7 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
           })}
         </div>
       ) : null}
-      {displayState.visibleArtworkIds.length === 0 ? <div className="fuwafuwa-empty">WAITING FOR ARTWORKS</div> : null}
+      {effectiveDisplayState.visibleArtworkIds.length === 0 ? <div className="fuwafuwa-empty">WAITING FOR ARTWORKS</div> : null}
       <MetricsOverlay metrics={metrics} />
     </main>
   );

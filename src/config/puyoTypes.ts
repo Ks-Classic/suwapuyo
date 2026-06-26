@@ -37,10 +37,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "ghost_pop4",
     },
     sprites: {
-      idle: "/assets/sprites/ghost/idle.png",
-      connected: "/assets/sprites/ghost/idle.png",
-      popping: "/assets/sprites/ghost/idle.png",
-      preview: "/assets/sprites/ghost/preview.png",
+      idle: "/content/fuwafuwa-land/sprites/ghost/idle.png",
+      connected: "/content/fuwafuwa-land/sprites/ghost/idle.png",
+      popping: "/content/fuwafuwa-land/sprites/ghost/idle.png",
+      preview: "/content/fuwafuwa-land/sprites/ghost/preview.png",
     },
   },
   tooth: {
@@ -55,10 +55,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "tooth_pop4",
     },
     sprites: {
-      idle: "/assets/sprites/tooth/idle.png",
-      connected: "/assets/sprites/tooth/idle.png",
-      popping: "/assets/sprites/tooth/idle.png",
-      preview: "/assets/sprites/tooth/preview.png",
+      idle: "/content/fuwafuwa-land/sprites/tooth/idle.png",
+      connected: "/content/fuwafuwa-land/sprites/tooth/idle.png",
+      popping: "/content/fuwafuwa-land/sprites/tooth/idle.png",
+      preview: "/content/fuwafuwa-land/sprites/tooth/preview.png",
     },
   },
   blob: {
@@ -73,10 +73,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "blob_pop4",
     },
     sprites: {
-      idle: "/assets/sprites/blob/idle.png",
-      connected: "/assets/sprites/blob/idle.png",
-      popping: "/assets/sprites/blob/idle.png",
-      preview: "/assets/sprites/blob/preview.png",
+      idle: "/content/fuwafuwa-land/sprites/blob/idle.png",
+      connected: "/content/fuwafuwa-land/sprites/blob/idle.png",
+      popping: "/content/fuwafuwa-land/sprites/blob/idle.png",
+      preview: "/content/fuwafuwa-land/sprites/blob/preview.png",
     },
   },
   tanuki: {
@@ -91,10 +91,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "tanuki_pop4",
     },
     sprites: {
-      idle: "/assets/sprites/tanuki/idle.png",
-      connected: "/assets/sprites/tanuki/idle.png",
-      popping: "/assets/sprites/tanuki/idle.png",
-      preview: "/assets/sprites/tanuki/preview.png",
+      idle: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
+      connected: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
+      popping: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
+      preview: "/content/fuwafuwa-land/sprites/tanuki/preview.png",
     },
   },
 };
