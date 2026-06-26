@@ -699,28 +699,41 @@ def wrap_text(draw, text, font, max_width):
             out.append(c)
     return out
 
-def rounded_caption(canvas, text, font, cx, cy, border, fill, pop):
+def draw_caption(canvas, text, font, cx, cy, color, pop, style="outline"):
+    """字幕。話者区別をスタイルで:
+       outline(推奨)=白文字＋黒フチ＋話者色の外フチ / color=話者色の文字＋白フチ / box=白座布団＋色枠。
+       可読性は outline が最良（白文字＋黒フチ＝研究値）。"""
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
     max_text_w = canvas.width - 300        # 1行≒11〜13字に締める（研究: 縦字幕の可読上限）
+    sw = max(3, int(font.size * 0.10))     # 黒フチ幅
     lines = wrap_text(d, text, font, max_text_w)
-    line_gap = 10
-    boxes = [d.textbbox((0, 0), line, font=font) for line in lines]
-    widths = [box[2] - box[0] for box in boxes]
-    heights = [box[3] - box[1] for box in boxes]
+    line_gap = 12
+    boxes = [d.textbbox((0, 0), l, font=font, stroke_width=sw) for l in lines]
+    widths = [b[2] - b[0] for b in boxes]
+    heights = [b[3] - b[1] for b in boxes]
     tw = max(widths) if widths else 0
     th = sum(heights) + line_gap * max(0, len(lines) - 1)
-    pad = 26; x = int(cx - tw / 2); y = int(cy - th / 2 - (1 - pop) * 24)
-    d.rounded_rectangle([x - pad, y - pad, x + tw + pad, y + th + pad],
-                        radius=28, fill=fill, outline=border + (255,), width=7)
+    y = int(cy - th / 2 - (1 - pop) * 24)
+    col = tuple(color) + (255,)
+    if style == "box":
+        pad = 26; x = int(cx - tw / 2)
+        d.rounded_rectangle([x - pad, y - pad, x + tw + pad, y + th + pad],
+                            radius=28, fill=(255, 255, 255, 240), outline=col, width=7)
     yy = y
     for line, box, width, height in zip(lines, boxes, widths, heights):
-        d.text((int(cx - width / 2) - box[0], yy - box[1]), line, font=font, fill=(31, 41, 55, 255))
+        x = int(cx - width / 2) - box[0]; ty = yy - box[1]
+        if style == "box":
+            d.text((x, ty), line, font=font, fill=(31, 41, 55, 255))
+        elif style == "color":                 # 話者色の文字＋白フチ（暗背景でも読める）
+            d.text((x, ty), line, font=font, fill=(255, 255, 255, 235), stroke_width=sw, stroke_fill=(255, 255, 255, 235))
+            d.text((x, ty), line, font=font, fill=col)
+        else:                                   # outline(推奨): 話者色の外フチ→黒フチ→白文字
+            d.text((x, ty), line, font=font, fill=col, stroke_width=sw + max(3, int(font.size * 0.07)), stroke_fill=col)
+            d.text((x, ty), line, font=font, fill=(38, 42, 55, 255), stroke_width=sw, stroke_fill=(38, 42, 55, 255))
+            d.text((x, ty), line, font=font, fill=(255, 255, 255, 255))
         yy += height + line_gap
-    if pop < 1.0:
-        arr = np.array(layer); arr[..., 3] = (arr[..., 3] * pop).astype(np.uint8)
-        layer = Image.fromarray(arr, "RGBA")
-    return Image.alpha_composite(canvas, layer)
+    return Image.alpha_composite(canvas, alpha_layer(layer, pop))
 
 def alpha_layer(layer, opacity):
     if opacity >= 0.999:
@@ -1133,11 +1146,10 @@ def render_frame(spec, scene, font_path, tsec, starts):
         is_cta = who == "cta"
         spk = scene["speakers"].get(who) if not is_cta else None
         col = tuple(spec["cta"]["color"]) if is_cta else (spk["color"] if spk else (255, 255, 255))
-        fill = (255, 247, 214, 240) if is_cta else (255, 255, 255, 240)
         fnt = scene["fonts"]["cta"] if is_cta else scene["fonts"]["sub"]
         cy = int(H * rel(layout, "ctaY" if is_cta else "subtitleY", 0.69))
         pop = min(1.0, t_in / 0.18)
-        canvas = rounded_caption(canvas, ln["text"], fnt, W // 2, cy, col, fill, pop)
+        canvas = draw_caption(canvas, ln["text"], fnt, W // 2, cy, col, pop, spec.get("subtitleStyle", "outline"))
 
     if spec.get("debugSafezone"):
         ov = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
