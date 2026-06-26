@@ -14,17 +14,17 @@
     { "who": "waawaa", "text": "おはようございます！", "dur": 2.0 },
     { "who": "waawaa", "text": "今日のふわふわランドの天気は、、、", "dur": 3.0 },
     { "who": "suusuu", "text": "はれ、です！", "dur": 2.0 },
-    { "who": "waawaa", "text": "ふわぁ… あさ 起きたら 口カラッカラ", "dur": 3.2 },
-    { "who": "suusuu", "text": "あんた また 口あけて 寝とったな", "dur": 3.2 },
-    { "who": "waawaa", "text": "なんで バレるん！？", "dur": 2.2 },
-    { "who": "suusuu", "text": "日本の子の 3人に1人、お口ぽかんで 寝てるらしいで", "dur": 4.4 },
-    { "who": "waawaa", "text": "3人に1人！ ぼくの 仲間 いっぱいや！", "dur": 3.4 },
-    { "who": "suusuu", "text": "仲間ちゃう。口あくと 乾くやろ？", "dur": 2.8 },
-    { "who": "suusuu", "text": "そしたら むし歯くんが よろこぶ言うてな", "dur": 3.4 },
-    { "who": "waawaa", "text": "ぼくの口、むし歯くんの パーティ会場やん", "dur": 3.6 },
-    { "who": "suusuu", "text": "せやから 夜は お口とじて、お鼻で すー", "dur": 3.8 },
-    { "who": "waawaa", "text": "で、それ 誰に きいたん？", "dur": 2.6 },
+    { "who": "waawaa", "text": "ふわぁ… あさ 起きたら 口カラカラ", "dur": 3.2 },
+    { "who": "suusuu", "text": "また 口あけて 寝てたでしょ", "dur": 3.0 },
+    { "who": "waawaa", "text": "なんで バレるの！？", "dur": 2.2 },
+    { "who": "suusuu", "text": "日本の子の 3人に1人、お口ぽかんで 寝てるんだって", "dur": 4.4 },
+    { "who": "waawaa", "text": "3人に1人！ ぼくの 仲間 いっぱい！", "dur": 3.2 },
+    { "who": "suusuu", "text": "仲間じゃない。口あくと 乾くでしょ？", "dur": 3.0 },
+    { "who": "suusuu", "text": "そしたら むし歯くんが よろこぶんだって", "dur": 3.4 },
+    { "who": "waawaa", "text": "ぼくの口、むし歯くんの パーティ会場じゃん", "dur": 3.6 },
+    { "who": "suusuu", "text": "だから 夜は お口とじて、お鼻で すー", "dur": 3.6 },
+    { "who": "waawaa", "text": "で、それ 誰に きいたの？", "dur": 2.6 },
     { "who": "suusuu", "text": "村の せんせい。…8/2、会いに来る？", "dur": 3.6 },
-    { "who": "cta", "text": "8/2、YourTIMEで まっとるで", "dur": 2.8 }
+    { "who": "cta", "text": "8/2、YourTIMEで まってるよ", "dur": 2.8 }
   ]
 }
