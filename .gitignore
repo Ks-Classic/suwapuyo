@@ -27,3 +27,8 @@ supabase/.temp/
 
 # ショート動画の書き出し（script.json+render.pyから再生成可能）
 shorts/out/
+# 旧一発もの動画（make_30s.py から再生成可能・8.5MBをgitに載せない）
+shorts/legacy/*.mp4
+
+# 一時QA作業ディレクトリ
+.tmp-qa/
