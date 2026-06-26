@@ -1,0 +1,28 @@
+{
+  "title": "yt-006-yoru-okuchi-pokan",
+  "series": "yoru-no-himitsu",
+  "size": [1080, 1920],
+  "fps": 30,
+  "topTitle": "ねてる間の、ひみつ",
+  "theme": "夜のお口ぽかんと、お鼻のすーすー呼吸",
+  "weather": "よる",
+  "hook": { "text": "ねるとき、お口…あいてない？", "durationSec": 1.6, "type": "aruaru" },
+  "cta": { "color": [214, 158, 44] },
+  "audio": { "bgm": true, "animalese": true },
+  "eventAnimation": ["breath-wind"],
+  "lines": [
+    { "who": "waawaa", "text": "おはようございます！", "dur": 2.2 },
+    { "who": "waawaa", "text": "今日のふわふわランドの天気は、、、", "dur": 3.0 },
+    { "who": "suusuu", "text": "よる、です！", "dur": 2.0 },
+    { "who": "waawaa", "text": "ねえ すーすー！ぼく すごいこと きづいた！", "dur": 3.0 },
+    { "who": "suusuu", "text": "……いやな よかん。なに？", "dur": 2.6 },
+    { "who": "waawaa", "text": "ねてる あいだに、お口から たましい でてかない！？", "dur": 3.6 },
+    { "who": "suusuu", "text": "でてかない。", "dur": 1.6 },
+    { "who": "waawaa", "text": "でも あさ、お口 ぽかーんって あいてるよ？", "dur": 3.4 },
+    { "who": "suusuu", "text": "それね。よるは お口とじて、お鼻で すー、すー…", "dur": 4.0 },
+    { "who": "waawaa", "text": "あっ いま じぶんの なまえ よんだ！", "dur": 3.0 },
+    { "who": "suusuu", "text": "よんでない。…でも おぼえやすいでしょ？", "dur": 3.4 },
+    { "who": "waawaa", "text": "おぼえた！ねるまえ、お口とじて すーすー！", "dur": 3.4 },
+    { "who": "cta", "text": "よる、お口とじて すーすー", "dur": 2.6 }
+  ]
+}
