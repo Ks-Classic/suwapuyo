@@ -1,46 +1,84 @@
 {
   "title": "yt-003-kuchimori-network",
+  "series": "fuwa-kurashi",
+  "topTitle": "からだの声、きいてる？",
+  "theme": "からだに様子をきく。何も言わずやさしく聞くだけでリラックス",
+  "weather": "くもり",
+  "hook": {
+    "text": "からだの声、きいてる？",
+    "durationSec": 1.6,
+    "type": "aruaru"
+  },
+  "eventAnimation": [
+    "care-glow"
+  ],
+  "lines": [
+    {
+      "who": "wano",
+      "text": "おはようございます！",
+      "dur": 2.0
+    },
+    {
+      "who": "wano",
+      "text": "今日のふわふわランドの天気は、、、",
+      "dur": 3.0
+    },
+    {
+      "who": "suu",
+      "text": "くもり、です！",
+      "dur": 2.0
+    },
+    {
+      "who": "wano",
+      "text": "ねえ すーすー。さいきん、からだ いそがしそう",
+      "dur": 3.8
+    },
+    {
+      "who": "suu",
+      "text": "からだの 声って、きいてあげてる？",
+      "dur": 3.4
+    },
+    {
+      "who": "wano",
+      "text": "こえ？ からだ しゃべるの！？",
+      "dur": 2.8
+    },
+    {
+      "who": "suu",
+      "text": "ことばじゃ ないよ。…そっと きくだけ",
+      "dur": 3.6
+    },
+    {
+      "who": "wano",
+      "text": "なにも 言わずに？",
+      "dur": 2.2
+    },
+    {
+      "who": "suu",
+      "text": "うん。肩に そっと、おつかれさま って",
+      "dur": 3.6
+    },
+    {
+      "who": "wano",
+      "text": "ふぁ…なんか、ほっと した",
+      "dur": 2.8
+    },
+    {
+      "who": "suu",
+      "text": "でしょ。きいてあげるだけで、ゆるむんだ",
+      "dur": 3.6
+    },
+    {
+      "who": "cta",
+      "text": "からだに そっと、おつかれさま。8/2 YourTIMEで",
+      "dur": 3.6
+    }
+  ],
   "size": [
     1080,
     1920
   ],
   "fps": 30,
-  "backgroundVariant": "cloud-network: speech-bubble clouds connected with warm lines",
-  "topTitle": "つながる朝",
-  "titleStyle": "ふわ水色",
-  "targetAudience": {
-    "primary": "medical_worker",
-    "secondary": "health_literacy"
-  },
-  "viewerState": "来場者にどう声をかけると伝わるか考えている",
-  "theme": "健康情報を押しつけず、会話から次のケアにつなげる",
-  "behaviorGoal": "最初の声かけを説明ではなく相手の困りごとから始める",
-  "cognitiveHook": "くもりの朝を、話しやすい空気として見立てる",
-  "marketingPhilosophy": "YourTIMEは売り込みより、信頼が生まれる接点をつくる場",
-  "weather": "くもり",
-  "topIllust": "public/content/fuwafuwa-land/characters/display/wanono.png",
-  "characters": {
-    "wano": {
-      "img": "public/content/fuwafuwa-land/characters/display/wanono.png",
-      "side": "left",
-      "pitch": 840,
-      "color": [
-        90,
-        172,
-        192
-      ]
-    },
-    "suu": {
-      "img": "public/content/fuwafuwa-land/characters/display/suusuu.png",
-      "side": "right",
-      "pitch": 760,
-      "color": [
-        210,
-        132,
-        156
-      ]
-    }
-  },
   "cta": {
     "color": [
       214,
@@ -51,72 +89,5 @@
   "audio": {
     "bgm": true,
     "animalese": true
-  },
-  "debugSafezone": false,
-  "eventAnimation": [
-    "halo-link",
-    "soft-popup",
-    "care-glow"
-  ],
-  "emotion": {
-    "wano": "soft, floating, gently reassuring",
-    "suu": "calm organizer, warm explanation"
-  },
-  "lines": [
-    {
-      "who": "wano",
-      "text": "おはようございます！",
-      "dur": 2.2
-    },
-    {
-      "who": "wano",
-      "text": "今日のふわふわランドの天気は、、、",
-      "dur": 3.0
-    },
-    {
-      "who": "wano",
-      "text": "くもりです！",
-      "dur": 2.0
-    },
-    {
-      "who": "suu",
-      "text": "まぶしすぎないから、話しやすい朝だね",
-      "dur": 3.8
-    },
-    {
-      "who": "wano",
-      "text": "健康の話って、正しさだけだと届かない日がある",
-      "dur": 4.5
-    },
-    {
-      "who": "suu",
-      "text": "まずは、最近こまっていることを聞く",
-      "dur": 3.7
-    },
-    {
-      "who": "wano",
-      "text": "それだけで、情報がその人のものになる",
-      "dur": 3.8
-    },
-    {
-      "who": "suu",
-      "text": "医療の人にも、そうじゃない人にも同じだね",
-      "dur": 4.0
-    },
-    {
-      "who": "wano",
-      "text": "YourTIMEは、売り込むより、つながる場所",
-      "dur": 4.0
-    },
-    {
-      "who": "suu",
-      "text": "次のケアは、信頼のあとについてくる",
-      "dur": 3.6
-    },
-    {
-      "who": "cta",
-      "text": "まず一言、聞いてみよう",
-      "dur": 3.0
-    }
-  ]
+  }
 }

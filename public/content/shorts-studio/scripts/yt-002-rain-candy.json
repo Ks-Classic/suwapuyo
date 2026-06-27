@@ -1,46 +1,90 @@
 {
   "title": "yt-002-rain-candy",
+  "series": "fuwa-zatsugaku",
+  "topTitle": "甘いもの、悪者じゃない",
+  "theme": "だらだら食べを減らして体を整える",
+  "weather": "あめ",
+  "hook": {
+    "text": "甘いもの、ガマンしてない？",
+    "durationSec": 1.6,
+    "type": "aruaru"
+  },
+  "eventAnimation": [
+    "candy-rain",
+    "small-plate"
+  ],
+  "lines": [
+    {
+      "who": "keto",
+      "text": "おはようございます！",
+      "dur": 2.0
+    },
+    {
+      "who": "keto",
+      "text": "今日のふわふわランドの天気は、、、",
+      "dur": 3.0
+    },
+    {
+      "who": "touka",
+      "text": "あめ、です！",
+      "dur": 2.0
+    },
+    {
+      "who": "touka",
+      "text": "あめ！？ やった、ぼくの すきな…",
+      "dur": 3.0
+    },
+    {
+      "who": "keto",
+      "text": "……水の あめ、にゃ",
+      "dur": 2.4
+    },
+    {
+      "who": "touka",
+      "text": "なーんだ。甘いものは 今日も がまん？",
+      "dur": 3.4
+    },
+    {
+      "who": "keto",
+      "text": "ちがうにゃ。甘いのは わる者じゃない",
+      "dur": 3.4
+    },
+    {
+      "who": "touka",
+      "text": "えっ、いいの！？",
+      "dur": 2.2
+    },
+    {
+      "who": "keto",
+      "text": "大事なのは 量より だらだら しないこと、にゃ",
+      "dur": 4.0
+    },
+    {
+      "who": "touka",
+      "text": "だらだら…耳が いたい",
+      "dur": 2.6
+    },
+    {
+      "who": "keto",
+      "text": "ちょこっと食べたら、お口 おやすみ。にゃ（じゅるり）",
+      "dur": 4.0
+    },
+    {
+      "who": "touka",
+      "text": "先生、いま よだれ でてたよ",
+      "dur": 3.0
+    },
+    {
+      "who": "cta",
+      "text": "甘い時間、決めよ。8/2 YourTIMEで まってるよ",
+      "dur": 3.4
+    }
+  ],
   "size": [
     1080,
     1920
   ],
   "fps": 30,
-  "backgroundVariant": "rain-candy: candy-like raindrops slowly become clear water drops",
-  "topTitle": "雨の日の選び方",
-  "titleStyle": "先生みどり",
-  "targetAudience": {
-    "primary": "general_discomfort",
-    "secondary": "health_literacy"
-  },
-  "viewerState": "甘いものやだるさが気になり、体の整え方を知りたい",
-  "theme": "だらだら食べを減らして体を整える",
-  "behaviorGoal": "甘いものを小皿に分け、食べる時間を決める",
-  "cognitiveHook": "雨とアメの一瞬の勘違いから、血糖の話へ自然につなぐ",
-  "marketingPhilosophy": "YourTIMEは、我慢ではなく自分に合う整え方を見つける場",
-  "weather": "雨",
-  "topIllust": "public/content/fuwafuwa-land/characters/display/touka.png",
-  "characters": {
-    "keto": {
-      "img": "public/content/fuwafuwa-land/characters/display/ketonyan.png",
-      "side": "left",
-      "pitch": 650,
-      "color": [
-        93,
-        147,
-        78
-      ]
-    },
-    "touka": {
-      "img": "public/content/fuwafuwa-land/characters/display/touka.png",
-      "side": "right",
-      "pitch": 520,
-      "color": [
-        164,
-        112,
-        52
-      ]
-    }
-  },
   "cta": {
     "color": [
       214,
@@ -51,77 +95,5 @@
   "audio": {
     "bgm": true,
     "animalese": true
-  },
-  "debugSafezone": false,
-  "eventAnimation": [
-    "candy-rain",
-    "small-plate",
-    "water-sparkle"
-  ],
-  "emotion": {
-    "keto": "teacher mode with warm correction",
-    "touka": "embarrassed, then relieved and practical"
-  },
-  "lines": [
-    {
-      "who": "keto",
-      "text": "おはようございます！",
-      "dur": 2.2
-    },
-    {
-      "who": "keto",
-      "text": "今日のふわふわランドの天気は、、、",
-      "dur": 3.0
-    },
-    {
-      "who": "keto",
-      "text": "雨です！",
-      "dur": 2.0
-    },
-    {
-      "who": "touka",
-      "text": "雨かあ。アメが降る日じゃないよね？",
-      "dur": 3.2
-    },
-    {
-      "who": "keto",
-      "text": "水の雨にゃ。甘い方は、悪者じゃない",
-      "dur": 4.0
-    },
-    {
-      "who": "touka",
-      "text": "よかった。ぼく、ちょっと焦げた気分で",
-      "dur": 3.5
-    },
-    {
-      "who": "keto",
-      "text": "大事なのは量より、だらだら続けないこと",
-      "dur": 4.2
-    },
-    {
-      "who": "touka",
-      "text": "じゃあ、小皿に分ける。水も飲む",
-      "dur": 3.4
-    },
-    {
-      "who": "keto",
-      "text": "それだけで、体は選びやすくなるにゃ",
-      "dur": 3.6
-    },
-    {
-      "who": "touka",
-      "text": "我慢じゃなくて、作戦なんだね",
-      "dur": 3.1
-    },
-    {
-      "who": "keto",
-      "text": "YourTIMEは、体に合う作戦を見つける場所",
-      "dur": 4.3
-    },
-    {
-      "who": "cta",
-      "text": "甘い時間を決めよう",
-      "dur": 3.0
-    }
-  ]
+  }
 }

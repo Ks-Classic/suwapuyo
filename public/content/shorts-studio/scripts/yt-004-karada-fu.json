@@ -1,46 +1,84 @@
 {
   "title": "yt-004-karada-fu",
+  "series": "fuwa-zatsugaku",
+  "topTitle": "鼻って、すごいマスク",
+  "theme": "鼻呼吸の大事さ：鼻は空気をあたため・うるおし・ほこりをとる",
+  "weather": "はれ",
+  "hook": {
+    "text": "口で 息、してない？",
+    "durationSec": 1.6,
+    "type": "aruaru"
+  },
+  "eventAnimation": [
+    "breath-wind"
+  ],
+  "lines": [
+    {
+      "who": "shinbo",
+      "text": "おはようございます！",
+      "dur": 2.0
+    },
+    {
+      "who": "shinbo",
+      "text": "今日のふわふわランドの天気は、、、",
+      "dur": 3.0
+    },
+    {
+      "who": "sanka",
+      "text": "はれ、です！",
+      "dur": 2.0
+    },
+    {
+      "who": "shinbo",
+      "text": "あれ さんか、お口 あいてるよ",
+      "dur": 3.0
+    },
+    {
+      "who": "sanka",
+      "text": "あっ、つい 口で 息 しちゃう…",
+      "dur": 3.2
+    },
+    {
+      "who": "shinbo",
+      "text": "鼻ってね、すごい マスク なんだよ",
+      "dur": 3.4
+    },
+    {
+      "who": "sanka",
+      "text": "マスク！？ 鼻が！？",
+      "dur": 2.4
+    },
+    {
+      "who": "shinbo",
+      "text": "空気を あたためて、うるおして、ほこりも とる",
+      "dur": 4.2
+    },
+    {
+      "who": "sanka",
+      "text": "へぇ…口だと、そのまま 入っちゃうんだ",
+      "dur": 3.6
+    },
+    {
+      "who": "shinbo",
+      "text": "そう。だから 鼻で すー、が いいんだ",
+      "dur": 3.4
+    },
+    {
+      "who": "sanka",
+      "text": "お口とじて、鼻で すー…。なんか おちつく",
+      "dur": 4.0
+    },
+    {
+      "who": "cta",
+      "text": "鼻で すー、して みてね。8/2 YourTIMEで",
+      "dur": 3.4
+    }
+  ],
   "size": [
     1080,
     1920
   ],
   "fps": 30,
-  "backgroundVariant": "breath-lab: nose windsock, diaphragm clouds, clean blue airflow",
-  "topTitle": "鼻からすー",
-  "titleStyle": "夜のしずく",
-  "targetAudience": {
-    "primary": "general_discomfort",
-    "secondary": "family_health"
-  },
-  "viewerState": "口の乾き、姿勢、なんとなく疲れやすさが気になっている",
-  "theme": "口を閉じて鼻から吸う、小さな呼吸リセット",
-  "behaviorGoal": "肩を落として鼻から3秒吸う",
-  "cognitiveHook": "風の日から、口の乾きと鼻呼吸に気づく",
-  "marketingPhilosophy": "YourTIMEは、体のサインに気づいて小さく試せる場",
-  "weather": "風",
-  "topIllust": "public/content/fuwafuwa-land/characters/display/sanka.png",
-  "characters": {
-    "shinbo": {
-      "img": "public/content/fuwafuwa-land/characters/display/shinbo.png",
-      "side": "left",
-      "pitch": 610,
-      "color": [
-        166,
-        184,
-        86
-      ]
-    },
-    "sanka": {
-      "img": "public/content/fuwafuwa-land/characters/display/sanka.png",
-      "side": "right",
-      "pitch": 740,
-      "color": [
-        96,
-        174,
-        198
-      ]
-    }
-  },
   "cta": {
     "color": [
       214,
@@ -51,77 +89,5 @@
   "audio": {
     "bgm": true,
     "animalese": true
-  },
-  "debugSafezone": false,
-  "eventAnimation": [
-    "breath-wind",
-    "shadow-fade",
-    "posture-line"
-  ],
-  "emotion": {
-    "shinbo": "serious body analyst with odd metaphors",
-    "sanka": "worried at first, then brighter with nasal breathing"
-  },
-  "lines": [
-    {
-      "who": "shinbo",
-      "text": "おはようございます！",
-      "dur": 2.2
-    },
-    {
-      "who": "shinbo",
-      "text": "今日のふわふわランドの天気は、、、",
-      "dur": 3.0
-    },
-    {
-      "who": "shinbo",
-      "text": "風です！",
-      "dur": 2.0
-    },
-    {
-      "who": "sanka",
-      "text": "風の日って、口があくと乾くね",
-      "dur": 3.2
-    },
-    {
-      "who": "shinbo",
-      "text": "観察完了。今日は鼻からすーの日だ",
-      "dur": 3.4
-    },
-    {
-      "who": "sanka",
-      "text": "ぼく、口で吸うくせがあるかも",
-      "dur": 3.2
-    },
-    {
-      "who": "shinbo",
-      "text": "まず口を閉じる。肩をすとん",
-      "dur": 3.4
-    },
-    {
-      "who": "sanka",
-      "text": "すー。なんか影が少し薄い",
-      "dur": 3.2
-    },
-    {
-      "who": "shinbo",
-      "text": "鼻呼吸は、体に空気の道を思い出させる",
-      "dur": 4.2
-    },
-    {
-      "who": "sanka",
-      "text": "親子で一回だけなら、できそう",
-      "dur": 3.4
-    },
-    {
-      "who": "shinbo",
-      "text": "YourTIMEは、体のサインに気づく実験室だ",
-      "dur": 4.2
-    },
-    {
-      "who": "cta",
-      "text": "鼻から3秒すー",
-      "dur": 3.0
-    }
-  ]
+  }
 }

@@ -1,46 +1,94 @@
 {
   "title": "yt-001-hare-mouth-gym",
+  "series": "fuwa-asobi",
+  "topTitle": "朝のお口たいそう",
+  "theme": "口腔育成：ほっぺ・舌・笑顔でお口を起こす",
+  "weather": "はれ",
+  "hook": {
+    "text": "お口、ねぼけてない？",
+    "durationSec": 1.5,
+    "type": "aruaru"
+  },
+  "eventAnimation": [
+    "cheek-balloon"
+  ],
+  "lines": [
+    {
+      "who": "waawaa",
+      "text": "おはようございます！",
+      "dur": 2.0
+    },
+    {
+      "who": "waawaa",
+      "text": "今日のふわふわランドの天気は、、、",
+      "dur": 3.0
+    },
+    {
+      "who": "mogu",
+      "text": "はれ、です！",
+      "dur": 2.0
+    },
+    {
+      "who": "waawaa",
+      "text": "ふわぁ…おはよ。って、お口 うごかない！",
+      "dur": 3.4
+    },
+    {
+      "who": "mogu",
+      "text": "ふふ、お口も まだ ねぼけてるんだよ",
+      "dur": 3.4
+    },
+    {
+      "who": "waawaa",
+      "text": "えっ、お口に ねぼけ あるの！？",
+      "dur": 2.8
+    },
+    {
+      "who": "mogu",
+      "text": "あるある。じゃあ ほっぺ ぷーっ！",
+      "dur": 3.0
+    },
+    {
+      "who": "waawaa",
+      "text": "ぷーーっ！…風船村長、はっしん！",
+      "dur": 3.2
+    },
+    {
+      "who": "mogu",
+      "text": "いいね〜！つぎ、ベロ ぺろーん",
+      "dur": 3.0
+    },
+    {
+      "who": "waawaa",
+      "text": "ぺろっ。…ゆうしゃの けん！",
+      "dur": 2.8
+    },
+    {
+      "who": "mogu",
+      "text": "ちがうけど、おしい（笑）",
+      "dur": 2.6
+    },
+    {
+      "who": "waawaa",
+      "text": "さいごは、にこーっ！",
+      "dur": 2.4
+    },
+    {
+      "who": "mogu",
+      "text": "かんぺき。ごはん前の お口スイッチ オンだね",
+      "dur": 3.8
+    },
+    {
+      "who": "cta",
+      "text": "ぷー、ぺろ、にこ。8/2 YourTIMEで あそぼ",
+      "dur": 3.2
+    }
+  ],
   "size": [
     1080,
     1920
   ],
   "fps": 30,
-  "backgroundVariant": "mouth-gym: toothbrush clouds, smiling tooth sun, soft morning blue",
-  "topTitle": "口たいそう",
-  "titleStyle": "ぷくっと黄色",
-  "targetAudience": {
-    "primary": "family_health",
-    "secondary": "health_literacy"
-  },
-  "viewerState": "親子で楽しくできる健康習慣を探している",
-  "theme": "口腔育成: ほっぺ・舌・笑顔でお口を起こす",
-  "behaviorGoal": "親子で10秒の口たいそうをする",
-  "cognitiveHook": "見た瞬間に真似できる小さな運動",
-  "marketingPhilosophy": "YourTIMEは、知識を聞くだけでなく親子で体験して次のケアへつながる場",
-  "weather": "晴れ",
-  "topIllust": "public/content/fuwafuwa-land/characters/originals/02_わーわー.png",
-  "characters": {
-    "wawa": {
-      "img": "public/content/fuwafuwa-land/characters/display/waawaa.png",
-      "side": "left",
-      "pitch": 920,
-      "color": [
-        222,
-        120,
-        44
-      ]
-    },
-    "mogu": {
-      "img": "public/content/fuwafuwa-land/characters/display/mogupiyo.png",
-      "side": "right",
-      "pitch": 700,
-      "color": [
-        56,
-        152,
-        224
-      ]
-    }
-  },
   "cta": {
     "color": [
       214,
@@ -51,92 +99,5 @@
   "audio": {
     "bgm": true,
     "animalese": true
-  },
-  "debugSafezone": false,
-  "eventAnimation": [
-    "cheek-balloon",
-    "tongue-flag",
-    "smile-stamp"
-  ],
-  "emotion": {
-    "wawa": "adventure excitement, bouncing with the explorer hat",
-    "mogu": "gentle coach, bubbly praise"
-  },
-  "lines": [
-    {
-      "who": "wawa",
-      "text": "おはようございます！",
-      "dur": 2.2
-    },
-    {
-      "who": "wawa",
-      "text": "今日のふわふわランドの天気は、、、",
-      "dur": 3.0
-    },
-    {
-      "who": "wawa",
-      "text": "晴れです！",
-      "dur": 2.0
-    },
-    {
-      "who": "mogu",
-      "text": "お口も、まだねぼけてるかも",
-      "dur": 2.8
-    },
-    {
-      "who": "wawa",
-      "text": "えっ、ぼくの口、寝ぐせある？",
-      "dur": 3.0
-    },
-    {
-      "who": "mogu",
-      "text": "あるある。じゃあ、ほっぺぷー！",
-      "dur": 3.2
-    },
-    {
-      "who": "wawa",
-      "text": "ぷーー！風船村長、発進！",
-      "dur": 3.0
-    },
-    {
-      "who": "mogu",
-      "text": "いいね、ぽこぽこ！次は舌ぺろ",
-      "dur": 3.4
-    },
-    {
-      "who": "wawa",
-      "text": "ぺろっ。勇者の剣みたい！",
-      "dur": 3.0
-    },
-    {
-      "who": "mogu",
-      "text": "ちがうけど、ちょっと近いかも",
-      "dur": 3.0
-    },
-    {
-      "who": "wawa",
-      "text": "最後は、にこー！どう？",
-      "dur": 3.0
-    },
-    {
-      "who": "mogu",
-      "text": "ばっちり。食べる前のお口じゅんびだね",
-      "dur": 3.8
-    },
-    {
-      "who": "wawa",
-      "text": "おうちでも、親子でぷーぺろにこー！",
-      "dur": 3.6
-    },
-    {
-      "who": "mogu",
-      "text": "YourTIMEで、こういう遊びを持ち帰ってね",
-      "dur": 4.0
-    },
-    {
-      "who": "cta",
-      "text": "ぷーぺろにこー！",
-      "dur": 3.0
-    }
-  ]
+  }
 }
