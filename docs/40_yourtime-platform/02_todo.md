@@ -1,54 +1,74 @@
-# YOUR TIME Platform Demo — TODO
+# YourTIME 村の案内所 — TODO（最新版）
 
-> Created: 2026-05-06
-> Active scope: fastest 10-minute demo for Suwa-san discussion.
+> 更新: 2026-07-01 ／ 対象: 2026-08-02 本番 と 直近の打合せデモ
+> 背骨: `07_experience-and-user-journey.md`（体験が最優先）。全TODOは「来場前/中/後に健康を楽しく深く体験してもらう」目的に奉仕する。
+> 設計: `03_village-concierge-design.md`（§13=実装状況）／ デザイン: `06_design-guideline.md`（すわぷよDNA）。
 
 ---
 
-## Completed Baseline
+## ✅ 実装済み（main コミット済・build green）
 
-- [x] Existing SuwaPuyo MVP: swap puzzle game
-- [x] Four character sprites and names
-- [x] Character-specific min-pop rules
-- [x] Tanuki coin effect
-- [x] Responsive mobile-first game screen
-- [x] Vercel deploy-ready Vite app
+- [x] `/concierge` LIFF器（オンボ→マップ→QRスタンプ→むらずかん→会場アナウンス・1オリジンpath）
+- [x] 家族構成アンケート（No ストレス5条件・キーボードゼロ・1タップ自動前進）
+- [x] むらずかん＝スタンプ台紙（トレカ化を撤回・時計→ロゴのインク押印・深さ=印の格）
+- [x] 獲得演出＝時計→インク押印（スプリング着地＋インク飛沫＋confetti＋SE）
+- [x] マップ 縦画面cover表示＋横パン（横長会場図の9:16違和感を解消）
+- [x] マップ カテゴリフィルタ（該当ブース強調・非該当ディム）
+- [x] デザイン正典化＝すわぷよDNA（マップ/アンケート/図鑑へ一貫適用の規定）
+- [x] 深さ3ボタンを横一列に修正
+- [x] バグ修正: すわぷよ盤面キャラのタップ選択/消去/リフィルで拡大
+- [x] バグ修正: LIFF外部ブラウザ強制ログイン→ローカルfallback回復
+- [x] 体験ドキュメント `07` / 設計 `03 §13` / 本TODO 更新
 
-## Phase 1: Discussion Demo
+---
 
-- [x] SPEC: define YOUR TIME platform concept
-- [x] TODO: define implementation steps
-- [x] Add mock YOUR TIME reflection data
-- [x] Add three-question reflection UI
-- [x] Add character result panel
-- [x] Add three "next entrance" recommendations
-- [x] Keep recommendations non-ranking and non-diagnostic
-- [ ] Confirm with Suwa-san whether the event language and categories are accurate
-- [ ] Replace mock recommendations with real YOUR TIME exhibitors/content
+## 🧍 人間側クリティカルパス（アプリ実装では埋まらない・要手作業）
 
-## Phase 2: Event PoC
+- [ ] LINE Developers Console で LIFF Endpoint を `https://fuwafuwa-land.vercel.app/concierge` に設定
+- [ ] 受付QR（友だち追加QR）取得（Official Account Manager）
+- [ ] `git push origin main` ＋ Vercel 本番反映（`vercel --prod`）
+- [ ] 小夏さん: 本番マップ素材（SVG/高解像PNG）・各社スタンプ用ロゴ・実出展者情報
+- [ ] リポジトリ整理: 未追跡のstray画像（`ChatGPT Image…` `スクリーンショット…` `やすさん.jpg`）の要否判断
 
-- [ ] Decide where the QR appears in the physical event flow
-- [ ] Define paper stamp rally handoff copy
-- [ ] Create exhibitor profile schema
-- [ ] Create content schema for YouTube / Instagram / article links
-- [ ] Add full directory view so recommendations do not feel unfair
-- [ ] Add simple analytics events without collecting sensitive health data
+---
 
-## Phase 3: Real Platform
+## 🎯 次の実装（体験を深める優先順）
 
-- [ ] Persist answers and results with explicit consent
-- [ ] Add admin editor for themes and exhibitors
-- [ ] Add event/location support for nationwide YOUR TIME events
-- [ ] Add post-event LINE or email follow-up
-- [ ] Add exhibitor-facing insight report
-- [ ] Define medical/legal review rules for health content
+### 来場中体験（During）を深める
+- [ ] **むらずかん 100枠ミッション化**（`06 §10`）: 密グリッド（正方4-5列）＋セット別スティッキー見出し（村エリア名＋進捗）＋未取得シルエット（番号のみ厳禁）＋「○○を○種あつめよう」ミッション＋endowed progress（受付で1-2個先付与）。実出展者データが前提。
+- [ ] 実出展者24件 ↔ ブース番号の対応表を反映（現状 `demoData` のサンプル使い回し）。
+- [ ] 初回アンケートのDNA磨き込み（概ね整合済・仕上げパス）。
+- [ ] マップ: フィルタ時に該当ブースへ fly-to（任意・過度な移動は避ける）。
 
-## Guardrails
+### 来場後体験（After）を深める
+- [ ] むらずかんを「思い出・学びの結晶」として見返せる導線（来場後）。
+- [ ] 村の案内所（LINE）の継続接続（週1上限・opt-inは良い体験直後にユーザー起点）。
 
-- [ ] Do not replace the paper stamp rally
-- [ ] Do not rank exhibitors
-- [ ] Do not provide medical diagnosis
-- [ ] Do not bias recommendation order by sponsorship amount
-- [ ] Do not collect child-sensitive data without explicit policy
+### 出展者価値（データ）
+- [ ] アンケート/スタンプの永続化（現状ローカルのみ＝出展者還元データが空）。
+- [ ] 企業レポート（Webページ・認証付き個別URL）。
 
+### 品質
+- [ ] テスト整備（現状0本・デモ優先で保留）。最低: アンケート状態遷移・スタンプ深さ上書き・フィルタ判定。
+- [ ] 実機で pan/pinch・スタンプSE（WebView自動再生制限）確認。
+- [ ] `announcements` の Supabase migration ＋ Realtime 本番確認。
+
+---
+
+## 🚧 ガードレール（体験を壊さないための"やらないこと"・`07 §1`）
+
+- [ ] 登録を強制しない／地図・紹介は登録なしでも見られる
+- [ ] 画面に沈めない（顔を上げさせる）／親子の会話を奪わない
+- [ ] 健康・医療の効果を断定しない（薬機法/医療広告GL）
+- [ ] 露出順位を金で売らない（お金は露出の"周り"を流す）
+- [ ] スタンプを外部通貨化しない（記念・進捗の可視化に留める）
+- [ ] 出展者に一斉配信の蛇口を渡さない／配信過多で嫌われない
+- [ ] 子どもの要配慮データを明示ポリシーなく集めない
+
+---
+
+## ⚠️ 未決（要確認）
+
+- アンケート項目の最終確定（`03 §5.1`）
+- 報酬の梯子の中身（`03 §5.4`）
+- QR不正対策のレベル（デモは不問／本番は要検討）
