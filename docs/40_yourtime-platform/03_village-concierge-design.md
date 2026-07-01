@@ -418,7 +418,7 @@ type VisitDepth = "visited" | "explained" | "experienced";
 
 ## 13. 実装状況（2026-07-01 現在）
 
-> `git log` 参照。すべて `main` にコミット済み（GitHub未push・Vercel未反映の可能性あり）。
+> `git log` 参照。すべて `main` にコミット済み。**2026-07-01 に GitHub `main` へ push 済み・Vercel（`ks-classic/fuwafuwa-land`）本番反映済み**（最新本番 build green・Ready）。
 
 ### 実装済み（build green・ヘッドレス目視）
 - **`/concierge` LIFF器**：オンボ（ようこそ→家族構成アンケート→チュートリアル）→マップ→QRスタンプ→むらずかん→会場アナウンス。1オリジンpath配信・Supabase未設定でもIndexedDBローカルで成立。
@@ -431,6 +431,7 @@ type VisitDepth = "visited" | "explained" | "experienced";
 ### 修正した不具合
 - **すわぷよ盤面キャラのタップ選択/消去/リフィルで拡大**（絶対scale→基準scale×係数）。
 - **LIFF外部ブラウザ強制ログイン**（`withLoginOnExternalBrowser:true`→`false`）。ローカルfallbackを回復。
+- **iPhoneで「村の案内所」が進めない**（2026-07-01・commit `5abb7bf`）：`crypto.randomUUID` が iOS Safari <15.4／LINEアプリ内WebView／非HTTPS で未定義→TypeError、加えて IndexedDB もプライベートブラウズ等で例外。どちらも未ハンドリングで `getOrCreateVisitor()` が reject→「はじめる」以降が無反応だった。`src/concierge/uuid.ts` に `safeUuid()`（randomUUID→getRandomValues→Math.random の3段fallback）を新設、`visitorStore` は localStorage を try/catch＋IndexedDB不可時はメモリストアへ自動退避、`announcementStore` の送信IDも `safeUuid` 化。**残**: `fuwafuwa-land/store/` の生 `crypto.randomUUID` 4箇所（タブレット側・別サーフェス）は未対応。
 
 ### 人間側クリティカルパス（残）
 - LINE Developers Console で LIFF Endpoint を `https://fuwafuwa-land.vercel.app/concierge` に設定。
@@ -444,3 +445,5 @@ type VisitDepth = "visited" | "explained" | "experienced";
 - アンケートの永続化（現状ローカルのみ＝出展者還元データが空）。
 - テスト（現状0本・デモ優先で保留中）。
 - 実機での pan/pinch・スタンプSE 確認。
+- **実機での iPhone ストレージfallback確認**（上記修正の検証）：古めのiPhone or Safariプライベートモードで「はじめる→質問→マップ→スタンプ」まで通るか。
+- `fuwafuwa-land/store/` の生 `crypto.randomUUID` 4箇所を `safeUuid` 化（タブレットが古いiOS Safariの場合の保険・別コミット）。

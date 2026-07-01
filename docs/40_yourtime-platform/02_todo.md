@@ -18,6 +18,8 @@
 - [x] 深さ3ボタンを横一列に修正
 - [x] バグ修正: すわぷよ盤面キャラのタップ選択/消去/リフィルで拡大
 - [x] バグ修正: LIFF外部ブラウザ強制ログイン→ローカルfallback回復
+- [x] バグ修正: **iPhoneで村の案内所が進めない**（`crypto.randomUUID`/IndexedDBの未ハンドリング→`safeUuid`3段fallback＋ストレージのメモリ退避・commit `5abb7bf`）
+- [x] **GitHub `main` push ＋ Vercel 本番反映済み**（2026-07-01・`ks-classic/fuwafuwa-land` Ready）
 - [x] 体験ドキュメント `07` / 設計 `03 §13` / 本TODO 更新
 
 ---
@@ -26,7 +28,8 @@
 
 - [ ] LINE Developers Console で LIFF Endpoint を `https://fuwafuwa-land.vercel.app/concierge` に設定
 - [ ] 受付QR（友だち追加QR）取得（Official Account Manager）
-- [ ] `git push origin main` ＋ Vercel 本番反映（`vercel --prod`）
+- [x] ~~`git push origin main` ＋ Vercel 本番反映~~（2026-07-01 完了・git連携で自動デプロイ）
+- [ ] **iPhone実機で「村の案内所」フロー確認**（古めのiPhone or Safariプライベートモードで最後まで進めるか＝ストレージfallback検証）
 - [ ] 小夏さん: 本番マップ素材（SVG/高解像PNG）・各社スタンプ用ロゴ・実出展者情報
 - [ ] リポジトリ整理: 未追跡のstray画像（`ChatGPT Image…` `スクリーンショット…` `やすさん.jpg`）の要否判断
 
@@ -49,8 +52,10 @@
 - [ ] 企業レポート（Webページ・認証付き個別URL）。
 
 ### 品質
-- [ ] テスト整備（現状0本・デモ優先で保留）。最低: アンケート状態遷移・スタンプ深さ上書き・フィルタ判定。
+- [ ] テスト整備（現状0本・デモ優先で保留）。最低: アンケート状態遷移・スタンプ深さ上書き・フィルタ判定・**safeUuid/ストレージfallback**。
 - [ ] 実機で pan/pinch・スタンプSE（WebView自動再生制限）確認。
+- [ ] **iPhone実機でストレージfallback検証**（古いiOS/プライベートモードで全工程通るか）。
+- [ ] `fuwafuwa-land/store/` の生 `crypto.randomUUID` 4箇所を `safeUuid` 化（タブレット側・別コミット）。
 - [ ] `announcements` の Supabase migration ＋ Realtime 本番確認。
 
 ---
