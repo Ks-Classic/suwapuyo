@@ -1,0 +1,428 @@
+.root {
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+  background: #f7efe1;
+  font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", system-ui, sans-serif;
+  color: #302819;
+}
+
+.panel {
+  width: min(480px, 100%);
+  margin: 0 auto;
+  background: #fffdf7;
+  border: 1px solid #e7dcc5;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 10px 24px rgba(63, 50, 27, 0.12);
+}
+
+.kicker,
+.liffState {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.panel h1 {
+  margin: 0 0 14px;
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.lead {
+  margin: 0 0 20px;
+  line-height: 1.7;
+  color: #675b43;
+}
+
+.mascot,
+.stampClock {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  aspect-ratio: 1;
+  border: 8px solid #0f766e;
+  border-radius: 50%;
+  background: #fff8df;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.mascot {
+  margin: 0 auto 18px;
+}
+
+.stampStage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+}
+
+.stampRing {
+  position: absolute;
+  width: 104px;
+  height: 104px;
+  border: 3px solid #0f766e;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.primaryButton,
+.optionButton,
+.countButton,
+.depthButton {
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primaryButton {
+  width: 100%;
+  min-height: 52px;
+  background: #0f766e;
+  color: #fff;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.textButton,
+.backButton {
+  border: 0;
+  background: transparent;
+  color: #0f766e;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.backButton {
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eef8f5;
+  color: #315c56;
+}
+
+.previewIcon {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+}
+
+.previewIcon span {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.previewIcon small {
+  font-size: 11px;
+  font-weight: 700;
+  color: #315c56;
+}
+
+.optionGrid,
+.countGrid,
+.depthGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.optionButton {
+  min-height: 86px;
+  padding: 12px;
+  background: #fff7e4;
+  color: #302819;
+  text-align: left;
+}
+
+.optionButton span,
+.optionButton small {
+  display: block;
+}
+
+.optionButton small {
+  margin-top: 6px;
+  color: #7b6f55;
+}
+
+.selectedOption {
+  outline: 3px solid #0f766e;
+}
+
+.countButton {
+  min-height: 76px;
+  background: #f2d36f;
+  color: #302819;
+  font-size: 28px;
+}
+
+.childList {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.childRow {
+  border: 1px solid #eadfc8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fffaf0;
+}
+
+.childRowOpen {
+  border-color: #0f766e;
+}
+
+.childHeader {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+}
+
+.childHeader small {
+  color: #7b6f55;
+}
+
+.childBody {
+  padding: 0 12px 12px;
+}
+
+.chipRow,
+.chipWrap {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 10px;
+}
+
+.chip,
+.chipLarge,
+.segmented button {
+  flex: 0 0 auto;
+  min-height: 40px;
+  border: 1px solid #d7cbb4;
+  border-radius: 8px;
+  background: #fffdf7;
+  color: #302819;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chip {
+  min-width: 48px;
+}
+
+.chipLarge {
+  padding: 0 14px;
+}
+
+.chipSelected,
+.segmented .segmentSelected {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tutorialGrid {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.tutorialGrid div {
+  padding: 16px;
+  border-radius: 8px;
+  background: #fff7e4;
+  font-weight: 800;
+}
+
+.stampDone {
+  display: grid;
+  gap: 6px;
+  place-items: center;
+  min-height: 116px;
+  color: #0f766e;
+}
+
+.stampDone strong {
+  font-size: 28px;
+}
+
+.depthButton {
+  min-height: 78px;
+  background: #fff7e4;
+  color: #302819;
+}
+
+.depthButton span {
+  display: block;
+  margin-bottom: 4px;
+  color: #0f766e;
+}
+
+.progressTrack {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eadfc8;
+}
+
+.progressTrack div {
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
+  transition: width 240ms ease;
+}
+
+.stampGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.stampCell,
+.stampCellDone {
+  min-height: 118px;
+  border: 1px dashed #b8a98c;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #302819;
+  font: inherit;
+  font-weight: 800;
+}
+
+.stampCellDone {
+  border-style: solid;
+  border-color: #0f766e;
+  background: #eef8f5;
+}
+
+.stampCell span,
+.stampCellDone span {
+  display: block;
+  font-size: 28px;
+}
+
+.stampCell small,
+.stampCellDone small {
+  display: block;
+  margin-top: 8px;
+  padding: 0 8px;
+  color: #6d6149;
+}
+
+.reward {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f2d36f;
+  font-weight: 900;
+  text-align: center;
+}
+
+.announcement {
+  position: fixed;
+  z-index: 20;
+  top: max(10px, env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(480px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.28);
+}
+
+.announcementIcon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  font-weight: 900;
+}
+
+.announcement button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 20px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 132px;
+  box-sizing: border-box;
+  margin: 8px 0 14px;
+  padding: 12px;
+  border: 1px solid #d7cbb4;
+  border-radius: 8px;
+  resize: vertical;
+  font: inherit;
+}
+
+@media (max-width: 380px) {
+  .panel {
+    padding: 14px;
+  }
+
+  .optionGrid,
+  .depthGrid,
+  .stampGrid {
+    grid-template-columns: 1fr;
+  }
+}
