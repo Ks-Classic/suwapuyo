@@ -154,7 +154,9 @@ def resolve_scene(spec):
         return s.strip()
     w = spec.get("weather") or ""
     for k, v in (("はれ","day"),("晴","day"),("あめ","rain"),("雨","rain"),
-                 ("くもり","cloudy"),("曇","cloudy"),("ゆき","snow"),("雪","snow")):
+                 ("くもり","cloudy"),("曇","cloudy"),("ゆき","snow"),("雪","snow"),
+                 ("よる","night"),("夜","night"),("あさ","morning"),("朝","morning"),
+                 ("ゆうがた","dusk"),("夕","dusk")):
         if k in w:
             return v
     text = f"{spec.get('theme','')} {spec.get('topTitle','')} {spec.get('series','')}"
@@ -174,7 +176,12 @@ def pick_background(spec):
     bgs = spec.get("backgrounds")
     if isinstance(bgs, list) and bgs:
         return bgs[stable_hash(spec.get("title", "")) % len(bgs)]
-    return BG_DIR + SCENES[resolve_scene(spec)][0]
+    path = BG_DIR + SCENES[resolve_scene(spec)][0]
+    try:
+        resolve(path)                       # 解決できればそのシーンを使う
+    except FileNotFoundError:
+        path = BG_DIR + SCENES["day"][0]    # 未生成シーン(festival/room/seaside等)は day にフォールバック＝落とさない
+    return path
 
 def scene_baseline(spec):
     """選ばれた背景に合うキャラ接地。室内0.74/海辺0.72等を自動。layoutが明示すればそちら優先。"""
@@ -699,13 +706,14 @@ def wrap_text(draw, text, font, max_width):
             out.append(c)
     return out
 
-def draw_caption(canvas, text, font, cx, cy, color, pop, style="outline"):
+def draw_caption(canvas, text, font, cx, cy, color, pop, style="outline", layout=None):
     """字幕。話者区別をスタイルで:
        outline(推奨)=白文字＋黒フチ＋話者色の外フチ / color=話者色の文字＋白フチ / box=白座布団＋色枠。
        可読性は outline が最良（白文字＋黒フチ＝研究値）。"""
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
-    max_text_w = canvas.width - 300        # 1行≒11〜13字に締める（研究: 縦字幕の可読上限）
+    side = int(canvas.width * rel(layout or {}, "captionSideMargin", 0.055))  # 左右マージン（小さいほど横長）
+    max_text_w = canvas.width - side * 2   # 横長に取り、改行は_segments(助詞/句読点境界)で内容に応じて自然に
     sw = max(3, int(font.size * 0.10))     # 黒フチ幅
     lines = wrap_text(d, text, font, max_text_w)
     line_gap = 12
@@ -1027,14 +1035,14 @@ def prepare_scene(spec, font_path):
     if len(draw_ids) <= 1 and draw_ids:
         # 1人=中央・大きめ・反転なし（make_30s ゴールデン配置）
         k = draw_ids[0]
-        h = int(W * rel(layout, "characterHeightSingle", rel(layout, "characterHeight", 0.56)))
+        h = int(W * rel(layout, "characterHeightSingle", rel(layout, "characterHeight", 0.60)))
         img = scale_to_h(load_rgba(resolved[k]["img"]), h)
         chars[k] = {"img": img, "cx": int(W * rel(layout, "centerCharacterX", 0.5)), "side": "center"}
     elif draw_ids:
         # 2人=左右・小さめ（横並びで収まる）
-        hp = int(W * rel(layout, "characterHeightPair", rel(layout, "characterHeight", 0.40)))
-        left_x = rel(layout, "leftCharacterX", 0.30)
-        right_x = rel(layout, "rightCharacterX", 0.70)
+        hp = int(W * rel(layout, "characterHeightPair", rel(layout, "characterHeight", 0.60)))
+        left_x = rel(layout, "leftCharacterX", 0.27)
+        right_x = rel(layout, "rightCharacterX", 0.73)
         sides = assign_sides(draw_ids, resolved)
         for k in draw_ids:
             side = sides[k]
@@ -1051,7 +1059,7 @@ def prepare_scene(spec, font_path):
         "baselineY": scene_baseline(spec),   # 背景に合うキャラ接地（室内/海辺は自動で下げる）
         "bgBig": bg_big, "kb": kb_on,        # Ken Burns 用
         "fonts": {
-            "sub": ImageFont.truetype(font_path, int(W * rel(layout, "subtitleFontSize", 0.054))),
+            "sub": ImageFont.truetype(font_path, int(W * rel(layout, "subtitleFontSize", 0.080))),
             "cta": ImageFont.truetype(font_path, int(W * rel(layout, "ctaFontSize", 0.072))),
         },
     }
@@ -1134,9 +1142,9 @@ def render_frame(spec, scene, font_path, tsec, starts):
             canvas,
             spec["topTitle"],
             font_path,
-            int(W * rel(layout, "titleFontSize", 0.082)),
+            int(W * rel(layout, "titleFontSize", 0.110)),
             int(W * rel(layout, "titleX", 0.5)),
-            int(H * rel(layout, "titleY", 0.27)) + tbob,
+            int(H * rel(layout, "titleY", 0.30)) + tbob,
             scene["titleStyle"],
         )
 
@@ -1149,7 +1157,7 @@ def render_frame(spec, scene, font_path, tsec, starts):
         fnt = scene["fonts"]["cta"] if is_cta else scene["fonts"]["sub"]
         cy = int(H * rel(layout, "ctaY" if is_cta else "subtitleY", 0.69))
         pop = min(1.0, t_in / 0.18)
-        canvas = draw_caption(canvas, ln["text"], fnt, W // 2, cy, col, pop, spec.get("subtitleStyle", "outline"))
+        canvas = draw_caption(canvas, ln["text"], fnt, W // 2, cy, col, pop, spec.get("subtitleStyle", "outline"), layout)
 
     if spec.get("debugSafezone"):
         ov = Image.new("RGBA", canvas.size, (0, 0, 0, 0))

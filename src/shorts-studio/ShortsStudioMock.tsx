@@ -838,12 +838,13 @@ export function ShortsStudioMock() {
   const stageCharacters = isSwapped
     ? [selected.characters[1], selected.characters[0]]
     : selected.characters;
+  const previewStageCharacters = pickStageCharacterIds(selected, isSwapped);
   const leftCharacter = getCharacter(stageCharacters[0]);
   const rightCharacter = getCharacter(stageCharacters[1]);
   const effect = effectPresets.find((preset) => preset.id === selectedEffect) ?? effectPresets[0];
   const selectedTitleStyle = getTitleStyle(selectedTitleStyleName);
   const selectedCharacter = getCharacter(selectedCharacterId);
-  const renderLines = useMemo(() => buildRenderLines(script), [script]);
+  const renderLines = useMemo(() => buildRenderLines(script, stageCharacters.length > 1), [script, stageCharacters.length]);
   const postHashtags = useMemo(() => ["#YourTIME", "#ふわふわランド", "#親子健康", "#口腔育成"], []);
   const postCaption = `${title}。${selected.action} YourTIMEで、親子で持ち帰れる健康のきっかけを。`;
   const qualityChecks = useMemo(() => buildQualityChecks({
@@ -955,9 +956,10 @@ export function ShortsStudioMock() {
       subtitleY,
     },
     stage: {
-      leftCharacterId: leftCharacter.id,
-      rightCharacterId: rightCharacter.id,
+      leftCharacterId: previewStageCharacters[0],
+      rightCharacterId: previewStageCharacters[1],
       swapped: isSwapped,
+      mode: previewStageCharacters.length === 1 ? "solo" : "duo",
     },
     eventAnimation: selectedEffect,
     lines: renderLines.map((line) => line.text),
@@ -968,6 +970,7 @@ export function ShortsStudioMock() {
   }), [
     characterY,
     isSwapped,
+    previewStageCharacters,
     leftCharacter.id,
     postCaption,
     postHashtags,
