@@ -77,7 +77,7 @@ function getSfx(): SoundFX {
   return sharedSfx;
 }
 
-const CONFETTI_COLORS = ["#0f766e", "#f2d36f", "#d96f5f", "#79bd66", "#5bc0eb"];
+const CONFETTI_COLORS = ["#F5A623", "#FFD93D", "#FF8FAB", "#6BBF4E", "#5BC0EB"];
 const CONFETTI_PIECES = Array.from({ length: 7 }, (_, index) => ({
   angle: (360 / 7) * index - 90,
   color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
@@ -257,6 +257,71 @@ interface OptionButtonProps {
   onClick: () => void;
 }
 
+const GUIDE_CHARACTER_IMAGE = "/content/fuwafuwa-land/characters/display/waawaa.png";
+
+const STEP_GUIDE_LINES: Partial<Record<VisitorStep, string>> = {
+  party: "だれと来たか教えて！",
+  "children-count": "何人で来たのかな？",
+  children: "ひとりずつ教えてね",
+  adults: "大人は何人いっしょ？",
+  source: "村のこと、どこで知った？",
+  health: "さいごの質問！",
+  tutorial: "準備ばっちり、村に入ろう！",
+};
+
+const SURVEY_STEPS: VisitorStep[] = ["party", "children-count", "children", "adults", "source", "health"];
+
+function StepDots({ step }: { step: VisitorStep }) {
+  const index = SURVEY_STEPS.indexOf(step);
+  if (index < 0) {
+    return null;
+  }
+  return (
+    <div className={styles.stepDots} aria-hidden="true">
+      {SURVEY_STEPS.map((surveyStep, dotIndex) => (
+        <span
+          key={surveyStep}
+          className={`${styles.stepDot} ${
+            dotIndex === index ? styles.stepDotActive : dotIndex < index ? styles.stepDotDone : ""
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CharacterHost({ step }: { step: VisitorStep }) {
+  const reduced = useReducedMotion();
+  const line = STEP_GUIDE_LINES[step];
+  return (
+    <div className={styles.guideRow}>
+      <motion.img
+        key={step}
+        src={GUIDE_CHARACTER_IMAGE}
+        alt=""
+        className={styles.guideCharacter}
+        initial={reduced ? false : { scale: 0.6, rotate: -8, opacity: 0 }}
+        animate={reduced ? { y: 0 } : { scale: 1, rotate: 0, opacity: 1, y: [0, -6, 0] }}
+        transition={
+          reduced
+            ? { duration: 0 }
+            : {
+                scale: { type: "spring", stiffness: 300, damping: 14 },
+                rotate: { type: "spring", stiffness: 300, damping: 14 },
+                opacity: { duration: 0.2 },
+                y: { duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.4 },
+              }
+        }
+      />
+      {line !== undefined ? (
+        <div className={styles.guideBubble}>
+          <p>{line}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function OptionButton({ selected = false, label, detail, onClick }: OptionButtonProps) {
   return (
     <button type="button" className={`${styles.optionButton} ${selected ? styles.selectedOption : ""}`} onClick={onClick}>
@@ -280,14 +345,14 @@ function WelcomeStep({ liffSession, onStart }: { liffSession: LiffSession; onSta
             : "LINE連携はfallbackで継続";
   return (
     <section className={styles.panel}>
-      <motion.div
+      <motion.img
+        src={GUIDE_CHARACTER_IMAGE}
+        alt=""
         className={styles.mascot}
         initial={reduced ? false : { scale: 0.72, y: 18, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 18 }}
-      >
-        00
-      </motion.div>
+      />
       <p className={styles.kicker}>YourTIME 村の案内所</p>
       <h1>今日は、親子の時間を集めにいこう</h1>
       <p className={styles.lead}>家族構成をタップで入れると、マップとスタンプ帳がすぐ使えます。</p>
@@ -341,7 +406,9 @@ function Onboarding({
   if (step === "party") {
     return (
       <section className={styles.panel}>
-        <p className={styles.kicker}>1 / 6</p>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
+        <p className={styles.kicker}>STEP 1 / 6</p>
         <h1>だれと来た？</h1>
         <VisitorPreview visitor={visitor ?? {}} kids={draftChildren} reduced={!!reduced} />
         <div className={styles.optionGrid}>
@@ -358,7 +425,9 @@ function Onboarding({
   if (step === "children-count") {
     return (
       <section className={styles.panel}>
-        <p className={styles.kicker}>2 / 6</p>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
+        <p className={styles.kicker}>STEP 2 / 6</p>
         <h1>お子さんは何人？</h1>
         <VisitorPreview visitor={visitor ?? {}} kids={draftChildren} reduced={!!reduced} />
         <div className={styles.countGrid}>
@@ -387,7 +456,9 @@ function Onboarding({
   if (step === "children") {
     return (
       <section className={styles.panel}>
-        <p className={styles.kicker}>3 / 6</p>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
+        <p className={styles.kicker}>STEP 3 / 6</p>
         <h1>お子さんのこと</h1>
         <VisitorPreview visitor={visitor ?? {}} kids={draftChildren} reduced={!!reduced} />
         <div className={styles.childList}>
@@ -452,7 +523,9 @@ function Onboarding({
   if (step === "adults") {
     return (
       <section className={styles.panel}>
-        <p className={styles.kicker}>4 / 6</p>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
+        <p className={styles.kicker}>STEP 4 / 6</p>
         <h1>大人は何人？</h1>
         <div className={styles.countGrid}>
           {[1, 2, 3].map((count) => (
@@ -477,7 +550,9 @@ function Onboarding({
     ];
     return (
       <section className={styles.panel}>
-        <p className={styles.kicker}>5 / 6</p>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
+        <p className={styles.kicker}>STEP 5 / 6</p>
         <h1>来場のきっかけは？</h1>
         <div className={styles.chipWrap}>
           {sources.map((source) => (
@@ -494,7 +569,9 @@ function Onboarding({
   if (step === "health") {
     return (
       <section className={styles.panel}>
-        <p className={styles.kicker}>6 / 6</p>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
+        <p className={styles.kicker}>STEP 6 / 6</p>
         <h1>お仕事は健康・医療系？</h1>
         <p className={styles.lead}>出展者の説明をその場でちょうどいい専門度に合わせるために聞いています。</p>
         <div className={styles.optionGrid}>
@@ -509,6 +586,8 @@ function Onboarding({
   if (step === "tutorial") {
     return (
       <section className={styles.panel}>
+        <StepDots step={step} />
+        <CharacterHost step={step} />
         <p className={styles.kicker}>つかい方</p>
         <h1>マップで探して、ブースで時計スタンプ</h1>
         <div className={styles.tutorialGrid}>
@@ -584,7 +663,7 @@ function StampScreen({ booth, stamps, onStamped, onBack }: StampScreenProps) {
           </div>
           <AnimatePresence>
             {doneDepth !== null ? (
-              <StampCelebration key="celebration" color={booth.themeColor ?? "#0f766e"} reduced={!!reduced} />
+              <StampCelebration key="celebration" color={booth.themeColor ?? "#F5A623"} reduced={!!reduced} />
             ) : null}
           </AnimatePresence>
         </div>

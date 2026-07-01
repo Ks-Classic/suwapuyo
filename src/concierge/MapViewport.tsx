@@ -92,7 +92,10 @@ export function MapViewport({
     const viewportHeight = rect?.height ?? 0;
     const focusPxX = (target.xPercent / 100) * contentWidth;
     const focusPxY = (target.yPercent / 100) * contentHeight;
-    const nextScale = clamp(target.scale, fitScaleRef.current, maxScaleRef.current);
+    // scale<=0 は「フィット表示」の合図。横幅ぴったりだと縦に余白が出て寂しいので、
+    // 少しだけ寄せて(fit×1.3)会場が画面を程よく埋める初期フレーミングにする。
+    const requestedScale = target.scale <= 0 ? fitScaleRef.current * 1.3 : target.scale;
+    const nextScale = clamp(requestedScale, fitScaleRef.current, maxScaleRef.current);
     return {
       x: viewportWidth / 2 - focusPxX * nextScale,
       y: viewportHeight / 2 - focusPxY * nextScale,

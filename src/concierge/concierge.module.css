@@ -1,134 +1,159 @@
+/*
+ * 村の案内所 共通スタイル。
+ * デザインの正: docs/40_yourtime-platform/06_design-guideline.md
+ * 磨りガラス(glassmorphism) × 村イラスト背景 × 暖色 × M PLUS Rounded。
+ * 色は src/styles/index.css の CSS変数のみ使う(ハードコード禁止)。
+ */
+
 .root {
+  position: relative;
   min-height: 100dvh;
-  padding: max(16px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
-  background: #f7efe1;
-  font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", system-ui, sans-serif;
-  color: #302819;
+  padding: max(18px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background:
+    linear-gradient(180deg, rgba(197, 232, 247, 0.35), rgba(255, 248, 231, 0.55)),
+    url("/content/fuwafuwa-land/backgrounds/village-bg.png") center top / cover no-repeat fixed;
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
 }
 
+/* ─────────── パネル(磨りガラスの窓) ─────────── */
 .panel {
-  width: min(480px, 100%);
+  position: relative;
+  width: min(460px, 100%);
   margin: 0 auto;
-  background: #fffdf7;
-  border: 1px solid #e7dcc5;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 10px 24px rgba(63, 50, 27, 0.12);
+  padding: 24px 22px 22px;
+  border-radius: var(--radius-xl);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-lg);
 }
 
-.kicker,
+.kicker {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--color-accent-dark);
+}
+
+/* オンボーディングの進捗ドット */
+.stepDots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 0 0 16px;
+}
+
+.stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: rgba(122, 99, 78, 0.25);
+  transition: width var(--transition-normal), background var(--transition-normal);
+}
+
+.stepDotActive {
+  width: 22px;
+  background: var(--color-accent);
+}
+
+.stepDotDone {
+  background: var(--color-accent-light);
+}
+
 .liffState {
-  margin: 0 0 8px;
+  margin: 10px 0 0;
   font-size: 12px;
   font-weight: 700;
-  color: #0f766e;
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 .panel h1 {
   margin: 0 0 14px;
   font-size: 24px;
+  font-weight: 900;
   line-height: 1.35;
+  color: var(--color-text-primary);
 }
 
 .lead {
   margin: 0 0 20px;
   line-height: 1.7;
-  color: #675b43;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
-.mascot,
-.stampClock {
-  display: grid;
-  place-items: center;
-  width: 104px;
-  aspect-ratio: 1;
-  border: 8px solid #0f766e;
-  border-radius: 50%;
-  background: #fff8df;
-  font-size: 34px;
-  font-weight: 900;
-}
-
+/* ─────────── ウェルカムのマスコット ─────────── */
 .mascot {
-  margin: 0 auto 18px;
+  display: block;
+  width: 148px;
+  aspect-ratio: 1;
+  margin: 4px auto 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 14px rgba(74, 55, 40, 0.22));
 }
 
-.stampStage {
-  position: relative;
+/* ─────────── 案内キャラ + 吹き出し ─────────── */
+.guideRow {
   display: grid;
-  place-items: center;
-  margin: 0 auto 18px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 18px;
 }
 
-.stampRing {
+.guideCharacter {
+  width: 72px;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 8px rgba(74, 55, 40, 0.2));
+}
+
+.guideBubble {
+  position: relative;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 248, 231, 0.9);
+  box-shadow: var(--shadow-sm);
+}
+
+.guideBubble::before {
   position: absolute;
-  width: 104px;
-  height: 104px;
-  border: 3px solid #0f766e;
-  border-radius: 50%;
-  pointer-events: none;
+  top: 18px;
+  left: -9px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-right: 10px solid rgba(255, 248, 231, 0.9);
+  border-bottom: 8px solid transparent;
+  content: "";
 }
 
-.confettiPiece {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
-  border-radius: 2px;
-  pointer-events: none;
-}
-
-.primaryButton,
-.optionButton,
-.countButton,
-.depthButton {
-  border: 0;
-  border-radius: 8px;
-  font: inherit;
+.guideBubble p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 15px;
   font-weight: 800;
-  cursor: pointer;
+  line-height: 1.45;
 }
 
-.primaryButton {
-  width: 100%;
-  min-height: 52px;
-  background: #0f766e;
-  color: #fff;
-}
-
-.primaryButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.textButton,
-.backButton {
-  border: 0;
-  background: transparent;
-  color: #0f766e;
-  font: inherit;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.backButton {
-  margin: 0 0 12px;
-  padding: 0;
-}
-
+/* ─────────── 家族プレビュー(アイコン列) ─────────── */
 .preview {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  margin: 0 0 16px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #eef8f5;
-  color: #315c56;
+  gap: 12px;
+  min-height: 54px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 217, 61, 0.16);
 }
 
 .previewIcon {
@@ -138,31 +163,98 @@
 }
 
 .previewIcon span {
-  font-size: 26px;
+  font-size: 28px;
   line-height: 1;
 }
 
 .previewIcon small {
   font-size: 11px;
-  font-weight: 700;
-  color: #315c56;
+  font-weight: 800;
+  color: var(--color-text-secondary);
 }
 
+/* ─────────── ボタン共通 ─────────── */
+.primaryButton,
+.optionButton,
+.countButton,
+.depthButton {
+  border: 0;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.primaryButton:active,
+.optionButton:active,
+.countButton:active,
+.depthButton:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+/* 主CTA: オレンジのタクタイルボタン(下辺に濃色=押せる立体) */
+.primaryButton {
+  width: 100%;
+  min-height: 56px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--color-accent-light), var(--color-accent));
+  color: #fff;
+  font-size: 17px;
+  box-shadow: 0 5px 0 var(--color-accent-dark), var(--shadow-md);
+}
+
+.primaryButton:active {
+  box-shadow: 0 2px 0 var(--color-accent-dark), var(--shadow-sm);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: 0 5px 0 var(--color-accent-dark);
+}
+
+.textButton,
+.backButton {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.textButton {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 6px;
+  text-align: center;
+}
+
+.backButton {
+  margin: 0 0 12px;
+  padding: 6px 0;
+}
+
+/* 選択肢(2列の大きいカードボタン) */
 .optionGrid,
 .countGrid,
 .depthGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 16px 0;
+  gap: 12px;
+  margin: 18px 0 0;
 }
 
 .optionButton {
-  min-height: 86px;
-  padding: 12px;
-  background: #fff7e4;
-  color: #302819;
+  min-height: 92px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-text-primary);
   text-align: left;
+  box-shadow: var(--shadow-sm);
 }
 
 .optionButton span,
@@ -170,37 +262,50 @@
   display: block;
 }
 
+.optionButton span {
+  font-size: 17px;
+}
+
 .optionButton small {
   margin-top: 6px;
-  color: #7b6f55;
+  color: var(--color-text-secondary);
+  font-weight: 700;
 }
 
 .selectedOption {
-  outline: 3px solid #0f766e;
+  border-color: var(--color-accent);
+  background: rgba(245, 166, 35, 0.14);
+  box-shadow: 0 0 0 3px var(--color-accent-glow), var(--shadow-sm);
 }
 
 .countButton {
-  min-height: 76px;
-  background: #f2d36f;
-  color: #302819;
-  font-size: 28px;
+  min-height: 82px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #ffffff, var(--color-cream));
+  color: var(--color-text-primary);
+  font-size: 30px;
+  box-shadow: var(--shadow-sm);
 }
 
+/* 子どもカード(アコーディオン) */
 .childList {
   display: grid;
-  gap: 10px;
-  margin: 16px 0;
+  gap: 12px;
+  margin: 18px 0 0;
 }
 
 .childRow {
-  border: 1px solid #eadfc8;
-  border-radius: 8px;
   overflow: hidden;
-  background: #fffaf0;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-sm);
 }
 
 .childRowOpen {
-  border-color: #0f766e;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-glow), var(--shadow-sm);
 }
 
 .childHeader {
@@ -208,56 +313,76 @@
   width: 100%;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px;
+  padding: 14px;
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-weight: 800;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .childHeader small {
-  color: #7b6f55;
+  color: var(--color-text-secondary);
+  font-weight: 700;
 }
 
 .childBody {
-  padding: 0 12px 12px;
+  padding: 0 14px 14px;
 }
 
+/* チップ列(年齢/きっかけ) */
 .chipRow,
 .chipWrap {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  padding: 4px 0 4px;
+}
+
+.chipRow {
+  flex-wrap: nowrap;
   overflow-x: auto;
-  padding: 4px 0 10px;
+  scrollbar-width: none;
+}
+
+.chipRow::-webkit-scrollbar {
+  display: none;
 }
 
 .chip,
 .chipLarge,
 .segmented button {
   flex: 0 0 auto;
-  min-height: 40px;
-  border: 1px solid #d7cbb4;
-  border-radius: 8px;
-  background: #fffdf7;
-  color: #302819;
+  min-height: 44px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-text-primary);
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.chip:active,
+.chipLarge:active,
+.segmented button:active {
+  transform: scale(0.94);
 }
 
 .chip {
-  min-width: 48px;
+  min-width: 52px;
 }
 
 .chipLarge {
-  padding: 0 14px;
+  padding: 0 18px;
 }
 
 .chipSelected,
 .segmented .segmentSelected {
-  border-color: #0f766e;
-  background: #0f766e;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
   color: #fff;
 }
 
@@ -265,88 +390,138 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
+/* チュートリアル */
 .tutorialGrid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin: 18px 0;
 }
 
 .tutorialGrid div {
-  padding: 16px;
-  border-radius: 8px;
-  background: #fff7e4;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.8);
   font-weight: 800;
+}
+
+/* ─────────── スタンプ画面 ─────────── */
+.stampStage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 4px auto 18px;
+}
+
+.stampClock {
+  display: grid;
+  place-items: center;
+  width: 116px;
+  aspect-ratio: 1;
+  border: 8px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: linear-gradient(160deg, #ffffff, var(--color-cream));
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.stampRing {
+  position: absolute;
+  width: 116px;
+  height: 116px;
+  border: 4px solid var(--color-accent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.depthButton {
+  min-height: 84px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.depthButton span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 26px;
 }
 
 .stampDone {
   display: grid;
   gap: 6px;
   place-items: center;
-  min-height: 116px;
-  color: #0f766e;
+  min-height: 120px;
+  color: var(--color-accent-dark);
 }
 
 .stampDone strong {
-  font-size: 28px;
+  font-size: 30px;
+  font-weight: 900;
 }
 
-.depthButton {
-  min-height: 78px;
-  background: #fff7e4;
-  color: #302819;
-}
-
-.depthButton span {
-  display: block;
-  margin-bottom: 4px;
-  color: #0f766e;
-}
-
+/* ─────────── スタンプ帳 ─────────── */
 .progressTrack {
-  height: 12px;
+  height: 14px;
   overflow: hidden;
-  border-radius: 999px;
-  background: #eadfc8;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 3px rgba(74, 55, 40, 0.15);
 }
 
 .progressTrack div {
   height: 100%;
   border-radius: inherit;
-  background: #0f766e;
-  transition: width 240ms ease;
+  background: linear-gradient(90deg, var(--color-accent-light), var(--color-accent));
+  transition: width var(--transition-normal);
 }
 
 .stampGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
   margin: 18px 0;
 }
 
 .stampCell,
 .stampCellDone {
-  min-height: 118px;
-  border: 1px dashed #b8a98c;
-  border-radius: 8px;
-  background: #fffaf0;
-  color: #302819;
+  min-height: 122px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed rgba(160, 139, 116, 0.5);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary);
   font: inherit;
   font-weight: 800;
 }
 
 .stampCellDone {
   border-style: solid;
-  border-color: #0f766e;
-  background: #eef8f5;
+  border-color: var(--color-accent);
+  background: rgba(245, 166, 35, 0.14);
 }
 
 .stampCell span,
 .stampCellDone span {
   display: block;
-  font-size: 28px;
+  font-size: 30px;
 }
 
 .stampCell small,
@@ -354,18 +529,21 @@
   display: block;
   margin-top: 8px;
   padding: 0 8px;
-  color: #6d6149;
+  color: var(--color-text-secondary);
 }
 
 .reward {
   margin: 0;
-  padding: 12px;
-  border-radius: 8px;
-  background: #f2d36f;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--color-accent-light), var(--color-accent));
+  color: #fff;
   font-weight: 900;
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
+/* ─────────── 会場アナウンス ─────────── */
 .announcement {
   position: fixed;
   z-index: 20;
@@ -375,23 +553,29 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  width: min(480px, calc(100% - 24px));
+  width: min(460px, calc(100% - 24px));
   margin: 0 auto;
-  padding: 12px;
-  border-radius: 8px;
-  background: #0f766e;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(180deg, var(--color-accent-light), var(--color-accent));
   color: #fff;
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.28);
+  box-shadow: var(--shadow-lg);
 }
 
 .announcementIcon {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.3);
   font-weight: 900;
+}
+
+.announcement span:nth-child(2) {
+  flex: 1;
+  font-weight: 800;
 }
 
 .announcement button {
@@ -401,23 +585,27 @@
   color: #fff;
   font: inherit;
   font-size: 20px;
+  cursor: pointer;
 }
 
+/* スタッフ: アナウンス入力 */
 .textarea {
   width: 100%;
   min-height: 132px;
   box-sizing: border-box;
   margin: 8px 0 14px;
-  padding: 12px;
-  border: 1px solid #d7cbb4;
-  border-radius: 8px;
+  padding: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.85);
   resize: vertical;
   font: inherit;
+  color: var(--color-text-primary);
 }
 
 @media (max-width: 380px) {
   .panel {
-    padding: 14px;
+    padding: 18px 16px 16px;
   }
 
   .optionGrid,

@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { BOOTH_MAP_LANDS } from "../fuwafuwa-land/map/boothMapData";
-import type { BoothExhibitor, MapLandId } from "../fuwafuwa-land/map/boothMapData";
+import type { BoothExhibitor } from "../fuwafuwa-land/map/boothMapData";
 import { track } from "../shared/analytics";
-import { CONCIERGE_MAP_IMAGE_URL, CONCIERGE_QR_IMAGE_URL, DEMO_BOOTHS, LAND_CAMERA_TARGETS } from "./demoData";
+import { CONCIERGE_QR_IMAGE_URL, DEMO_BOOTHS } from "./demoData";
 import type { ConciergeStamp } from "./visitorStore";
 import { MapViewport, type MapViewportHandle } from "./MapViewport";
+import { VenueMapSvg } from "./VenueMapSvg";
 import styles from "./mapScreen.module.css";
 
 const MAP_WIDTH = 1724;
 const MAP_HEIGHT = 1012;
+const GUIDE_CHARACTER_IMAGE = "/content/fuwafuwa-land/characters/display/waawaa.png";
+// scale:0 は MapViewport 側で「横幅フィット・中央寄せ」に補正される(初期の全体表示)。
+const FIT_TARGET = { xPercent: 50, yPercent: 50, scale: 0 };
 
 interface MapScreenProps {
   stamps: ConciergeStamp[];
@@ -30,7 +33,7 @@ function BoothPin({
   reduced: boolean;
   onSelect: () => void;
 }) {
-  const color = booth.themeColor ?? "#0f766e";
+  const color = booth.themeColor ?? "#F5A623";
   return (
     <button
       type="button"
@@ -50,7 +53,6 @@ function BoothPin({
 
 export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) {
   const reduced = !!useReducedMotion();
-  const [selectedLand, setSelectedLand] = useState<MapLandId>(BOOTH_MAP_LANDS[0].id);
   const [selectedBooth, setSelectedBooth] = useState<BoothExhibitor | null>(null);
   const stampedIds = useMemo(() => new Set(stamps.map((stamp) => stamp.exhibitor_id)), [stamps]);
   const viewportHandle = useRef<MapViewportHandle | null>(null);
@@ -59,19 +61,8 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
     track("map_open", { surface: "concierge" });
   }, []);
 
-  useEffect(() => {
-    const camera = LAND_CAMERA_TARGETS[selectedLand];
-    viewportHandle.current?.flyTo({ xPercent: camera.x, yPercent: camera.y, scale: camera.scale });
-  }, [selectedLand]);
-
-  function selectLand(landId: MapLandId): void {
-    setSelectedLand(landId);
-    track("tap", { surface: "concierge", id: landId, kind: "land_tab" });
-  }
-
   function refit(): void {
-    const camera = LAND_CAMERA_TARGETS[selectedLand];
-    viewportHandle.current?.flyTo({ xPercent: camera.x, yPercent: camera.y, scale: camera.scale });
+    viewportHandle.current?.flyTo(FIT_TARGET);
   }
 
   return (
@@ -79,9 +70,10 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>村のマップ</p>
-          <h1>行きたい場所をタップ</h1>
+          <h1>気になるブースをタップ</h1>
         </div>
         <button type="button" className={styles.stampBadge} onClick={onStampBook} aria-label="スタンプ帳">
+          <span aria-hidden="true">🎫</span>
           <motion.span
             key={stamps.length}
             initial={reduced ? false : { scale: 1.4 }}
@@ -93,34 +85,18 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
         </button>
       </header>
 
-      <nav className={styles.landTabs} aria-label="ランドを選ぶ">
-        {BOOTH_MAP_LANDS.map((land) => (
-          <button
-            key={land.id}
-            type="button"
-            className={selectedLand === land.id ? styles.landTabActive : styles.landTab}
-            style={{ "--land-color": land.themeColor } as CSSProperties}
-            onClick={() => selectLand(land.id)}
-          >
-            {land.shortLabel}
-          </button>
-        ))}
-      </nav>
-
       <div className={styles.stage}>
         <MapViewport
           contentWidth={MAP_WIDTH}
           contentHeight={MAP_HEIGHT}
-          initialTarget={{
-            xPercent: LAND_CAMERA_TARGETS[selectedLand].x,
-            yPercent: LAND_CAMERA_TARGETS[selectedLand].y,
-            scale: LAND_CAMERA_TARGETS[selectedLand].scale,
-          }}
+          initialTarget={FIT_TARGET}
           handleRef={viewportHandle}
           className={styles.viewport}
         >
           <div className={styles.canvas} style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}>
-            <img src={CONCIERGE_MAP_IMAGE_URL} width={MAP_WIDTH} height={MAP_HEIGHT} alt="YourTIME 会場マップ" draggable={false} className={styles.mapImage} />
+            <div className={styles.mapImage} style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}>
+              <VenueMapSvg />
+            </div>
             {DEMO_BOOTHS.map((booth) => (
               <BoothPin
                 key={booth.id}
@@ -178,24 +154,30 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
             <button type="button" className={styles.sheetClose} onClick={() => setSelectedBooth(null)} aria-label="閉じる">
               ×
             </button>
-            <div className={styles.sheetHead}>
-              <span className={styles.sheetIcon} style={{ "--pin-color": selectedBooth.themeColor ?? "#0f766e" } as CSSProperties}>
-                {selectedBooth.stampEmoji ?? selectedBooth.boothNo}
-              </span>
-              <div>
-                <p className={styles.kicker}>{selectedBooth.category}・ブース{selectedBooth.boothNo}</p>
-                <h2>{selectedBooth.name}</h2>
-              </div>
+            <div className={styles.sheetBanner} style={{ background: selectedBooth.themeColor ?? "#F5A623" }}>
+              <span className={styles.sheetRibbon}>ブース紹介</span>
+              <img src={GUIDE_CHARACTER_IMAGE} alt="" className={styles.sheetGuide} />
             </div>
-            <p className={styles.sheetSummary}>{selectedBooth.summary}</p>
-            <p className={styles.sheetActivity}>{selectedBooth.activity}</p>
-            <div className={styles.sheetActions}>
-              <button type="button" className={styles.sheetPrimary} onClick={() => onOpenStamp(selectedBooth.id)}>
-                このブースでスタンプ
-              </button>
-              <button type="button" className={styles.sheetSecondary} onClick={() => setSelectedBooth(null)}>
-                とじる
-              </button>
+            <div className={styles.sheetBody}>
+              <div className={styles.sheetHead}>
+                <span className={styles.sheetIcon} style={{ "--pin-color": selectedBooth.themeColor ?? "#F5A623" } as CSSProperties}>
+                  {selectedBooth.stampEmoji ?? selectedBooth.boothNo}
+                </span>
+                <div>
+                  <p className={styles.kicker}>{selectedBooth.category}・ブース{selectedBooth.boothNo}</p>
+                  <h2>{selectedBooth.name}</h2>
+                </div>
+              </div>
+              <p className={styles.sheetSummary}>{selectedBooth.summary}</p>
+              <p className={styles.sheetActivity}>{selectedBooth.activity}</p>
+              <div className={styles.sheetActions}>
+                <button type="button" className={styles.sheetPrimary} onClick={() => onOpenStamp(selectedBooth.id)}>
+                  このブースでスタンプ
+                </button>
+                <button type="button" className={styles.sheetSecondary} onClick={() => setSelectedBooth(null)}>
+                  とじる
+                </button>
+              </div>
             </div>
           </motion.aside>
         ) : null}
