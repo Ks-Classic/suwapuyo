@@ -1,7 +1,69 @@
-# すわぷよ 実装TODO — v2.2
+# すわぷよ 実装TODO — v2.3
 
-> **最終更新**: 2026-06-26  
-> **現在**: MVP v2.0（スワップ式デモ + 村テーマ + 音 + たぬぺいコインエフェクト）に加え、YourTIME 2026-08-02 向け「すーすーわーわー ふわふわランド」と、YourTIME特化ショート動画生成プロダクト `Shorts Auto Studio` のMP4出力MVPを並行整理。
+> **最終更新**: 2026-06-28  
+> **現在**: MVP v2.0（スワップ式デモ + 村テーマ + 音 + たぬぺいコインエフェクト）に加え、**すわぷよ「感動デモ」（6/30運営会議向け＝召喚＋お口体操＋キャラ選択＋村長ナビ）** を新規最優先化。並行で「すーすーわーわー ふわふわランド」と `Shorts Auto Studio` を整理。
+> **実装の正**: `docs/30_suwapuyo/04_demo-detailed-design.md`（v0.2.1）＋ `05_storyboard-and-narrator-script.md`。実装担当=**Codex**。
+
+---
+
+## 🔴 最優先: すわぷよ「感動デモ」(6/30運営会議向け)
+
+**目的(CR-0)**: 2026-06-30 YourTIME運営会議で、諏訪さん＆運営に「描いた絵が“自分の相棒”として動き、いっしょに遊び、未病体操をする」通し体験を1台で見せ、**(1)前日開放 (2)LINE立ち上げ (3)キャラ二次利用** のGOを取る。
+**実装の正**: `04_demo-detailed-design.md`（v0.2.1）＋`05_storyboard-and-narrator-script.md`（絵コンテ＋村長脚本）。実装=**Codex**。
+**原則**: 1オリジンpath配信／全工程オフライン成立／**DB変更なし**／**前方互換シーム(04§14)で本番は“足すだけ”**。
+
+確定UX: 同一端末で即召喚／手動「体操タイム」／お手本=もぐぴよ実演＋かな＋口ピクト＋タイマー／相棒選択(村22体＋自分の絵＋隠しロック枠1/3〜1/2)／降臨=空から＋名乗り「あそぼ！」／喜び=連鎖ほど＋SE・声なし／わーわー村長ナビ。**監修(出展者紹介)はデモ外＝本番**。
+
+### 基盤(共通) [DEMO-0xx]
+- [ ] **DEMO-001**: `src/shared/buddyStore.ts`（IndexedDB・Blob・get/set/markSummoned）
+- [ ] **DEMO-002**: `src/shared/progressStore.ts`（taisou_counts/login_days/streak/unlocked_character_ids/selected_buddy ※形は本番想定=04§14 S-2）
+- [ ] **DEMO-003**: `src/config/characters.ts`（村22体・starter/hidden・**id=display_characters.idと一致**）
+- [ ] **DEMO-004**: `src/config/taisouHosts.ts`（部位↔ホスト↔かな↔口ピクト↔一言）
+- [ ] **DEMO-005**: 境界関数 `loadCharacters()/isUnlocked()/track(enum+meta)` を“境界”として実装(04§14 S-1)
+- [ ] **DEMO-006**: `App.tsx` を1オリジンpath routingに（hostname分割を踏まない・`/map`追加）
+
+### P0(必須・物語が立つ最小) [DEMO-1xx]
+- [ ] **DEMO-101**: ふわ描画完了→`setBuddy()`＋「すわぷよで遊ぶ」CTA(`/`)
+- [ ] **DEMO-102**: キャラ選択(簡易)＝自分の絵＋starter数体＋ロック枠表示（`CharacterSelectScreen`）
+- [ ] **DEMO-103**: 自分の絵を選ぶ→**降臨フル**（05 A-1: 予兆→降下→着地→名乗り）
+- [ ] **DEMO-104**: 応援レイヤー＝**連鎖ほど大喜び＋SE・デバウンス**（`popClearable`フック）
+- [ ] **DEMO-105**: 「体操タイム」→お口体操（もぐぴよ実演＋かな＋口ピクト＋タイマー）→カウント+1
+- [ ] **DEMO-106**: わーわー村長ナビ（要所のふきだし・05 B-1）
+- [ ] **DEMO-107**: デモ種（事前に相棒1枚仕込み）＋全工程オフライン確認
+
+### P1(厚み) [DEMO-2xx]
+- [ ] **DEMO-201**: キャラ選択の**村22体＋隠しシルエット**(1/3〜1/2)＋ヒント文言
+- [ ] **DEMO-202**: 体操3部位（もぐぴよ/シンボー/酸化）＋村長ナビ全編
+- [ ] **DEMO-203**: 降臨/喜び/お手本の仕上げ（イージング/SE/モーション微調整）
+- [ ] **DEMO-204**: 村キャラ選択時の“軽い登場”
+
+### LINE当日マップMVP [MAP-0xx]
+- [x] **MAP-001**: `/map` スマホ当日マップ（`BoothMapScreen`）
+  - [x] **DEMO-302a**: `docs/10_fuwafuwa-land/00_strategy/12_line-map-and-handoff.md` を正本に、実装境界・未決・QAを整理
+  - [x] **DEMO-302b**: 静的データ + 境界関数 `loadMapLands()/loadBoothExhibitors()`（DB変更なし）
+  - [x] **DEMO-302c**: ランド別タブ + 簡略マップ + 出展者一覧
+  - [x] **DEMO-302d**: ブース/一覧タップ → 紹介カード(bottom sheet)
+  - [x] **DEMO-302e**: `/` すわぷよ導線 + 既存 `/staff` `/display` 回帰確認
+- [x] **MAP-002**: `/map` `/fuwafuwa/map` `#/fuwafuwa/map` の3経路確認（Supabase未設定でも表示）
+- [x] **MAP-003**: `trackMapEvent()` 境界関数のみ設置（初期no-op、将来tap_eventsへ接続）
+- [x] **MAP-004**: 紹介カード文言の医療広告チェック（断定・診断・予防効果表現を入れない）
+- [x] **MAP-005**: `/line` LINE風リッチメニュー入口（すわぷよ/マップ/ふわふわ/体操/スタッフ/ディスプレイ）
+- [x] **MAP-006**: `/?taisou=1` お口体操直行デモ導線（完了状態までDOM確認）
+
+### P2(引き立て・最初に削る) [DEMO-3xx]
+- [ ] **DEMO-301**: `/display` 複数ブース（`config.sponsors[]`）
+
+### 前方互換シーム(本番手戻り防止・04§14) [DEMO-4xx]
+- [ ] **DEMO-401**: 解放 `unlockRule(progress)` は仕様明記＋stub(starter返す)。素データ(counts/streak/login_days)は記録
+- [ ] **DEMO-402**: `TaisouInterlude` に `sponsor?` prop(デモ未使用)・`CharacterSelect`は`isUnlocked()`経由
+- [ ] **DEMO-403**: track計測点をenum+metaで“呼び場所だけ”設置（DB配線は本番）
+- [ ] **DEMO-404**: ID整合(characters.id=display_characters.id)・`BuddyRecord.artworkId`保持
+
+### 受け入れ/検証 [DEMO-5xx]
+- [ ] **DEMO-501**: 縦貫通QA（描く→選ぶ→降臨→喜び→体操）・`tsc -b && vite build` green・**既存回帰なし**
+- [ ] **DEMO-502**: 6/28壁打ちで**P0予行**
+
+> 確定デフォルト(04§13): a 当日マップ=出展者のみ / b 体操3部位(お口/首肩/呼吸) / c ナビ各遷移1ふきだし / e ルート`/map` / f 名乗り「あそぼ！」 / g starter約13・hidden約9 / h ヒント「たくさんあそぶと…ひらくかも？」
 
 ---
 
