@@ -2,15 +2,15 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { BoothExhibitor } from "../fuwafuwa-land/map/boothMapData";
 import { track } from "../shared/analytics";
-import { CONCIERGE_QR_IMAGE_URL, DEMO_BOOTHS } from "./demoData";
+import { CONCIERGE_QR_IMAGE_URL, DEMO_BOOTHS, VENUE_POIS, type VenuePoi } from "./demoData";
 import type { ConciergeStamp } from "./visitorStore";
 import { MapViewport, type MapViewportHandle } from "./MapViewport";
 import { VenueMapSvg } from "./VenueMapSvg";
+import { BoothPopup } from "./BoothPopup";
 import styles from "./mapScreen.module.css";
 
 const MAP_WIDTH = 1724;
 const MAP_HEIGHT = 1012;
-const GUIDE_CHARACTER_IMAGE = "/content/fuwafuwa-land/characters/display/waawaa.png";
 // scale:0 は MapViewport 側で「横幅フィット・中央寄せ」に補正される(初期の全体表示)。
 const FIT_TARGET = { xPercent: 50, yPercent: 50, scale: 0 };
 
@@ -51,9 +51,44 @@ function BoothPin({
   );
 }
 
+/** Googleマップ型のPOIラベル(アイコン+名前のピル)。会場の主要スポット用。 */
+function PoiMarker({ poi, onSelect }: { poi: VenuePoi; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      className={styles.poi}
+      style={{ left: `${poi.mapX}%`, top: `${poi.mapY}%`, "--poi-color": poi.themeColor } as CSSProperties}
+      onClick={onSelect}
+      aria-label={`${poi.label} を見る`}
+    >
+      <span className={styles.poiDot} aria-hidden="true">
+        {poi.icon}
+      </span>
+      <span className={styles.poiLabel}>{poi.label}</span>
+    </button>
+  );
+}
+
+function poiToBooth(poi: VenuePoi): BoothExhibitor {
+  return {
+    id: poi.id,
+    boothNo: "",
+    landId: "food",
+    name: poi.label,
+    category: poi.category,
+    summary: poi.summary,
+    activity: poi.activity,
+    mapX: poi.mapX,
+    mapY: poi.mapY,
+    themeColor: poi.themeColor,
+    stampEmoji: poi.icon,
+  };
+}
+
 export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) {
   const reduced = !!useReducedMotion();
   const [selectedBooth, setSelectedBooth] = useState<BoothExhibitor | null>(null);
+  const [selectedInfo, setSelectedInfo] = useState<BoothExhibitor | null>(null);
   const stampedIds = useMemo(() => new Set(stamps.map((stamp) => stamp.exhibitor_id)), [stamps]);
   const viewportHandle = useRef<MapViewportHandle | null>(null);
 
@@ -97,6 +132,16 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
             <div className={styles.mapImage} style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}>
               <VenueMapSvg />
             </div>
+            {VENUE_POIS.map((poi) => (
+              <PoiMarker
+                key={poi.id}
+                poi={poi}
+                onSelect={() => {
+                  setSelectedInfo(poiToBooth(poi));
+                  track("booth_card_open", { surface: "concierge", id: poi.id });
+                }}
+              />
+            ))}
             {DEMO_BOOTHS.map((booth) => (
               <BoothPin
                 key={booth.id}
@@ -143,43 +188,14 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
 
       <AnimatePresence>
         {selectedBooth !== null ? (
-          <motion.aside
-            className={styles.sheet}
-            initial={reduced ? false : { y: 260 }}
-            animate={{ y: 0 }}
-            exit={reduced ? { opacity: 0 } : { y: 260 }}
-            transition={reduced ? { duration: 0.12 } : { type: "spring", stiffness: 320, damping: 30 }}
-          >
-            <div className={styles.sheetHandle} aria-hidden="true" />
-            <button type="button" className={styles.sheetClose} onClick={() => setSelectedBooth(null)} aria-label="閉じる">
-              ×
-            </button>
-            <div className={styles.sheetBanner} style={{ background: selectedBooth.themeColor ?? "#F5A623" }}>
-              <span className={styles.sheetRibbon}>ブース紹介</span>
-              <img src={GUIDE_CHARACTER_IMAGE} alt="" className={styles.sheetGuide} />
-            </div>
-            <div className={styles.sheetBody}>
-              <div className={styles.sheetHead}>
-                <span className={styles.sheetIcon} style={{ "--pin-color": selectedBooth.themeColor ?? "#F5A623" } as CSSProperties}>
-                  {selectedBooth.stampEmoji ?? selectedBooth.boothNo}
-                </span>
-                <div>
-                  <p className={styles.kicker}>{selectedBooth.category}・ブース{selectedBooth.boothNo}</p>
-                  <h2>{selectedBooth.name}</h2>
-                </div>
-              </div>
-              <p className={styles.sheetSummary}>{selectedBooth.summary}</p>
-              <p className={styles.sheetActivity}>{selectedBooth.activity}</p>
-              <div className={styles.sheetActions}>
-                <button type="button" className={styles.sheetPrimary} onClick={() => onOpenStamp(selectedBooth.id)}>
-                  このブースでスタンプ
-                </button>
-                <button type="button" className={styles.sheetSecondary} onClick={() => setSelectedBooth(null)}>
-                  とじる
-                </button>
-              </div>
-            </div>
-          </motion.aside>
+          <BoothPopup
+            key="booth"
+            booth={selectedBooth}
+            onStamp={() => onOpenStamp(selectedBooth.id)}
+            onClose={() => setSelectedBooth(null)}
+          />
+        ) : selectedInfo !== null ? (
+          <BoothPopup key="info" booth={selectedInfo} onClose={() => setSelectedInfo(null)} />
         ) : null}
       </AnimatePresence>
     </main>

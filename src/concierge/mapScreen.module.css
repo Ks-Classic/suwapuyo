@@ -187,6 +187,46 @@
   }
 }
 
+/* ─────────── POIラベル(Googleマップ型ピル) ─────────── */
+.poi {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px 4px 5px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.poi:active {
+  transform: translate(-50%, -50%) scale(0.94);
+}
+
+.poiDot {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--poi-color, var(--color-accent)) 24%, #ffffff);
+  font-size: 15px;
+}
+
+.poiLabel {
+  line-height: 1;
+}
+
 /* ─────────── ズームコントロール ─────────── */
 .zoomControls {
   position: absolute;
@@ -305,172 +345,10 @@
   transform: scale(0.96);
 }
 
-/* ─────────── 紹介カード(bottom sheet) ─────────── */
-.sheet {
-  position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: max(14px, env(safe-area-inset-bottom));
-  z-index: 10;
-  width: min(460px, calc(100% - 24px));
-  margin: 0 auto;
-  overflow: hidden;
-  border-radius: var(--radius-xl);
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-lg);
-}
-
-.sheetHandle {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  z-index: 2;
-  width: 44px;
-  height: 5px;
-  margin-left: -22px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.sheetClose {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(74, 55, 40, 0.32);
-  color: #fff;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.sheetBanner {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  height: 72px;
-  padding: 12px 18px;
-  overflow: hidden;
-}
-
-.sheetRibbon {
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--color-text-primary);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.sheetGuide {
-  position: absolute;
-  right: 16px;
-  bottom: -12px;
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 6px rgba(74, 55, 40, 0.28));
-}
-
-.sheetBody {
-  padding: 16px 18px 18px;
-}
-
-.sheetHead {
-  display: grid;
-  grid-template-columns: 60px minmax(0, 1fr);
-  gap: 14px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.sheetIcon {
-  display: grid;
-  place-items: center;
-  width: 60px;
-  height: 60px;
-  margin-top: -40px;
-  border: 4px solid rgba(255, 255, 255, 0.95);
-  border-radius: var(--radius-lg);
-  background: var(--pin-color, var(--color-accent));
-  color: #fff;
-  font-size: 28px;
-  box-shadow: var(--shadow-md);
-}
-
-.sheetHead h2 {
-  margin: 2px 0 0;
-  font-size: 20px;
-  font-weight: 900;
-  line-height: 1.25;
-  color: var(--color-text-primary);
-}
-
-.sheetSummary {
-  margin: 0 0 6px;
-  color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.sheetActivity {
-  margin: 0 0 16px;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.sheetActions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-}
-
-.sheetPrimary {
-  min-height: 52px;
-  border: 0;
-  border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--color-accent-light), var(--color-accent));
-  color: #fff;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 4px 0 var(--color-accent-dark);
-}
-
-.sheetPrimary:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 var(--color-accent-dark);
-}
-
-.sheetSecondary {
-  min-height: 52px;
-  padding: 0 18px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--color-text-secondary);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-}
+/* 紹介カードは BoothPopup(boothPopup.module.css)へ分離済み。 */
 
 @media (max-width: 380px) {
   .header h1 {
     font-size: 15px;
-  }
-
-  .sheetActions {
-    grid-template-columns: 1fr;
   }
 }

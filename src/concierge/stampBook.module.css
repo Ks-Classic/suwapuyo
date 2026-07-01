@@ -1,0 +1,434 @@
+/*
+ * むらずかん。デザインの正: docs/40_yourtime-platform/06_design-guideline.md
+ * モデル=ポケモン図鑑(未取得シルエット) × ポケカ Pocket(レア度フレーム/ホロ/傾き)。
+ */
+
+.root {
+  position: relative;
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background:
+    linear-gradient(180deg, rgba(197, 232, 247, 0.4), rgba(255, 248, 231, 0.6)),
+    url("/content/fuwafuwa-land/backgrounds/village-bg.png") center top / cover no-repeat fixed;
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+}
+
+/* ─────────── ヘッダー ─────────── */
+.header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: min(520px, 100%);
+  margin: 0 auto 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-xl);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-md);
+}
+
+.back {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.headTitle {
+  min-width: 0;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-dark);
+}
+
+.headTitle h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.counter {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.counter small {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.progressTrack {
+  width: min(520px, 100%);
+  height: 14px;
+  margin: 0 auto 16px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: inset 0 1px 3px rgba(74, 55, 40, 0.16);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-accent-light), var(--color-accent));
+}
+
+/* ─────────── グリッド ─────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: min(520px, 100%);
+  margin: 0 auto 16px;
+}
+
+.cardButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  perspective: 800px;
+}
+
+.cardButton:disabled {
+  cursor: default;
+}
+
+.newBadge {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-pink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  box-shadow: var(--shadow-sm);
+  transform: rotate(8deg);
+}
+
+/* ─────────── カード共通 ─────────── */
+.card {
+  position: relative;
+  display: grid;
+  aspect-ratio: 63 / 88;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 3px solid #fffdf7;
+  box-shadow: var(--shadow-md);
+}
+
+.cardButton {
+  position: relative;
+}
+
+/* 取得済み: タイプ色のグラデ地 */
+.foil_none,
+.foil_holo,
+.foil_full {
+  background:
+    radial-gradient(120% 80% at 50% 18%, rgba(255, 255, 255, 0.6), transparent 60%),
+    linear-gradient(165deg, color-mix(in srgb, var(--card-color) 30%, #ffffff), var(--card-color));
+}
+
+.dexNo {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.stars {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: flex;
+  gap: 1px;
+  font-size: 12px;
+}
+
+.starOn {
+  color: #ffd93d;
+  text-shadow: 0 1px 2px rgba(74, 55, 40, 0.4);
+}
+
+.starOff {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.creature {
+  place-self: center;
+  font-size: clamp(46px, 16vw, 72px);
+  filter: drop-shadow(0 6px 8px rgba(74, 55, 40, 0.3));
+  z-index: 2;
+}
+
+.namePlate {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  z-index: 3;
+  display: grid;
+  gap: 1px;
+  padding: 7px 9px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.92);
+  text-align: left;
+}
+
+.namePlate strong {
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.namePlate small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+/* ─────────── ホロ演出 ─────────── */
+.holo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 0, 128, 0.35),
+    rgba(255, 214, 0, 0.35),
+    rgba(0, 200, 170, 0.35),
+    rgba(90, 120, 255, 0.35),
+    transparent 80%
+  );
+  background-size: 220% 220%;
+  mix-blend-mode: color-dodge;
+  opacity: 0.5;
+  animation: holo-sweep 4s linear infinite;
+}
+
+.foil_full .holo {
+  opacity: 0.7;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 0, 128, 0.4),
+    rgba(255, 214, 0, 0.4),
+    rgba(0, 200, 170, 0.4),
+    rgba(90, 120, 255, 0.4),
+    rgba(255, 0, 128, 0.4)
+  );
+  background-size: 200% 200%;
+  animation: holo-spin 6s linear infinite;
+}
+
+.foil_full {
+  border-color: #ffe98a;
+  box-shadow: 0 0 0 1px #ffd93d, var(--shadow-lg);
+}
+
+@keyframes holo-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 220% 50%;
+  }
+}
+
+@keyframes holo-spin {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+/* ─────────── 未取得(シルエット) ─────────── */
+.cardLocked {
+  background: linear-gradient(165deg, #6f6353, #4a4034);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.cardLocked .dexNo {
+  background: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.silhouette {
+  place-self: center;
+  font-size: clamp(46px, 16vw, 72px);
+  filter: brightness(0) opacity(0.32);
+  z-index: 1;
+}
+
+.lock {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.mystery {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  z-index: 3;
+  padding: 7px 9px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+/* ─────────── ご褒美バナー ─────────── */
+.reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(520px, 100%);
+  margin: 0 auto;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-md);
+}
+
+.rewardDone {
+  border-color: #ffe98a;
+  background: linear-gradient(180deg, rgba(255, 245, 200, 0.95), rgba(255, 231, 138, 0.9));
+}
+
+.rewardIcon {
+  font-size: 32px;
+}
+
+.reward strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.reward small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+/* ─────────── カード詳細(ホロ傾き) ─────────── */
+.detailBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(30, 22, 12, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.detailStage {
+  position: relative;
+  width: min(280px, 74vw);
+  aspect-ratio: 63 / 88;
+  transform-style: preserve-3d;
+}
+
+.detailStage .card {
+  width: 100%;
+  height: 100%;
+  border-width: 5px;
+  border-radius: 22px;
+}
+
+.detailStage .creature,
+.detailStage .silhouette {
+  font-size: clamp(90px, 30vw, 130px);
+}
+
+.detailGlare {
+  position: absolute;
+  z-index: 4;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.7), transparent 62%);
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.shine {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+}
+
+.detailHint {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detailClose {
+  min-height: 48px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 360px) {
+  .grid {
+    gap: 10px;
+  }
+}

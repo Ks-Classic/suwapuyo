@@ -11,11 +11,11 @@ import type {
   VisitorType,
 } from "../fuwafuwa-land/map/boothMapData";
 import { track } from "../shared/analytics";
-import { unlockCharacter } from "../shared/progressStore";
 import { sendAnnouncement, subscribeAnnouncements, type Announcement } from "./announcementStore";
 import styles from "./concierge.module.css";
-import { DEMO_BOOTHS, HIDDEN_REWARD_CHARACTER_ID } from "./demoData";
+import { DEMO_BOOTHS } from "./demoData";
 import { MapScreen } from "./MapScreen";
+import { StampBook } from "./StampBook";
 import {
   getOrCreateVisitor,
   listStamps,
@@ -688,45 +688,12 @@ function StampScreen({ booth, stamps, onStamped, onBack }: StampScreenProps) {
   );
 }
 
-function StampBook({ stamps, onMap }: { stamps: ConciergeStamp[]; onMap: () => void }) {
-  const stampedIds = new Set(stamps.map((stamp) => stamp.exhibitor_id));
-  const complete = stamps.length >= DEMO_BOOTHS.length;
-
-  useEffect(() => {
-    if (complete) {
-      unlockCharacter(HIDDEN_REWARD_CHARACTER_ID);
-      track("unlock_hidden", { surface: "concierge", id: HIDDEN_REWARD_CHARACTER_ID });
-    }
-  }, [complete]);
-
-  return (
-    <main className={styles.root}>
-      <section className={styles.panel}>
-        <button type="button" className={styles.backButton} onClick={onMap}>マップへ</button>
-        <p className={styles.kicker}>スタンプ帳</p>
-        <h1>{stamps.length} / {DEMO_BOOTHS.length}</h1>
-        <div className={styles.progressTrack}>
-          <div style={{ width: `${(stamps.length / DEMO_BOOTHS.length) * 100}%` }} />
-        </div>
-        <div className={styles.stampGrid}>
-          {DEMO_BOOTHS.map((booth) => (
-            <button key={booth.id} type="button" className={stampedIds.has(booth.id) ? styles.stampCellDone : styles.stampCell}>
-              <span>{stampedIds.has(booth.id) ? booth.stampEmoji ?? "OK" : booth.boothNo}</span>
-              <small>{booth.name}</small>
-            </button>
-          ))}
-        </div>
-        <p className={styles.reward}>{complete ? "隠しキャラ解放済み" : "全部あつめて すわぷよ隠しキャラ"}</p>
-      </section>
-    </main>
-  );
-}
-
 function VisitorApp({ boothParam }: { boothParam: string | null }) {
   const { visitor, stamps, liffSession, refresh } = useConciergeData();
   const initialStep: VisitorStep = boothParam !== null ? "map" : visitor?.onboarded_at !== undefined ? "map" : "welcome";
   const [step, setStep] = useState<VisitorStep>(initialStep);
   const [stampBoothId, setStampBoothId] = useState<string | null>(boothParam);
+  const [justStampedId, setJustStampedId] = useState<string | null>(null);
   const [draftChildren, setDraftChildren] = useState<ChildInfo[]>(visitor?.children ?? []);
   const [activeChild, setActiveChild] = useState(0);
   const { announcement, clearAnnouncement } = useAnnouncements();
@@ -759,6 +726,7 @@ function VisitorApp({ boothParam }: { boothParam: string | null }) {
           onBack={() => setStampBoothId(null)}
           onStamped={() => {
             void refresh();
+            setJustStampedId(stampBoothId);
             setStep("stamp-book");
             setStampBoothId(null);
           }}
@@ -777,7 +745,7 @@ function VisitorApp({ boothParam }: { boothParam: string | null }) {
       ) : step === "map" ? (
         <MapScreen stamps={stamps} onOpenStamp={setStampBoothId} onStampBook={() => setStep("stamp-book")} />
       ) : step === "stamp-book" ? (
-        <StampBook stamps={stamps} onMap={() => setStep("map")} />
+        <StampBook stamps={stamps} justStampedId={justStampedId} onMap={() => setStep("map")} />
       ) : (
         <main className={styles.root}>
           <Onboarding

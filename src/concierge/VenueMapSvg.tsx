@@ -38,6 +38,7 @@ function BoothDots({ x, y, w, h, cols, rows }: { x: number; y: number; w: number
   const stepX = (w - padX * 2) / Math.max(cols - 1, 1);
   const stepY = (h - padY * 2) / Math.max(rows - 1, 1);
   let index = 0;
+  let boothNo = 0;
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
       // 元図同様、市松に少し欠けを作って単調な格子に見えないようにする
@@ -45,18 +46,18 @@ function BoothDots({ x, y, w, h, cols, rows }: { x: number; y: number; w: number
         index += 1;
         continue;
       }
-      // 装飾のブース枠(実データが来たらここが実ピンになる想定)。
+      boothNo += 1;
+      const cx = x + padX + col * stepX;
+      const cy = y + padY + row * stepY;
+      // 装飾のブース枠(実データが来たらここが実ピンになる想定)＋ブース番号。
       // 操作対象の実ピン(MapScreenのBoothPin)を目立たせるため、控えめにする。
       dots.push(
-        <circle
-          key={index}
-          cx={x + padX + col * stepX}
-          cy={y + padY + row * stepY}
-          r={11}
-          fill="rgba(255,255,255,0.55)"
-          stroke="rgba(74,55,40,0.18)"
-          strokeWidth={2}
-        />,
+        <g key={index}>
+          <circle cx={cx} cy={cy} r={13} fill="rgba(255,255,255,0.72)" stroke="rgba(74,55,40,0.22)" strokeWidth={2} />
+          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={13} fontWeight={800} fill="#7a634e">
+            {boothNo}
+          </text>
+        </g>,
       );
       index += 1;
     }
