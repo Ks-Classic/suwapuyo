@@ -55,7 +55,8 @@ export function MapViewport({
   const scale = useMotionValue(initialTarget.scale);
   const reduced = useReducedMotion();
 
-  const fitScaleRef = useRef(initialTarget.scale);
+  const fitScaleRef = useRef(initialTarget.scale); // 横幅フィット(=最小ズーム。全体が見える)
+  const coverScaleRef = useRef(initialTarget.scale); // 高さフィル(=初期表示。縦画面を埋める)
   const maxScaleRef = useRef(initialTarget.scale * maxScaleMultiplier);
   const activePointers = useRef(new Map<number, PointerEvent>());
   const panOrigin = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
@@ -92,9 +93,10 @@ export function MapViewport({
     const viewportHeight = rect?.height ?? 0;
     const focusPxX = (target.xPercent / 100) * contentWidth;
     const focusPxY = (target.yPercent / 100) * contentHeight;
-    // scale<=0 は「フィット表示」の合図。横幅ぴったりだと縦に余白が出て寂しいので、
-    // 少しだけ寄せて(fit×1.3)会場が画面を程よく埋める初期フレーミングにする。
-    const requestedScale = target.scale <= 0 ? fitScaleRef.current * 1.3 : target.scale;
+    // scale<=0 は「初期フィット表示」の合図。横長マップを縦画面(9:16)で見ると横幅フィットでは
+    // 上下に大きな余白が出て違和感が出る。そこで初期は「高さフィル(cover)」で画面を埋め、
+    // 横方向のパンで探索させる(Google/Apple Maps体感)。ズームアウトで全体(横幅フィット)にも戻れる。
+    const requestedScale = target.scale <= 0 ? coverScaleRef.current : target.scale;
     const nextScale = clamp(requestedScale, fitScaleRef.current, maxScaleRef.current);
     return {
       x: viewportWidth / 2 - focusPxX * nextScale,
@@ -144,8 +146,13 @@ export function MapViewport({
       if (rect.width === 0) {
         return;
       }
-      fitScaleRef.current = rect.width / contentWidth;
-      maxScaleRef.current = fitScaleRef.current * maxScaleMultiplier;
+      const fitW = rect.width / contentWidth; // 横幅フィット(全体が入る=最小ズーム)
+      const cover = Math.max(fitW, rect.height / contentHeight); // 画面を埋める(縦画面対策)
+      fitScaleRef.current = fitW;
+      coverScaleRef.current = cover;
+      // 最大ズームは cover 基準(縦画面では cover が fitW の数倍になるため、
+      // fitW×倍率だとブースに寄れなくなる)。
+      maxScaleRef.current = cover * maxScaleMultiplier;
     }
     recomputeFit();
 

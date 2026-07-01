@@ -7,6 +7,7 @@ export type TrackEventType =
   | "onboard_done"
   | "onboard_skip"
   | "map_open"
+  | "map_filter"
   | "booth_card_open"
   | "stamp_get"
   | "reward_reach"

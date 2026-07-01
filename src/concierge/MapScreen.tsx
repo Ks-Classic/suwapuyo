@@ -25,19 +25,23 @@ function BoothPin({
   stamped,
   selected,
   reduced,
+  dimmed,
+  matched,
   onSelect,
 }: {
   booth: BoothExhibitor;
   stamped: boolean;
   selected: boolean;
   reduced: boolean;
+  dimmed: boolean;
+  matched: boolean;
   onSelect: () => void;
 }) {
   const color = booth.themeColor ?? "#F5A623";
   return (
     <button
       type="button"
-      className={`${styles.pin} ${selected ? styles.pinSelected : ""} ${stamped ? styles.pinStamped : ""}`}
+      className={`${styles.pin} ${selected ? styles.pinSelected : ""} ${stamped ? styles.pinStamped : ""} ${dimmed ? styles.markerDim : ""} ${matched ? styles.pinMatch : ""}`}
       style={{ left: `${booth.mapX}%`, top: `${booth.mapY}%`, "--pin-color": color } as CSSProperties}
       onClick={onSelect}
       aria-label={`${booth.name} ブース${booth.boothNo}`}
@@ -52,11 +56,21 @@ function BoothPin({
 }
 
 /** Googleマップ型のPOIラベル(アイコン+名前のピル)。会場の主要スポット用。 */
-function PoiMarker({ poi, onSelect }: { poi: VenuePoi; onSelect: () => void }) {
+function PoiMarker({
+  poi,
+  dimmed,
+  matched,
+  onSelect,
+}: {
+  poi: VenuePoi;
+  dimmed: boolean;
+  matched: boolean;
+  onSelect: () => void;
+}) {
   return (
     <button
       type="button"
-      className={styles.poi}
+      className={`${styles.poi} ${dimmed ? styles.markerDim : ""} ${matched ? styles.poiMatch : ""}`}
       style={{ left: `${poi.mapX}%`, top: `${poi.mapY}%`, "--poi-color": poi.themeColor } as CSSProperties}
       onClick={onSelect}
       aria-label={`${poi.label} を見る`}
@@ -68,6 +82,23 @@ function PoiMarker({ poi, onSelect }: { poi: VenuePoi; onSelect: () => void }) {
     </button>
   );
 }
+
+/**
+ * カテゴリフィルタ。選ぶと該当ブース/POIが強調され、非該当はディムする。
+ * 判定は booth.landId / category と POI.category を横断で見る(実データが来ても効くように緩め)。
+ */
+interface MarkerCat {
+  landId?: string;
+  category: string;
+}
+
+const MAP_FILTERS: { id: string; label: string; icon: string; match: (m: MarkerCat) => boolean }[] = [
+  { id: "all", label: "すべて", icon: "🗺️", match: () => true },
+  { id: "dental", label: "歯・お口", icon: "🦷", match: (m) => m.landId === "dental" || m.category.includes("歯") || m.category.includes("口") },
+  { id: "kids", label: "こども", icon: "🧒", match: (m) => m.landId === "kids" || m.category.includes("こども") || m.category.includes("縁日") || m.category.includes("体験") },
+  { id: "food", label: "たべもの", icon: "🍙", match: (m) => m.landId === "food" || m.category.includes("フード") },
+  { id: "stage", label: "ステージ", icon: "🎤", match: (m) => m.category.includes("ステージ") },
+];
 
 function poiToBooth(poi: VenuePoi): BoothExhibitor {
   return {
@@ -89,8 +120,14 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
   const reduced = !!useReducedMotion();
   const [selectedBooth, setSelectedBooth] = useState<BoothExhibitor | null>(null);
   const [selectedInfo, setSelectedInfo] = useState<BoothExhibitor | null>(null);
+  const [activeFilter, setActiveFilter] = useState("all");
   const stampedIds = useMemo(() => new Set(stamps.map((stamp) => stamp.exhibitor_id)), [stamps]);
   const viewportHandle = useRef<MapViewportHandle | null>(null);
+
+  const filter = MAP_FILTERS.find((entry) => entry.id === activeFilter) ?? MAP_FILTERS[0];
+  const filtering = activeFilter !== "all";
+  const boothMatches = (booth: BoothExhibitor): boolean => filter.match({ landId: booth.landId, category: booth.category });
+  const poiMatches = (poi: VenuePoi): boolean => filter.match({ category: poi.category });
 
   useEffect(() => {
     track("map_open", { surface: "concierge" });
@@ -120,6 +157,24 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
         </button>
       </header>
 
+      <div className={styles.filterBar} role="group" aria-label="カテゴリで絞りこむ">
+        {MAP_FILTERS.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            className={`${styles.filterChip} ${activeFilter === entry.id ? styles.filterChipActive : ""}`}
+            aria-pressed={activeFilter === entry.id}
+            onClick={() => {
+              setActiveFilter(entry.id);
+              track("map_filter", { surface: "concierge", id: entry.id });
+            }}
+          >
+            <span aria-hidden="true">{entry.icon}</span>
+            {entry.label}
+          </button>
+        ))}
+      </div>
+
       <div className={styles.stage}>
         <MapViewport
           contentWidth={MAP_WIDTH}
@@ -136,6 +191,8 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
               <PoiMarker
                 key={poi.id}
                 poi={poi}
+                dimmed={filtering && !poiMatches(poi)}
+                matched={filtering && poiMatches(poi)}
                 onSelect={() => {
                   setSelectedInfo(poiToBooth(poi));
                   track("booth_card_open", { surface: "concierge", id: poi.id });
@@ -149,6 +206,8 @@ export function MapScreen({ stamps, onOpenStamp, onStampBook }: MapScreenProps) 
                 stamped={stampedIds.has(booth.id)}
                 selected={selectedBooth?.id === booth.id}
                 reduced={reduced}
+                dimmed={filtering && !boothMatches(booth)}
+                matched={filtering && boothMatches(booth)}
                 onSelect={() => {
                   setSelectedBooth(booth);
                   track("booth_card_open", { surface: "concierge", id: booth.id });
