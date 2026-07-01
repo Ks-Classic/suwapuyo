@@ -107,6 +107,14 @@ const baseResidents: GardenResident[] = [
   },
 ];
 
+function safeDestroyApp(app: Application): void {
+  try {
+    app.destroy(true, { children: true });
+  } catch (error) {
+    console.debug("LifeGarden destroy skipped", error);
+  }
+}
+
 function LifeGarden({
   myCharacterImage,
   myCharacterName,
@@ -158,7 +166,7 @@ function LifeGarden({
       });
 
       if (cancelled) {
-        app.destroy(true, { children: true });
+        safeDestroyApp(app);
         return;
       }
 
@@ -183,7 +191,7 @@ function LifeGarden({
       cancelled = true;
       actorsRef.current = [];
       if (appRef.current) {
-        appRef.current.destroy(true, { children: true });
+        safeDestroyApp(appRef.current);
         appRef.current = null;
       }
     };

@@ -260,7 +260,8 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   return (
     <main className="fuwafuwa-display">
       <nav className="fuwafuwa-display-links" aria-label="画面移動">
-        <a href="/">ホーム</a>
+        <a href="/">すわぷよ</a>
+        <a href="/fuwafuwa">ホーム</a>
         <a href="/staff">スタッフ</a>
       </nav>
       <h1 className="fuwafuwa-display-title">ふわふわランド</h1>

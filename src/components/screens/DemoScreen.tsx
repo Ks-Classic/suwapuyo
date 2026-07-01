@@ -11,6 +11,12 @@ import {
 } from "pixi.js";
 import { SoundFX } from "../../audio/SoundFX";
 import { YourTimeReflectionDemo } from "../YourTimeReflectionDemo";
+import { CharacterSelectScreen } from "./CharacterSelectScreen";
+import { TaisouInterlude } from "./TaisouInterlude";
+import { VillageNarrator } from "../VillageNarrator";
+import { CHARACTERS } from "../../config/characters";
+import { buddyImageObjectUrl, ensureDemoBuddy, getBuddy, markSummoned } from "../../shared/buddyStore";
+import { getProgress, markFirstSummoned, type PuyoSlotId } from "../../shared/progressStore";
 import styles from "../../styles/demo.module.css";
 
 // ═══════════════════════════════════════
@@ -60,6 +66,28 @@ const SPRITE_PATHS: Record<PuyoType, string> = {
   tooth: "/content/fuwafuwa-land/sprites/tooth/idle.png",
   blob: "/content/fuwafuwa-land/sprites/blob/idle.png",
   tanuki: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
+};
+
+interface PuyoSkin {
+  name: string;
+  imageUrl: string;
+  objectUrl?: string;
+}
+
+type PuyoSkinMap = Record<PuyoType, PuyoSkin>;
+
+const DEFAULT_PUYO_SKINS: PuyoSkinMap = {
+  ghost: { name: CHAR_NAMES.ghost, imageUrl: SPRITE_PATHS.ghost },
+  tooth: { name: CHAR_NAMES.tooth, imageUrl: SPRITE_PATHS.tooth },
+  blob: { name: CHAR_NAMES.blob, imageUrl: SPRITE_PATHS.blob },
+  tanuki: { name: CHAR_NAMES.tanuki, imageUrl: SPRITE_PATHS.tanuki },
+};
+
+const SLOT_TO_TYPE: Record<PuyoSlotId, PuyoType> = {
+  ghost: "ghost",
+  tooth: "tooth",
+  blob: "blob",
+  tanuki: "tanuki",
 };
 
 // ═══════════════════════════════════════
@@ -135,11 +163,15 @@ function updateTweens(dtMs: number) {
   }
 }
 
+function tweenObject(obj: object): Record<string, number> {
+  return obj as unknown as Record<string, number>;
+}
+
 // ═══════════════════════════════════════
 // Particle system
 // ═══════════════════════════════════════
 interface Particle {
-  g: Graphics;
+  g: Container;
   vx: number;
   vy: number;
   life: number;
@@ -147,6 +179,25 @@ interface Particle {
 }
 
 let particles: Particle[] = [];
+
+interface BuddyVisual {
+  id: string;
+  label: string;
+  imageUrl: string;
+  scale: number;
+  shouldSummonFull: boolean;
+  objectUrl?: string;
+  onSummoned?: () => void;
+}
+
+interface PuyoSpriteMeta {
+  row: number;
+  col: number;
+  type: PuyoType;
+  baseY: number;
+  idlePhase: number;
+  animating: boolean;
+}
 
 function spawnParticles(
   container: Container,
@@ -316,11 +367,19 @@ class PuyoDemo {
   app: Application;
   board: (PuyoType | null)[][] = [];
   sprites: (Sprite | null)[][] = [];
+  spriteMeta = new WeakMap<Sprite, PuyoSpriteMeta>();
   textures: Record<string, Texture> = {};
   boardContainer!: Container;
   effectContainer!: Container;
   uiContainer!: Container;
+  cheerLayer!: Container;
   boardBg!: Graphics;
+  buddyVisual: BuddyVisual | null;
+  buddySprite: Sprite | null = null;
+  buddyTexture: Texture | null = null;
+  buddySpeech: Text | null = null;
+  puyoSkins: PuyoSkinMap;
+  lastBigCheerChain = 0;
   busy = false;
   time = 0;
   score = 0;
@@ -340,8 +399,10 @@ class PuyoDemo {
   onScoreChange?: (score: number) => void;
   onChainChange?: (chain: number) => void;
 
-  constructor() {
+  constructor(buddyVisual: BuddyVisual | null, puyoSkins: PuyoSkinMap) {
     this.app = new Application();
+    this.buddyVisual = buddyVisual;
+    this.puyoSkins = puyoSkins;
   }
 
   async init(container: HTMLElement) {
@@ -366,7 +427,7 @@ class PuyoDemo {
 
     // Load textures
     for (const type of TYPES) {
-      this.textures[type] = await Assets.load(SPRITE_PATHS[type]);
+      this.textures[type] = await Assets.load(this.puyoSkins[type].imageUrl);
       if (this.destroyed) return;
     }
 
@@ -397,6 +458,10 @@ class PuyoDemo {
     this.board = createBoard();
     this.initSprites();
 
+    this.cheerLayer = new Container();
+    this.app.stage.addChild(this.cheerLayer);
+    void this.setupBuddyLayer();
+
     // Ticker
     this.app.ticker.add((ticker) => {
       const dt = ticker.deltaMS;
@@ -405,9 +470,135 @@ class PuyoDemo {
       updateParticles(dt);
       this.updateIdleAnimation();
       this.updateSelectionPulse();
+      this.updateBuddyAnimation();
     });
 
     this.initialized = true;
+  }
+
+  async setupBuddyLayer() {
+    const visual = this.buddyVisual;
+    if (visual === null) {
+      return;
+    }
+    try {
+      const texture = await Assets.load<Texture>(visual.imageUrl);
+      if (this.destroyed) {
+        return;
+      }
+      this.buddyTexture = texture;
+      const sprite = new Sprite({ texture });
+      sprite.anchor.set(0.5, 1);
+      const maxSize = visual.id === "self" ? 92 : 72;
+      const ratio = Math.min(maxSize / sprite.texture.width, maxSize / sprite.texture.height, 1.2) * visual.scale;
+      sprite.scale.set(ratio);
+      sprite.x = BOARD_PAD + BOARD_W - 38;
+      sprite.y = BOARD_PAD + BOARD_H - 12;
+      sprite.alpha = visual.shouldSummonFull ? 0 : 1;
+      this.buddySprite = sprite;
+      this.cheerLayer.addChild(sprite);
+      if (visual.shouldSummonFull) {
+        await this.playSummon();
+        visual.onSummoned?.();
+      }
+    } catch (error) {
+      console.debug("buddy visual load failed", error);
+    }
+  }
+
+  updateBuddyAnimation() {
+    const sprite = this.buddySprite;
+    if (sprite === null) {
+      return;
+    }
+    sprite.y = BOARD_PAD + BOARD_H - 12 + Math.sin(this.time * 0.003) * 5;
+    sprite.rotation = Math.sin(this.time * 0.002) * 0.045;
+  }
+
+  async playSummon() {
+    const sprite = this.buddySprite;
+    if (sprite === null) {
+      return;
+    }
+    const targetY = BOARD_PAD + BOARD_H - 12;
+    const targetX = BOARD_PAD + BOARD_W - 38;
+    const shadow = new Graphics();
+    shadow.ellipse(targetX, targetY - 4, 34, 8).fill({ color: 0x5a4630, alpha: 0.18 });
+    shadow.alpha = 0;
+    this.cheerLayer.addChildAt(shadow, 0);
+    sprite.y = -40;
+    sprite.x = targetX - 10;
+    sprite.alpha = 0;
+    spawnParticles(this.cheerLayer, targetX, 42, 0xffd166, 14);
+    await Promise.all([
+      tweenTo(sprite as unknown as Record<string, number>, { y: targetY, x: targetX, alpha: 1 }, 800, easeOutQuad),
+      tweenTo(shadow as unknown as Record<string, number>, { alpha: 1 }, 300, easeOutQuad),
+    ]);
+    this.sfx.land();
+    const baseScaleX = sprite.scale.x;
+    const baseScaleY = sprite.scale.y;
+    await tweenTo(sprite.scale as unknown as Record<string, number>, { x: baseScaleX * 1.16, y: baseScaleY * 0.82 }, 100, easeOutQuad);
+    await tweenTo(sprite.scale as unknown as Record<string, number>, { x: baseScaleX * 0.9, y: baseScaleY * 1.18 }, 100, easeOutBack);
+    await tweenTo(sprite.scale as unknown as Record<string, number>, { x: baseScaleX, y: baseScaleY }, 120, easeOutBounce);
+    this.showBuddySpeech("あそぼ！");
+    await delay(600);
+    shadow.destroy();
+  }
+
+  showBuddySpeech(text: string) {
+    if (this.buddySpeech !== null) {
+      this.buddySpeech.destroy();
+      this.buddySpeech = null;
+    }
+    const speech = new Text({
+      text,
+      style: new TextStyle({
+        fontFamily: "'M PLUS Rounded 1c', sans-serif",
+        fontSize: 20,
+        fontWeight: "900",
+        fill: "#4a3728",
+        stroke: { color: "#ffffff", width: 5 },
+      }),
+    });
+    speech.anchor.set(0.5);
+    speech.x = BOARD_PAD + BOARD_W - 92;
+    speech.y = BOARD_PAD + BOARD_H - 96;
+    speech.alpha = 0;
+    this.buddySpeech = speech;
+    this.cheerLayer.addChild(speech);
+    tweenTo(speech as unknown as Record<string, number>, { alpha: 1, y: speech.y - 8 }, 120, easeOutQuad)
+      .then(() => delay(460))
+      .then(() => tweenTo(speech as unknown as Record<string, number>, { alpha: 0 }, 180, easeInQuad))
+      .then(() => {
+        speech.destroy();
+        if (this.buddySpeech === speech) {
+          this.buddySpeech = null;
+        }
+      });
+  }
+
+  cheerBuddy(chain: number) {
+    const sprite = this.buddySprite;
+    if (sprite === null) {
+      return;
+    }
+    if (chain >= 2) {
+      if (this.lastBigCheerChain === chain) {
+        return;
+      }
+      this.lastBigCheerChain = chain;
+      const baseScaleX = sprite.scale.x;
+      const baseScaleY = sprite.scale.y;
+      spawnParticles(this.cheerLayer, sprite.x, sprite.y - 48, 0xffd166, Math.min(10 + chain * 3, 24));
+      this.showBuddySpeech("すごい！");
+      void tweenTo(sprite as unknown as Record<string, number>, { y: sprite.y - 46 }, 140, easeOutQuad)
+        .then(() => tweenTo(sprite as unknown as Record<string, number>, { y: BOARD_PAD + BOARD_H - 12 }, 260, easeOutBounce));
+      void tweenTo(sprite.scale as unknown as Record<string, number>, { x: baseScaleX * 1.18, y: baseScaleY * 1.18 }, 120, easeOutBack)
+        .then(() => tweenTo(sprite.scale as unknown as Record<string, number>, { x: baseScaleX, y: baseScaleY }, 180, easeOutQuad));
+      return;
+    }
+    void tweenTo(sprite as unknown as Record<string, number>, { y: sprite.y - 18 }, 80, easeOutQuad)
+      .then(() => tweenTo(sprite as unknown as Record<string, number>, { y: BOARD_PAD + BOARD_H - 12 }, 140, easeOutBounce));
   }
 
   drawBoardBg() {
@@ -451,6 +642,17 @@ class PuyoDemo {
     return row * (CELL + GAP) + CELL / 2;
   }
 
+  updateSpriteMeta(sprite: Sprite | null, patch: Partial<PuyoSpriteMeta>) {
+    if (sprite === null) {
+      return;
+    }
+    const current = this.spriteMeta.get(sprite);
+    if (current === undefined) {
+      return;
+    }
+    this.spriteMeta.set(sprite, { ...current, ...patch });
+  }
+
   initSprites() {
     this.sprites = [];
     for (let r = 0; r < ROWS; r++) {
@@ -480,16 +682,23 @@ class PuyoDemo {
     sprite.cursor = "pointer";
     sprite.alpha = 0;
 
-    (sprite as any)._puyoRow = row;
-    (sprite as any)._puyoCol = col;
-    (sprite as any)._puyoType = type;
-    (sprite as any)._baseY = sprite.y;
-    (sprite as any)._idlePhase = Math.random() * Math.PI * 2;
+    this.spriteMeta.set(sprite, {
+      row,
+      col,
+      type,
+      baseY: sprite.y,
+      idlePhase: Math.random() * Math.PI * 2,
+      animating: false,
+    });
 
     // Click handler - reads current position from metadata (not closure)
     sprite.on("pointerdown", () => {
-      const currentRow = (sprite as any)._puyoRow;
-      const currentCol = (sprite as any)._puyoCol;
+      const meta = this.spriteMeta.get(sprite);
+      if (meta === undefined) {
+        return;
+      }
+      const currentRow = meta.row;
+      const currentCol = meta.col;
       this.handleClick(currentRow, currentCol);
     });
 
@@ -497,7 +706,7 @@ class PuyoDemo {
 
     // Fade in
     tweenTo(
-      sprite as any,
+      tweenObject(sprite),
       { alpha: 1 },
       300 + Math.random() * 200,
       easeOutQuad
@@ -510,10 +719,11 @@ class PuyoDemo {
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const sprite = this.sprites[r][c];
-        if (!sprite || (sprite as any)._animating) continue;
+        const meta = sprite === null ? undefined : this.spriteMeta.get(sprite);
+        if (!sprite || meta === undefined || meta.animating) continue;
 
-        const phase = (sprite as any)._idlePhase ?? 0;
-        const baseY = (sprite as any)._baseY ?? this.cellY(r);
+        const phase = meta.idlePhase;
+        const baseY = meta.baseY;
         sprite.y = baseY + Math.sin(this.time * 0.003 + phase) * 2;
         sprite.rotation = Math.sin(this.time * 0.002 + phase * 1.3) * 0.04;
       }
@@ -582,7 +792,7 @@ class PuyoDemo {
     // Scale up selected sprite slightly
     const sprite = this.sprites[row][col];
     if (sprite) {
-      tweenTo(sprite.scale as any, { x: 1.1, y: 1.1 }, 150, easeOutBack);
+      tweenTo(tweenObject(sprite.scale), { x: 1.1, y: 1.1 }, 150, easeOutBack);
     }
 
     // Show directional arrows on adjacent cells
@@ -600,7 +810,7 @@ class PuyoDemo {
     if (this.selectedRow >= 0 && this.selectedCol >= 0) {
       const sprite = this.sprites[this.selectedRow]?.[this.selectedCol];
       if (sprite) {
-        tweenTo(sprite.scale as any, { x: 1, y: 1 }, 150, easeOutQuad);
+        tweenTo(tweenObject(sprite.scale), { x: 1, y: 1 }, 150, easeOutQuad);
       }
     }
 
@@ -705,16 +915,8 @@ class PuyoDemo {
     this.sprites[r2][c2] = tempSprite;
 
     // Update sprite metadata
-    if (this.sprites[r1][c1]) {
-      (this.sprites[r1][c1] as any)._puyoRow = r1;
-      (this.sprites[r1][c1] as any)._puyoCol = c1;
-      (this.sprites[r1][c1] as any)._baseY = this.cellY(r1);
-    }
-    if (this.sprites[r2][c2]) {
-      (this.sprites[r2][c2] as any)._puyoRow = r2;
-      (this.sprites[r2][c2] as any)._puyoCol = c2;
-      (this.sprites[r2][c2] as any)._baseY = this.cellY(r2);
-    }
+    this.updateSpriteMeta(this.sprites[r1][c1], { row: r1, col: c1, baseY: this.cellY(r1) });
+    this.updateSpriteMeta(this.sprites[r2][c2], { row: r2, col: c2, baseY: this.cellY(r2) });
 
     // Check for matches
     const clearable = findAllClearable(this.board);
@@ -733,16 +935,8 @@ class PuyoDemo {
       this.sprites[r1][c1] = this.sprites[r2][c2];
       this.sprites[r2][c2] = tempSprite2;
 
-      if (this.sprites[r1][c1]) {
-        (this.sprites[r1][c1] as any)._puyoRow = r1;
-        (this.sprites[r1][c1] as any)._puyoCol = c1;
-        (this.sprites[r1][c1] as any)._baseY = this.cellY(r1);
-      }
-      if (this.sprites[r2][c2]) {
-        (this.sprites[r2][c2] as any)._puyoRow = r2;
-        (this.sprites[r2][c2] as any)._puyoCol = c2;
-        (this.sprites[r2][c2] as any)._baseY = this.cellY(r2);
-      }
+      this.updateSpriteMeta(this.sprites[r1][c1], { row: r1, col: c1, baseY: this.cellY(r1) });
+      this.updateSpriteMeta(this.sprites[r2][c2], { row: r2, col: c2, baseY: this.cellY(r2) });
 
       this.busy = false;
       return;
@@ -805,29 +999,29 @@ class PuyoDemo {
     const promises: Promise<void>[] = [];
 
     if (sprite1) {
-      (sprite1 as any)._animating = true;
+      this.updateSpriteMeta(sprite1, { animating: true });
       promises.push(
         tweenTo(
-          sprite1 as any,
+          tweenObject(sprite1),
           { x: this.cellX(c2), y: this.cellY(r2) },
           200,
           easeOutQuad
         ).then(() => {
-          (sprite1 as any)._animating = false;
+          this.updateSpriteMeta(sprite1, { animating: false });
         })
       );
     }
 
     if (sprite2) {
-      (sprite2 as any)._animating = true;
+      this.updateSpriteMeta(sprite2, { animating: true });
       promises.push(
         tweenTo(
-          sprite2 as any,
+          tweenObject(sprite2),
           { x: this.cellX(c1), y: this.cellY(r1) },
           200,
           easeOutQuad
         ).then(() => {
-          (sprite2 as any)._animating = false;
+          this.updateSpriteMeta(sprite2, { animating: false });
         })
       );
     }
@@ -865,10 +1059,10 @@ class PuyoDemo {
     const flashPromises = allCells.map(({ row, col }) => {
       const sprite = this.sprites[row][col];
       if (!sprite) return Promise.resolve();
-      (sprite as any)._animating = true;
+      this.updateSpriteMeta(sprite, { animating: true });
       sprite.tint = 0xffffff;
       return tweenTo(
-        sprite.scale as any,
+        tweenObject(sprite.scale),
         { x: 1.3, y: 1.3 },
         120,
         easeOutBack
@@ -922,8 +1116,8 @@ class PuyoDemo {
       }
 
       return Promise.all([
-        tweenTo(sprite.scale as any, { x: 0, y: 0 }, 250, easeInQuad),
-        tweenTo(sprite as any, { alpha: 0 }, 250, easeInQuad),
+        tweenTo(tweenObject(sprite.scale), { x: 0, y: 0 }, 250, easeInQuad),
+        tweenTo(tweenObject(sprite), { alpha: 0 }, 250, easeInQuad),
       ]);
     });
     await Promise.all(popPromises);
@@ -942,6 +1136,7 @@ class PuyoDemo {
     if (this.chainCount > 0) {
       this.showChainText(this.chainCount);
       if (this.chainCount > 1) this.sfx.chain(this.chainCount);
+      this.cheerBuddy(this.chainCount);
     }
 
     await delay(100);
@@ -956,29 +1151,28 @@ class PuyoDemo {
 
       this.sprites[toR][fromC] = sprite;
       this.sprites[fromR][fromC] = null;
-      (sprite as any)._puyoRow = toR;
-      (sprite as any)._baseY = this.cellY(toR);
+      this.updateSpriteMeta(sprite, { row: toR, baseY: this.cellY(toR) });
 
       const distance = toR - fromR;
       const duration = 100 + distance * 60;
 
       return tweenTo(
-        sprite as any,
+        tweenObject(sprite),
         { y: this.cellY(toR) },
         duration,
         easeInQuad
       ).then(() => {
         this.sfx.land();
-        (sprite as any)._animating = true;
+        this.updateSpriteMeta(sprite, { animating: true });
         return tweenTo(
-          sprite.scale as any,
+          tweenObject(sprite.scale),
           { x: 1.2, y: 0.8 },
           80,
           easeOutQuad
         )
           .then(() =>
             tweenTo(
-              sprite.scale as any,
+              tweenObject(sprite.scale),
               { x: 0.9, y: 1.1 },
               100,
               easeOutQuad
@@ -986,14 +1180,14 @@ class PuyoDemo {
           )
           .then(() =>
             tweenTo(
-              sprite.scale as any,
+              tweenObject(sprite.scale),
               { x: 1, y: 1 },
               120,
               easeOutBounce
             )
           )
           .then(() => {
-            (sprite as any)._animating = false;
+            this.updateSpriteMeta(sprite, { animating: false });
           });
       });
     });
@@ -1030,15 +1224,14 @@ class PuyoDemo {
       return delay(i * 30).then(() =>
         Promise.all([
           tweenTo(
-            sprite as any,
+            tweenObject(sprite),
             { y: this.cellY(row), alpha: 1 },
             350,
             easeOutBounce
           ),
-          tweenTo(sprite.scale as any, { x: 1, y: 1 }, 350, easeOutBack),
+          tweenTo(tweenObject(sprite.scale), { x: 1, y: 1 }, 350, easeOutBack),
         ]).then(() => {
-          (sprite as any)._baseY = this.cellY(row);
-          (sprite as any)._animating = false;
+          this.updateSpriteMeta(sprite, { baseY: this.cellY(row), animating: false });
         })
       );
     });
@@ -1072,16 +1265,16 @@ class PuyoDemo {
     text.scale.set(0.3);
     this.effectContainer.addChild(text);
 
-    tweenTo(text as any, { alpha: 1 }, 150, easeOutQuad);
-    tweenTo(text.scale as any, { x: 1.2, y: 1.2 }, 200, easeOutBack)
+    tweenTo(tweenObject(text), { alpha: 1 }, 150, easeOutQuad);
+    tweenTo(tweenObject(text.scale), { x: 1.2, y: 1.2 }, 200, easeOutBack)
       .then(() =>
-        tweenTo(text.scale as any, { x: 1, y: 1 }, 150, easeOutQuad)
+        tweenTo(tweenObject(text.scale), { x: 1, y: 1 }, 150, easeOutQuad)
       )
       .then(() => delay(400))
       .then(() =>
         Promise.all([
-          tweenTo(text as any, { alpha: 0 }, 300, easeInQuad),
-          tweenTo(text as any, { y: text.y - 40 }, 300, easeInQuad),
+          tweenTo(tweenObject(text), { alpha: 0 }, 300, easeInQuad),
+          tweenTo(tweenObject(text), { y: text.y - 40 }, 300, easeInQuad),
         ])
       )
       .then(() => text.destroy());
@@ -1116,7 +1309,7 @@ class PuyoDemo {
       this.effectContainer.addChild(g);
 
       particles.push({
-        g: g as any,
+        g,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed - 120,
         life: 0,
@@ -1140,7 +1333,7 @@ class PuyoDemo {
     plusText.y = y;
     this.effectContainer.addChild(plusText);
 
-    tweenTo(plusText as any, { y: y - 60, alpha: 0 }, 900, easeOutQuad).then(
+    tweenTo(tweenObject(plusText), { y: y - 60, alpha: 0 }, 900, easeOutQuad).then(
       () => plusText.destroy()
     );
   }
@@ -1176,10 +1369,10 @@ class PuyoDemo {
       this.effectContainer.addChild(g);
 
       // Scale up quickly for "burst" feel
-      tweenTo(g.scale as any, { x: 1.2, y: 1.2 }, 150, easeOutBack);
+      tweenTo(tweenObject(g.scale), { x: 1.2, y: 1.2 }, 150, easeOutBack);
 
       particles.push({
-        g: g as any,
+        g,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed - 100,
         life: 0,
@@ -1200,7 +1393,7 @@ class PuyoDemo {
     heartText.y = y;
     this.effectContainer.addChild(heartText);
 
-    tweenTo(heartText as any, { y: y - 65, alpha: 0 }, 900, easeOutQuad).then(
+    tweenTo(tweenObject(heartText), { y: y - 65, alpha: 0 }, 900, easeOutQuad).then(
       () => heartText.destroy()
     );
   }
@@ -1211,16 +1404,36 @@ class PuyoDemo {
     particles.forEach((p) => {
       try {
         p.g.destroy();
-      } catch (_e) {
+      } catch {
         /* ignore */
       }
     });
     particles = [];
     activeTweens = [];
+    if (this.buddySpeech !== null) {
+      this.buddySpeech.destroy();
+      this.buddySpeech = null;
+    }
+    if (this.buddySprite !== null) {
+      this.buddySprite.destroy();
+      this.buddySprite = null;
+    }
+    if (this.buddyTexture !== null) {
+      this.buddyTexture.destroy(true);
+      this.buddyTexture = null;
+    }
+    if (this.buddyVisual?.objectUrl !== undefined) {
+      URL.revokeObjectURL(this.buddyVisual.objectUrl);
+    }
+    for (const skin of Object.values(this.puyoSkins)) {
+      if (skin.objectUrl !== undefined) {
+        URL.revokeObjectURL(skin.objectUrl);
+      }
+    }
     if (this.initialized) {
       try {
         this.app.destroy(true, { children: true });
-      } catch (_e) {
+      } catch {
         // PixiJS destroy can throw if not fully initialized
       }
     }
@@ -1247,6 +1460,14 @@ export function DemoScreen() {
   const [chain, setChain] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<"game" | "reflection">("game");
+  const [showSelect, setShowSelect] = useState(false);
+  const [showTaisou, setShowTaisou] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("taisou") === "1";
+  });
+  const [selectionVersion, setSelectionVersion] = useState(0);
+  const [puyoSkins, setPuyoSkins] = useState<PuyoSkinMap>(DEFAULT_PUYO_SKINS);
+  const [gameError, setGameError] = useState<string | null>(null);
 
   // Auto-scale canvas to fit available space
   const scaleCanvas = useCallback(() => {
@@ -1264,30 +1485,107 @@ export function DemoScreen() {
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || showSelect) return;
 
-    const demo = new PuyoDemo();
-    demoRef.current = demo;
-    demo.onScoreChange = setScore;
-    demo.onChainChange = setChain;
-
-    demo
-      .init(containerRef.current)
-      .then(() => {
-        if (!demo.destroyed) {
-          setLoading(false);
-          requestAnimationFrame(scaleCanvas);
+    let cancelled = false;
+    let demo: PuyoDemo | null = null;
+    async function prepareVisuals(): Promise<{ buddyVisual: BuddyVisual | null; skins: PuyoSkinMap }> {
+      const progress = getProgress();
+      const buddy = await getBuddy();
+      const selfRecord = buddy ?? (Object.values(progress.selected_puyo_character_ids).includes("self") || progress.selected_buddy === "self" ? await ensureDemoBuddy() : null);
+      const skins: PuyoSkinMap = { ...DEFAULT_PUYO_SKINS };
+      for (const [slotId, characterId] of Object.entries(progress.selected_puyo_character_ids) as [PuyoSlotId, string][]) {
+        const type = SLOT_TO_TYPE[slotId];
+        if (characterId === "self" && selfRecord !== null) {
+          const objectUrl = buddyImageObjectUrl(selfRecord);
+          skins[type] = {
+            name: selfRecord.label,
+            imageUrl: objectUrl,
+            objectUrl,
+          };
+          continue;
         }
-      })
-      .catch((err) => {
-        console.error("PuyoDemo init error:", err);
-      });
+        const character = CHARACTERS.find((item) => item.id === characterId);
+        if (character !== undefined) {
+          skins[type] = { name: character.name, imageUrl: character.image };
+        }
+      }
+
+      if (progress.selected_buddy === "self") {
+        const record = selfRecord ?? (await ensureDemoBuddy());
+        const objectUrl = buddyImageObjectUrl(record);
+        return {
+          skins,
+          buddyVisual: {
+            id: "self",
+            label: record.label,
+            imageUrl: objectUrl,
+            scale: record.scale,
+            shouldSummonFull: progress.first_summoned_at === undefined && record.firstSummonedAt === undefined,
+            objectUrl,
+            onSummoned: () => {
+              markFirstSummoned();
+              void markSummoned();
+            },
+          },
+        };
+      }
+      const character = CHARACTERS.find((item) => item.id === progress.selected_buddy);
+      if (character === undefined) {
+        return { buddyVisual: null, skins };
+      }
+      return {
+        skins,
+        buddyVisual: {
+          id: character.id,
+          label: character.name,
+          imageUrl: character.image,
+          scale: 1,
+          shouldSummonFull: false,
+        },
+      };
+    }
+
+    void prepareVisuals().then(({ buddyVisual, skins }) => {
+      if (cancelled || containerRef.current === null) {
+        if (buddyVisual?.objectUrl !== undefined) {
+          URL.revokeObjectURL(buddyVisual.objectUrl);
+        }
+        for (const skin of Object.values(skins)) {
+          if (skin.objectUrl !== undefined) {
+            URL.revokeObjectURL(skin.objectUrl);
+          }
+        }
+        return;
+      }
+      setPuyoSkins(skins);
+      setGameError(null);
+      demo = new PuyoDemo(buddyVisual, skins);
+      demoRef.current = demo;
+      demo.onScoreChange = setScore;
+      demo.onChainChange = setChain;
+
+      demo
+        .init(containerRef.current)
+        .then(() => {
+          if (!demo?.destroyed) {
+            setLoading(false);
+            requestAnimationFrame(scaleCanvas);
+          }
+        })
+        .catch((err: unknown) => {
+          console.error("PuyoDemo init error:", err);
+          setGameError(err instanceof Error ? err.message : "game_init_failed");
+          setLoading(false);
+        });
+    });
 
     return () => {
-      demo.destroy();
+      cancelled = true;
+      demo?.destroy();
       demoRef.current = null;
     };
-  }, [scaleCanvas]);
+  }, [scaleCanvas, selectionVersion, showSelect]);
 
   // Observe wrapper size for responsive scaling
   useEffect(() => {
@@ -1311,6 +1609,21 @@ export function DemoScreen() {
       requestAnimationFrame(scaleCanvas);
     }
   }, [activeView, loading, scaleCanvas]);
+
+  if (showSelect) {
+    return (
+      <CharacterSelectScreen
+        onCancel={() => {
+          setShowSelect(false);
+        }}
+        onSelect={() => {
+          setLoading(true);
+          setShowSelect(false);
+          setSelectionVersion((current) => current + 1);
+        }}
+      />
+    );
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -1338,6 +1651,8 @@ export function DemoScreen() {
           ふりかえる
         </button>
       </div>
+
+      <VillageNarrator line="いっぱい消して、なかまを よろこばせよう！" compact />
 
       <div
         className={`${styles.viewPane} ${
@@ -1367,6 +1682,14 @@ export function DemoScreen() {
                 <p>Loading...</p>
               </div>
             )}
+            {gameError !== null && (
+              <div className={styles.loading}>
+                <p>ゲームの初期化に失敗しました</p>
+                <button type="button" onClick={() => setShowSelect(true)}>
+                  選び直す
+                </button>
+              </div>
+            )}
             <div ref={containerRef} className={styles.boardContainer} />
           </div>
 
@@ -1375,12 +1698,12 @@ export function DemoScreen() {
             {TYPES.map((type) => (
               <div key={type} className={styles.charCard}>
                 <img
-                  src={SPRITE_PATHS[type]}
-                  alt={CHAR_NAMES[type]}
+                  src={puyoSkins[type].imageUrl}
+                  alt={puyoSkins[type].name}
                   className={styles.charIcon}
                 />
                 <div className={styles.charDetails}>
-                  <span className={styles.charName}>{CHAR_NAMES[type]}</span>
+                  <span className={styles.charName}>{puyoSkins[type].name}</span>
                   <span
                     className={styles.charPop}
                     style={{ color: THEME_COLORS_HEX[type] }}
@@ -1396,6 +1719,25 @@ export function DemoScreen() {
           <p className={styles.instructions}>
             キャラをタップして選択 → 矢印で隣と入れ替え → つながったら消える！
           </p>
+          <div className={styles.demoActions}>
+            <button type="button" onClick={() => setShowTaisou(true)}>
+              体操タイム
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowSelect(true);
+              }}
+            >
+              キャラを選ぶ
+            </button>
+            <a className={styles.menuLink} href="/line">
+              村の案内所
+            </a>
+            <a className={styles.menuLink} href="/map">
+              会場マップ
+            </a>
+          </div>
       </div>
 
       <div
@@ -1411,9 +1753,10 @@ export function DemoScreen() {
             </span>
           </div>
           <div className={styles.reflectionArea}>
-            <YourTimeReflectionDemo />
+            {activeView === "reflection" ? <YourTimeReflectionDemo /> : null}
           </div>
       </div>
+      {showTaisou ? <TaisouInterlude onClose={() => setShowTaisou(false)} /> : null}
     </div>
   );
 }

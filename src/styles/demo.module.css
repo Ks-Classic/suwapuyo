@@ -305,6 +305,427 @@
   white-space: nowrap;
 }
 
+.demoActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.demoActions button,
+.menuLink,
+.drawLink,
+.taisouActions button,
+.villageNarrator button {
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  font-weight: 900;
+  min-height: 40px;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.demoActions button + button {
+  background: #8bd46e;
+}
+
+.menuLink {
+  display: grid;
+  place-items: center;
+  background: #0f766e;
+}
+
+.menuLink + .menuLink {
+  background: #5bc0eb;
+}
+
+.villageNarrator {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.86);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.villageNarratorCompact {
+  grid-template-columns: 34px minmax(0, 1fr);
+  padding: 4px 8px;
+}
+
+.villageNarrator img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(74, 55, 40, 0.16));
+}
+
+.villageNarrator p {
+  color: var(--color-text-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.villageNarrator button {
+  min-height: 34px;
+  font-size: 0.76rem;
+  padding: 6px 10px;
+}
+
+.selectScreen {
+  width: min(100%, 720px);
+  min-height: 100dvh;
+  padding: 12px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background:
+    linear-gradient(180deg, rgba(197, 232, 247, 0.95), rgba(232, 245, 224, 0.98));
+}
+
+.selectHeader {
+  text-align: left;
+}
+
+.selectHeader h1 {
+  margin: 0;
+  font-size: clamp(1.45rem, 6vw, 2.2rem);
+  font-weight: 900;
+  color: var(--color-text-primary);
+  letter-spacing: 0;
+}
+
+.characterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+
+.puyoSlotGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.puyoSlotTile {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 104px;
+  padding: 8px 5px;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.puyoSlotTileActive {
+  border-color: var(--color-accent);
+  background: rgba(255, 248, 231, 0.96);
+}
+
+.puyoSlotTile span {
+  color: var(--color-text-secondary);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.puyoSlotTile img,
+.puyoSlotTile strong {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.puyoSlotTile strong {
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(245, 166, 35, 0.18);
+  color: var(--color-accent);
+  font-size: 1.3rem;
+}
+
+.puyoSlotTile b {
+  max-width: 100%;
+  color: var(--color-text-primary);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.characterTile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  min-height: 134px;
+  padding: 10px 8px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  cursor: pointer;
+}
+
+.characterTile img,
+.drawPlaceholder {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 5px rgba(74, 55, 40, 0.14));
+}
+
+.drawPlaceholder {
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: rgba(255, 209, 102, 0.22);
+  border: 2px dashed rgba(245, 166, 35, 0.66);
+  color: var(--color-accent);
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.characterTile strong {
+  max-width: 100%;
+  color: var(--color-text-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.selfTile {
+  border-color: rgba(245, 166, 35, 0.82);
+  background: rgba(255, 248, 231, 0.94);
+}
+
+.tileBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  padding: 3px 5px;
+  border-radius: var(--radius-full);
+  background: rgba(245, 166, 35, 0.92);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.characterTileLocked img {
+  filter: grayscale(1) brightness(0.25) opacity(0.48);
+}
+
+.lockMark {
+  position: absolute;
+  top: 34px;
+  z-index: 1;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 900;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.28);
+}
+
+.drawLink {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.startGameButton {
+  border: 0;
+  border-radius: var(--radius-full);
+  background: #0f766e;
+  color: #fff;
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 900;
+  min-height: 46px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.randomButton {
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-primary);
+  font-size: 0.94rem;
+  font-weight: 900;
+  min-height: 44px;
+  padding: 9px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.backButton {
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  font-weight: 900;
+  min-height: 42px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.taisouOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(74, 55, 40, 0.32);
+}
+
+.taisouPanel {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 248, 231, 0.98);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-lg);
+}
+
+.taisouStage {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 68px;
+  align-items: center;
+  gap: 10px;
+}
+
+.taisouHost {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  animation: taisouHop 0.9s ease-in-out infinite alternate;
+  filter: drop-shadow(0 5px 6px rgba(74, 55, 40, 0.16));
+}
+
+.taisouMain {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.taisouLine,
+.beatLine {
+  color: var(--color-text-primary);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.kanaBeat {
+  color: var(--color-accent);
+  font-size: clamp(4.2rem, 22vw, 7rem);
+  font-weight: 900;
+  line-height: 0.92;
+}
+
+.mouthPict {
+  display: grid;
+  place-items: center;
+  min-width: 112px;
+  min-height: 54px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid rgba(139, 212, 110, 0.52);
+}
+
+.mouthPict span {
+  color: var(--color-text-primary);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.timerRing {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+}
+
+.timerRing span {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.taisouDone {
+  color: var(--color-accent);
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.taisouActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.taisouActions span {
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+@keyframes taisouHop {
+  from {
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    transform: translateY(-8px) scale(1.04);
+  }
+}
+
 /* ──── YOUR TIME Platform Demo ──── */
 .platformPanel {
   width: 100%;

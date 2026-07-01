@@ -15,7 +15,8 @@ export function StaffPanel({ services }: StaffPanelProps) {
       <header className="fuwafuwa-header">
         <h1>ふわふわランド</h1>
         <nav className="fuwafuwa-screen-links" aria-label="画面移動">
-          <a href="/">ホーム</a>
+          <a href="/">すわぷよ</a>
+          <a href="/fuwafuwa">ホーム</a>
           <a href="/display">ディスプレイ</a>
         </nav>
       </header>

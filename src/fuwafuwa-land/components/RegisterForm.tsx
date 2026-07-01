@@ -4,6 +4,7 @@ import { captureVideoFrame, fileToCanvas, startEnvironmentCamera, stopCamera, wa
 import { processArtworkCanvas } from "../capture/processArtwork";
 import { DigitalCanvas } from "../digital/DigitalCanvas";
 import { normalizeGivenName } from "../utils/id";
+import { setBuddy } from "../../shared/buddyStore";
 
 interface RegisterFormProps {
   repository: ArtworkRepository;
@@ -31,6 +32,8 @@ export function RegisterForm({ repository, characterContent, onRegistered }: Reg
   const [consentScope, setConsentScope] = useState<ConsentScope>("event_only");
   const [transparencyMode, setTransparencyMode] = useState<TransparencyMode>("coloring-sheet");
   const [mode, setMode] = useState<InputMode>("camera");
+  const [showInFuwafuwaLand, setShowInFuwafuwaLand] = useState(true);
+  const [sendToSuwapuyo, setSendToSuwapuyo] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const hasPreview = processed !== null;
@@ -113,7 +116,7 @@ export function RegisterForm({ repository, characterContent, onRegistered }: Reg
     await processCanvas(sourceCanvasRef.current, sourceFallbackRef.current, sourceMessageRef.current, nextMode);
   }
 
-  async function register(showOnDisplay: boolean): Promise<void> {
+  async function register(): Promise<void> {
     if (processed === null) {
       return;
     }
@@ -128,13 +131,29 @@ export function RegisterForm({ repository, characterContent, onRegistered }: Reg
         consentScope,
       };
       const artwork = await repository.register(input);
-      if (!showOnDisplay) {
+      if (sendToSuwapuyo) {
+        await setBuddy({
+          artworkId: artwork.id,
+          label: normalizeGivenName(givenName) || artwork.displayLabel,
+          image: processed.blob,
+          width: processed.width,
+          height: processed.height,
+          scale: 0.6,
+          source: "fuwafuwa-local",
+          createdAt: new Date().toISOString(),
+        });
+      }
+      if (!showInFuwafuwaLand) {
         await characterContent.setCharacterStatus(artwork.id, "hidden");
       }
       onRegistered(artwork);
       clearPreview();
       setGivenName("");
-      setMessage(showOnDisplay ? "登録して表示キャラ一覧に追加しました" : "登録して非表示キャラ一覧に追加しました");
+      setMessage(
+        `${showInFuwafuwaLand ? "登録してふわふわランドに表示します" : "登録して非表示にしました"}${
+          sendToSuwapuyo ? "。すわぷよの相棒にもしました" : ""
+        }`
+      );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "register_failed");
     } finally {
@@ -287,12 +306,23 @@ export function RegisterForm({ repository, characterContent, onRegistered }: Reg
           <option value="unknown">未確認</option>
         </select>
       </div>
+      <div className="fuwafuwa-flag-grid" aria-label="登場先">
+        <label className="fuwafuwa-flag-row">
+          <input
+            type="checkbox"
+            checked={showInFuwafuwaLand}
+            onChange={(event) => setShowInFuwafuwaLand(event.currentTarget.checked)}
+          />
+          <span>ふわふわランドに登場</span>
+        </label>
+        <label className="fuwafuwa-flag-row">
+          <input type="checkbox" checked={sendToSuwapuyo} onChange={(event) => setSendToSuwapuyo(event.currentTarget.checked)} />
+          <span>すわぷよにも登場</span>
+        </label>
+      </div>
       <div className="fuwafuwa-submit-bar">
-        <button type="button" disabled={busy || !hasPreview} onClick={() => void register(true)} className="fuwafuwa-primary-action">
-          登録して表示
-        </button>
-        <button type="button" disabled={busy || !hasPreview} onClick={() => void register(false)}>
-          登録のみ
+        <button type="button" disabled={busy || !hasPreview} onClick={() => void register()} className="fuwafuwa-primary-action">
+          登録する
         </button>
       </div>
       {message !== null ? <p className="fuwafuwa-message">{message}</p> : null}
