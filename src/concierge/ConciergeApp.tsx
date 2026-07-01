@@ -90,6 +90,13 @@ function StampCelebration({ color, reduced }: { color: string; reduced: boolean 
   return (
     <>
       <motion.div
+        className={styles.inkSplash}
+        style={{ background: color }}
+        initial={{ scale: 0.3, opacity: 0.32 }}
+        animate={{ scale: 2.2, opacity: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      />
+      <motion.div
         className={styles.stampRing}
         style={{ borderColor: color }}
         initial={{ scale: 0.6, opacity: 0.7 }}
@@ -638,27 +645,35 @@ function StampScreen({ booth, stamps, onStamped, onBack }: StampScreenProps) {
         <p className={styles.kicker}>ブースQR</p>
         <h1>{booth.name}</h1>
         <div className={styles.stampStage}>
-          <div className={styles.stampClock} style={{ borderColor: booth.themeColor }}>
-            <AnimatePresence mode="wait">
-              {doneDepth === null ? (
+          <div
+            className={styles.stampClock}
+            style={{ "--ink": booth.themeColor ?? "#F5A623" } as React.CSSProperties}
+          >
+            {/* 押される前の下地=時計文字盤(むらずかんの未取得マスと同じ表現) */}
+            <span className={styles.clockFace} aria-hidden="true">
+              {Array.from({ length: 12 }, (_, index) => (
+                <span key={index} className={styles.clockTick} style={{ transform: `rotate(${index * 30}deg)` }} />
+              ))}
+              <span className={styles.clockHandH} />
+              <span className={styles.clockHandM} />
+            </span>
+            <span className={styles.stampNo}>{booth.boothNo}</span>
+            {/* 獲得=時計にインクが"押される" */}
+            <AnimatePresence>
+              {doneDepth !== null ? (
                 <motion.span
-                  key="clock"
-                  initial={reduced ? false : { scale: 0.9 }}
-                  animate={{ scale: 1 }}
-                  exit={reduced ? { opacity: 0 } : { scale: 0 }}
+                  key="ink"
+                  className={styles.inkStamp}
+                  initial={reduced ? false : { scale: 1.7, rotate: -16, opacity: 0 }}
+                  animate={{ scale: 1, rotate: -4, opacity: 1 }}
+                  transition={reduced ? { duration: 0.12 } : { type: "spring", stiffness: 520, damping: 14 }}
                 >
-                  {booth.boothNo}
+                  <span className={styles.inkRing} aria-hidden="true" />
+                  <span className={styles.inkGlyph} aria-hidden="true">
+                    {booth.stampEmoji ?? "OK"}
+                  </span>
                 </motion.span>
-              ) : (
-                <motion.span
-                  key="stamp"
-                  initial={reduced ? false : { scale: 0 }}
-                  animate={{ scale: reduced ? 1 : [0, 1.15, 1] }}
-                  transition={{ duration: reduced ? 0.12 : 0.42 }}
-                >
-                  {booth.stampEmoji ?? "OK"}
-                </motion.span>
-              )}
+              ) : null}
             </AnimatePresence>
           </div>
           <AnimatePresence>

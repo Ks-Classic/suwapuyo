@@ -238,11 +238,18 @@
 
 /* 選択肢(2列の大きいカードボタン) */
 .optionGrid,
-.countGrid,
-.depthGrid {
+.countGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  margin: 18px 0 0;
+}
+
+/* 深さは「寄った/聞いた/体験した」の3択。必ず横一列(3列)で見せる。 */
+.depthGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   margin: 18px 0 0;
 }
 
@@ -417,6 +424,7 @@
 }
 
 .stampClock {
+  position: relative;
   display: grid;
   place-items: center;
   width: 116px;
@@ -424,10 +432,96 @@
   border: 8px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   background: linear-gradient(160deg, #ffffff, var(--color-cream));
-  font-size: 40px;
-  font-weight: 900;
-  color: var(--color-text-primary);
   box-shadow: var(--shadow-md);
+}
+
+/* 時計文字盤(下地) */
+.clockFace {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  opacity: 0.45;
+}
+
+.clockTick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  margin-left: -1px;
+  transform-origin: bottom center;
+  background: linear-gradient(rgba(122, 99, 78, 0.55) 0 7px, transparent 7px);
+  border-radius: 1px;
+}
+
+.clockHandH,
+.clockHandM {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: 50% 100%;
+  background: rgba(122, 99, 78, 0.7);
+  border-radius: 2px;
+}
+
+.clockHandH {
+  width: 3px;
+  height: 26%;
+  margin-left: -1.5px;
+  transform: rotate(-40deg);
+}
+
+.clockHandM {
+  width: 2px;
+  height: 34%;
+  margin-left: -1px;
+  transform: rotate(70deg);
+}
+
+.stampNo {
+  position: absolute;
+  top: 10px;
+  z-index: 2;
+  padding: 1px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(122, 99, 78, 0.28);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* 押されたインク印(時計に重なる) */
+.inkStamp {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #fffdf6, color-mix(in srgb, var(--ink) 10%, #fffdf6) 78%);
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--ink) 78%, #fff);
+}
+
+.inkRing {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--ink) 80%, #fff);
+  opacity: 0.85;
+}
+
+.inkGlyph {
+  font-size: 52px;
+  filter: drop-shadow(0 3px 4px rgba(74, 55, 40, 0.28));
+}
+
+.inkSplash {
+  position: absolute;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .stampRing {
@@ -451,18 +545,24 @@
 }
 
 .depthButton {
-  min-height: 84px;
+  display: grid;
+  place-items: center;
+  min-height: 92px;
+  padding: 10px 4px;
   border-radius: var(--radius-lg);
   border: 2px solid rgba(255, 255, 255, 0.9);
   background: rgba(255, 255, 255, 0.82);
   color: var(--color-text-primary);
   box-shadow: var(--shadow-sm);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .depthButton span {
   display: block;
-  margin-bottom: 4px;
-  font-size: 26px;
+  margin-bottom: 6px;
+  font-size: 28px;
 }
 
 .stampDone {
