@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>すーすーわーわー × YourTIME. ぜんたい地図</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --teal: #0f766e;
+    --teal-deep: #0b5a54;
+    --teal-soft: #e6f3f1;
+    --cream: #fff8e7;
+    --paper: #fffdf7;
+    --peach: #ffd9b3;
+    --peach-deep: #f5a623;
+    --ink: #2a3b3a;
+    --ink-soft: #5d726f;
+    --line-green: #06c755;
+    --insta: #d6356f;
+    --shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+    --shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.08);
+    --radius: 22px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #d8efe9 0%, transparent 60%),
+      linear-gradient(180deg, #eef7f5 0%, #fef7ea 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* poster canvas — optimized for screenshot at ~1240px */
+  .poster {
+    width: 1240px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 40px 44px 36px;
+  }
+
+  /* ── Header ── */
+  .head { text-align: center; position: relative; }
+  .kicker {
+    display: inline-block;
+    font-weight: 800;
+    letter-spacing: .14em;
+    font-size: 13px;
+    color: var(--teal);
+    background: #fff;
+    border: 2px solid var(--teal-soft);
+    padding: 6px 16px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-soft);
+  }
+  .title {
+    font-family: "Zen Maru Gothic", sans-serif;
+    font-weight: 900;
+    font-size: 40px;
+    margin: 14px 0 6px;
+    color: var(--teal-deep);
+    letter-spacing: .01em;
+  }
+  .title b { color: var(--peach-deep); }
+  .headline {
+    font-weight: 900;
+    font-size: 26px;
+    margin: 6px 0 2px;
+    color: var(--ink);
+  }
+  .sub { font-weight: 700; color: var(--ink-soft); font-size: 15px; margin: 0; }
+
+  /* ── LINE roof ── */
+  .roof {
+    margin: 26px 0 0;
+    border-radius: 26px 26px 16px 16px;
+    background: linear-gradient(180deg, #0f766e 0%, #0b5a54 100%);
+    color: #fff;
+    padding: 16px 26px 18px;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .roof::after {
+    content: "";
+    position: absolute; left: 50%; bottom: -13px; transform: translateX(-50%);
+    border-left: 14px solid transparent; border-right: 14px solid transparent;
+    border-top: 14px solid var(--teal-deep);
+  }
+  .roof-top { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .roof-badge {
+    background: var(--line-green); color: #053; font-weight: 900; font-size: 13px;
+    padding: 4px 12px; border-radius: 999px; letter-spacing: .03em;
+  }
+  .roof-title { font-family: "Zen Maru Gothic"; font-weight: 900; font-size: 21px; }
+  .roof-sub { opacity: .92; font-weight: 700; font-size: 14px; text-align: center; margin: 6px 0 12px; }
+  .roof-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .roof-tab {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 12px; padding: 8px 10px; text-align: center;
+  }
+  .roof-tab .when { font-size: 11px; font-weight: 900; letter-spacing: .12em; opacity: .8; }
+  .roof-tab .what { font-size: 14px; font-weight: 800; margin-top: 2px; }
+
+  /* ── Timeline (前→当日→後) ── */
+  .timeline {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: 1fr 44px 1fr 44px 1fr;
+    align-items: stretch;
+    gap: 0;
+  }
+  .stage {
+    background: var(--paper);
+    border: 2px solid #eadfca;
+    border-radius: var(--radius);
+    padding: 16px 16px 14px;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+  .stage .when {
+    position: absolute; top: -13px; left: 16px;
+    background: var(--peach-deep); color: #fff; font-weight: 900; font-size: 13px;
+    padding: 3px 14px; border-radius: 999px; box-shadow: var(--shadow-soft);
+  }
+  .stage h3 {
+    margin: 8px 0 8px; font-size: 17px; font-weight: 900;
+    font-family: "Zen Maru Gothic"; color: var(--teal-deep);
+  }
+  .stage .emoji { font-size: 26px; }
+  .stage ul { margin: 6px 0 0; padding-left: 0; list-style: none; }
+  .stage li { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.55; margin-bottom: 3px; display: flex; gap: 6px; }
+  .stage li::before { content: "›"; color: var(--peach-deep); font-weight: 900; }
+  .stage .tool { font-size: 11px; font-weight: 900; color: var(--teal); letter-spacing: .04em; margin-top: 8px; }
+  .arrow { display: flex; align-items: center; justify-content: center; color: var(--peach-deep); font-size: 30px; font-weight: 900; }
+
+  /* ── Role cards ── */
+  .roles-title { text-align: center; margin: 30px 0 14px; font-weight: 900; font-size: 16px; color: var(--ink-soft); letter-spacing: .06em; }
+  .roles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .card {
+    background: #fff; border-radius: 18px; padding: 14px 14px 13px;
+    box-shadow: var(--shadow-soft); border-top: 5px solid var(--teal);
+    display: flex; flex-direction: column;
+  }
+  .card.is-fuwa { border-top-color: var(--peach-deep); }
+  .card.is-line { border-top-color: var(--line-green); }
+  .card.is-insta { border-top-color: var(--insta); }
+  .card .ctag { font-size: 11px; font-weight: 900; letter-spacing: .1em; color: var(--ink-soft); }
+  .card h4 { margin: 4px 0 2px; font-size: 17px; font-weight: 900; font-family: "Zen Maru Gothic"; }
+  .card .role { font-size: 12px; font-weight: 800; color: var(--teal-deep); margin-bottom: 8px; min-height: 32px; }
+  .card.is-fuwa .role { color: #c47a16; }
+  .card.is-line .role { color: #0a8a3f; }
+  .card.is-insta .role { color: var(--insta); }
+  .card .fn { font-size: 12px; font-weight: 600; color: var(--ink); line-height: 1.5; flex: 1; }
+  .card .fn b { color: var(--ink); background: linear-gradient(transparent 62%, #ffe7c2 62%); }
+  .card .flow { margin-top: 9px; font-size: 11px; font-weight: 800; color: #fff; background: var(--teal); border-radius: 8px; padding: 5px 8px; line-height: 1.4; }
+  .card.is-fuwa .flow { background: var(--peach-deep); }
+  .card.is-line .flow { background: var(--line-green); color:#053; }
+  .card.is-insta .flow { background: var(--insta); }
+
+  /* ── Bottom: loop + principles ── */
+  .bottom { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; margin-top: 26px; }
+  .panel { background: var(--cream); border: 2px solid #efe2c6; border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-soft); }
+  .panel h4 { margin: 0 0 10px; font-size: 15px; font-weight: 900; font-family: "Zen Maru Gothic"; color: var(--teal-deep); }
+  .loop { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; font-size: 12.5px; font-weight: 700; }
+  .loop .node { background: #fff; border: 1px solid #e7d9bd; border-radius: 999px; padding: 4px 11px; }
+  .loop .to { color: var(--peach-deep); font-weight: 900; }
+  .loop .last { color: var(--teal); font-weight: 900; }
+  .princ { margin: 0; padding: 0; list-style: none; }
+  .princ li { font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-bottom: 6px; display: flex; gap: 7px; }
+  .princ li::before { content: "✓"; color: var(--line-green); font-weight: 900; }
+
+  .foot { text-align: center; margin-top: 22px; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  .foot b { color: var(--teal); }
+
+  @media print {
+    body { background: #fff; }
+    .poster { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+<main class="poster">
+
+  <!-- Header -->
+  <header class="head">
+    <span class="kicker">ぜんたい地図 ／ 2026-08-02 YourTIME..8th</span>
+    <h1 class="title">すーすーわーわー <b>×</b> YourTIME.</h1>
+    <p class="headline">遊んでいたら、いつのまにか“未病の村”ができていた。</p>
+    <p class="sub">未病を遊びに、遊びを文化に、文化を“村”に。 ／ 企画：ツナやす（ツナマヨ × 木幡）</p>
+  </header>
+
+  <!-- LINE roof = 器 -->
+  <section class="roof">
+    <div class="roof-top">
+      <span class="roof-badge">LINE</span>
+      <span class="roof-title">「村の案内所」＝デジタル健康ハンドブック</span>
+    </div>
+    <p class="roof-sub">前→当日→後を貫く“ひとつの器”。各所のQRから登録 → ずっとつながる・声がたまる。</p>
+    <div class="roof-tabs">
+      <div class="roof-tab"><div class="when">まえ</div><div class="what">世界観の発信・告知</div></div>
+      <div class="roof-tab"><div class="when">とうじつ</div><div class="what">会場マップ・ブース紹介</div></div>
+      <div class="roof-tab"><div class="when">あと</div><div class="what">お便り・アンケート→還元</div></div>
+    </div>
+  </section>
+
+  <!-- Timeline 前→当日→後 -->
+  <section class="timeline">
+    <div class="stage">
+      <span class="when">ひらく前</span>
+      <div class="emoji">📱</div>
+      <h3>すわぷよで遊ぶ</h3>
+      <ul>
+        <li>インスタで知る</li>
+        <li>遊ぶほど健康（お口・未病体操）</li>
+        <li>各所QRでLINE登録</li>
+      </ul>
+      <div class="tool">すわぷよ ＋ インスタ ＋ LINE</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="stage">
+      <span class="when">当日・会場</span>
+      <div class="emoji">🎨</div>
+      <h3>ふわふわランド</h3>
+      <ul>
+        <li>絵を描く → 村に登場（感動）</li>
+        <li>当日マップ：タップ→ブース紹介</li>
+        <li>相棒持ち帰りQR ＋ LINE登録QR</li>
+      </ul>
+      <div class="tool">ふわふわランド ＋ 当日マップ</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="stage">
+      <span class="when">帰ったあと</span>
+      <div class="emoji">🏠</div>
+      <h3>すわぷよ再起動</h3>
+      <ul>
+        <li>自分の絵（相棒）に会いに起動</li>
+        <li>体操を重ねて隠しキャラ解放</li>
+        <li>LINEで未病tips・次回告知・アンケート</li>
+      </ul>
+      <div class="tool">すわぷよ ＋ LINE</div>
+    </div>
+  </section>
+
+  <!-- Role cards -->
+  <p class="roles-title">— それぞれの役割（4つの取り組み） —</p>
+  <section class="roles">
+    <div class="card">
+      <span class="ctag">① 常設の入口</span>
+      <h4>すわぷよ</h4>
+      <div class="role">遊ぶほど健康になるゲーム</div>
+      <div class="fn">1分ごとに<b>お口・未病体操</b>。体操を重ねると<b>隠しキャラ解放</b>（ツムツム的）。体操は出展者の専門監修＝自然な紹介。<b>自分の絵が相棒で登場＝起動動機</b>。</div>
+      <div class="flow">起動→体操→紹介→LINE / 告知へ送る</div>
+    </div>
+    <div class="card is-fuwa">
+      <span class="ctag">② 当日の感動</span>
+      <h4>ふわふわランド</h4>
+      <div class="role">描いた絵が、村に登場する</div>
+      <div class="fn">タブレットに描く→村にふわふわ登場。顔は撮らず<b>作品のみ・名前は任意</b>。描いた絵は<b>QRで持ち帰り→すわぷよの相棒</b>に。</div>
+      <div class="flow">感動→相棒を持ち帰り→家で起動へ</div>
+    </div>
+    <div class="card is-line">
+      <span class="ctag">③ すべての器</span>
+      <h4>LINE 村の案内所</h4>
+      <div class="role">前→当日→後を貫くハンドブック</div>
+      <div class="fn">マップ・未病tips・お便り・<b>アンケート</b>を1か所に。<b>声を集めて出展者に還元</b>。特典は“GIVEを載せる権利”として課金（露出は売らない）。</div>
+      <div class="flow">各所QR→登録→ずっと・データが貯まる</div>
+    </div>
+    <div class="card is-insta">
+      <span class="ctag">④ 前後の発信</span>
+      <h4>インスタ ショート</h4>
+      <div class="role">世界観を楽しく届ける</div>
+      <div class="fn">キャラが<b>未病を楽しく発信</b>・YourTIMEを告知。運営ののちゃんと補完して、継続発信を肩代わり。</div>
+      <div class="flow">認知→すわぷよ / LINE / YourTIMEへ</div>
+    </div>
+  </section>
+
+  <!-- Bottom: loop + principles -->
+  <section class="bottom">
+    <div class="panel">
+      <h4>全員WINの循環（回るほど村に家が増える）</h4>
+      <div class="loop">
+        <span class="node">子どもが夢中</span><span class="to">→</span>
+        <span class="node">親子が院と出会う</span><span class="to">→</span>
+        <span class="node">院が“治療の前”からつながる</span><span class="to">→</span>
+        <span class="node">運営に還元</span><span class="to">→</span>
+        <span class="node">つくり手に仕事</span><span class="to">→</span>
+        <span class="node">もっと楽しい遊び</span><span class="last">↺</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h4>大事にする原則</h4>
+      <ul class="princ">
+        <li>露出は売らない（特典＝GIVEを載せる権利は可）</li>
+        <li>PULL＝タップして開く・通知爆撃しない</li>
+        <li>「広告」と呼ばない＝村の案内・運営に還元</li>
+        <li>個人情報は自前の同意フォームで丁寧に</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="foot">入口＝<b>ツナマヨ</b>（キャラ→紹介→チラシ）／出口＝<b>やす</b>（AI・アプリ・仕組み）。 村を回すのは諏訪さんと村のみんな。私たちは“続く形”にする黒子です。</p>
+
+</main>
+</body>
+</html>
