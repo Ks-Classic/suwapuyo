@@ -36,3 +36,4 @@ shorts/legacy/*.mp4
 # Python キャッシュ
 __pycache__/
 *.pyc
+*:Zone.Identifier
