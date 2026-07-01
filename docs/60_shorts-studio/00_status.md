@@ -30,7 +30,7 @@
 
 ## TODO（次回）
 
-1. **［保留］Notionカレンダー作成** — Notion MCP認証のコールバックURL待ち（`mcp__notion__authenticate`→URL→ブラウザ許可→`http://localhost:.../callback?code=...`を貼る→`complete_authentication`）。DB案: 投稿日/タイトル/テーマ/キャラ/IG文/YT文/TikTok文/ハッシュタグ/ステータス/動画。JSONは人が触らなくてよくなる。
+1. **［完了 2026-06-27］Notionカレンダー作成** — DB「すーすーわーわー ショート投稿カレンダー」作成済（data_source_id=`ee8e768f-8f5b-4170-90a2-1b7fee040d30` / https://app.notion.com/p/a29ddaa1b8f34e398c32913d32f3c3f3 ）。台本7本（yt-001〜007）を流し込み済。カラム=タイトル/スクリプトID/投稿日/ステータス(未着手/書き出し済/投稿予定/投稿済)/テーマ/シーン/フック/IG文/YT文/TikTok文/ハッシュタグ/動画。次の運用=投稿日を入れる→書き出したらステータス更新→動画添付。正本JSONは `public/content/shorts-studio/`。
 2. **push** — main がorigin より先行（コミット済み）。`git push origin main`。
 3. **5本の本番書き出し＆パッケージ** — セッション中断で止まったら `for f in public/content/shorts-studio/scripts/yt-00[1-5]-*.json; do python3 shorts/render.py "$f"; done && python3 shorts/package_posts.py`。
 4. **投稿運用** — まず**1日1本・週5〜7・複数プラットフォーム横展開**（同じ動画をIG/YT/TikTok）。最初の30〜50本は探索（台帳で計測）。2本/日は品質＋ストック確立後。
