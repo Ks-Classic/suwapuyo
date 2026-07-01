@@ -197,6 +197,11 @@ interface PuyoSpriteMeta {
   baseY: number;
   idlePhase: number;
   animating: boolean;
+  // sprite.width=CELL-4 で決まる基準スケール。キャラ画像スキンは原寸が大きく
+  // 基準スケールが1でないため、選択/消去/リフィルは必ずこの基準×係数でtweenする。
+  // (絶対値1.1等にtweenすると原寸1.1倍=数倍に膨張するバグの元)
+  baseScaleX: number;
+  baseScaleY: number;
 }
 
 function spawnParticles(
@@ -689,6 +694,8 @@ class PuyoDemo {
       baseY: sprite.y,
       idlePhase: Math.random() * Math.PI * 2,
       animating: false,
+      baseScaleX: sprite.scale.x,
+      baseScaleY: sprite.scale.y,
     });
 
     // Click handler - reads current position from metadata (not closure)
@@ -789,10 +796,13 @@ class PuyoDemo {
     this.selectionHighlight = highlight;
     this.uiContainer.addChild(highlight);
 
-    // Scale up selected sprite slightly
+    // Scale up selected sprite slightly (基準スケール×1.1。絶対1.1は膨張バグ)
     const sprite = this.sprites[row][col];
     if (sprite) {
-      tweenTo(tweenObject(sprite.scale), { x: 1.1, y: 1.1 }, 150, easeOutBack);
+      const meta = this.spriteMeta.get(sprite);
+      const bx = meta?.baseScaleX ?? sprite.scale.x;
+      const by = meta?.baseScaleY ?? sprite.scale.y;
+      tweenTo(tweenObject(sprite.scale), { x: bx * 1.1, y: by * 1.1 }, 150, easeOutBack);
     }
 
     // Show directional arrows on adjacent cells
@@ -806,11 +816,14 @@ class PuyoDemo {
       this.selectionHighlight = null;
     }
 
-    // Scale back selected sprite
+    // Scale back selected sprite (基準スケールに戻す。絶対1は膨張バグ)
     if (this.selectedRow >= 0 && this.selectedCol >= 0) {
       const sprite = this.sprites[this.selectedRow]?.[this.selectedCol];
       if (sprite) {
-        tweenTo(tweenObject(sprite.scale), { x: 1, y: 1 }, 150, easeOutQuad);
+        const meta = this.spriteMeta.get(sprite);
+        const bx = meta?.baseScaleX ?? 1;
+        const by = meta?.baseScaleY ?? 1;
+        tweenTo(tweenObject(sprite.scale), { x: bx, y: by }, 150, easeOutQuad);
       }
     }
 
@@ -1061,9 +1074,12 @@ class PuyoDemo {
       if (!sprite) return Promise.resolve();
       this.updateSpriteMeta(sprite, { animating: true });
       sprite.tint = 0xffffff;
+      const meta = this.spriteMeta.get(sprite);
+      const bx = meta?.baseScaleX ?? sprite.scale.x;
+      const by = meta?.baseScaleY ?? sprite.scale.y;
       return tweenTo(
         tweenObject(sprite.scale),
-        { x: 1.3, y: 1.3 },
+        { x: bx * 1.3, y: by * 1.3 },
         120,
         easeOutBack
       );
@@ -1216,9 +1232,11 @@ class PuyoDemo {
 
     const promises = newPuyos.map(({ type, row, col }, i) => {
       const sprite = this.createSprite(type, row, col);
+      const bx = sprite.scale.x; // 基準スケール(width=CELL-4で決定)
+      const by = sprite.scale.y;
       sprite.alpha = 0;
       sprite.y = -CELL;
-      sprite.scale.set(0.6);
+      sprite.scale.set(bx * 0.6, by * 0.6); // 基準×0.6から入る。絶対0.6→1は膨張バグ
       this.sprites[row][col] = sprite;
 
       return delay(i * 30).then(() =>
@@ -1229,7 +1247,7 @@ class PuyoDemo {
             350,
             easeOutBounce
           ),
-          tweenTo(tweenObject(sprite.scale), { x: 1, y: 1 }, 350, easeOutBack),
+          tweenTo(tweenObject(sprite.scale), { x: bx, y: by }, 350, easeOutBack),
         ]).then(() => {
           this.updateSpriteMeta(sprite, { baseY: this.cellY(row), animating: false });
         })
