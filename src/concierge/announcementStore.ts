@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "../fuwafuwa-land/lib/supabase";
+import { safeUuid } from "./uuid";
 
 export interface Announcement {
   id: string;
@@ -33,7 +34,7 @@ export async function sendAnnouncement(text: string): Promise<Announcement | nul
   }
   const { data, error } = await client
     .from("announcements")
-    .insert({ id: `demo-${crypto.randomUUID()}`, text: trimmed, active: true })
+    .insert({ id: `demo-${safeUuid()}`, text: trimmed, active: true })
     .select()
     .single();
   if (error !== null) {
