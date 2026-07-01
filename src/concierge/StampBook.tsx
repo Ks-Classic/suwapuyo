@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { BoothExhibitor, VisitDepth } from "../fuwafuwa-land/map/boothMapData";
 import { track } from "../shared/analytics";
 import { unlockCharacter } from "../shared/progressStore";
@@ -8,90 +8,94 @@ import type { ConciergeStamp } from "./visitorStore";
 import styles from "./stampBook.module.css";
 
 /**
- * むらずかん = 村の図鑑。
- * モデル: ポケモン図鑑(未取得=グレーのシルエット/取得=フルカラー) × ポケカ Pocket(レア度フレーム/ホロ/傾き)。
- * 関与の深さ(寄った/説明/体験)を そのままレア度(★1/★2/★3・体験はホロ)に対応させる。
+ * むらずかん = スタンプ台紙(絵本の見開き)。デザインの正: docs/40_yourtime-platform/06_design-guideline.md §6.5。
+ * モデルは「スタンプラリー」であって「トレカ」ではない。
+ * 未取得マス = うすい時計の文字盤 / 獲得マス = 時計→ロゴに"押された"インク印(ハンコ)。
+ * 関与の深さ(寄った/聞いた/体験した)は レアリティでなく「印の格」(リング数・金)で控えめに表す。
  */
 
-interface RarityTier {
-  stars: number;
+interface StampTier {
+  rings: number;
   label: string;
-  foil: "none" | "holo" | "full";
+  gold: boolean;
 }
 
-const RARITY: Record<VisitDepth, RarityTier> = {
-  visited: { stars: 1, label: "であった", foil: "none" },
-  explained: { stars: 2, label: "はなした", foil: "holo" },
-  experienced: { stars: 3, label: "たいけん", foil: "full" },
+const TIER: Record<VisitDepth, StampTier> = {
+  visited: { rings: 1, label: "であった", gold: false },
+  explained: { rings: 2, label: "はなした", gold: false },
+  experienced: { rings: 3, label: "たいけん", gold: true },
 };
 
-function dexNo(booth: BoothExhibitor): string {
-  return `No.${booth.boothNo.padStart(3, "0")}`;
+function slotNo(booth: BoothExhibitor): string {
+  return booth.boothNo.padStart(2, "0");
 }
 
-function Stars({ count }: { count: number }) {
+/** boothNo から決まる僅かな傾き(押印のゆらぎ)。乱数を使わず再現性を保つ。 */
+function pressAngle(booth: BoothExhibitor): number {
+  const n = Number.parseInt(booth.boothNo, 10) || 0;
+  return ((n * 37) % 9) - 4; // -4〜+4度
+}
+
+/** うすい時計の文字盤(未取得マスの下地) */
+function ClockFace() {
   return (
-    <span className={styles.stars} aria-hidden="true">
-      {Array.from({ length: 3 }, (_, index) => (
-        <span key={index} className={index < count ? styles.starOn : styles.starOff}>
-          ★
-        </span>
+    <span className={styles.clock} aria-hidden="true">
+      {Array.from({ length: 12 }, (_, index) => (
+        <span key={index} className={styles.tick} style={{ transform: `rotate(${index * 30}deg)` }} />
       ))}
+      <span className={styles.handHour} />
+      <span className={styles.handMin} />
     </span>
   );
 }
 
-function CardFace({
+/** 印そのもの(グリッド/詳細で共用) */
+function StampMark({
   booth,
   depth,
-  variant,
+  size,
 }: {
   booth: BoothExhibitor;
   depth: VisitDepth | null;
-  variant: "grid" | "detail";
+  size: "grid" | "detail";
 }) {
-  const caught = depth !== null;
-  const rarity = depth !== null ? RARITY[depth] : null;
-  const color = booth.themeColor ?? "#F5A623";
+  const tier = depth !== null ? TIER[depth] : null;
+  const ink = booth.themeColor ?? "#F5A623";
+  const angle = pressAngle(booth);
 
-  if (!caught) {
+  if (tier === null) {
     return (
-      <div className={`${styles.card} ${styles.cardLocked}`}>
-        <span className={styles.dexNo}>{dexNo(booth)}</span>
-        <span className={styles.lock} aria-hidden="true">
-          🔒
-        </span>
-        <span className={styles.silhouette} aria-hidden="true">
-          {booth.stampEmoji ?? "❔"}
-        </span>
-        <span className={styles.mystery}>？？？</span>
-      </div>
+      <span className={`${styles.mark} ${styles.markEmpty}`}>
+        <ClockFace />
+        <span className={styles.slotNo}>{slotNo(booth)}</span>
+        <span className={styles.mada}>まだ</span>
+      </span>
     );
   }
 
   return (
-    <div
-      className={`${styles.card} ${styles[`foil_${rarity!.foil}`]}`}
-      style={{ "--card-color": color } as React.CSSProperties}
+    <span
+      className={`${styles.mark} ${styles.markInked} ${tier.gold ? styles.markGold : ""}`}
+      style={{ "--ink": ink, "--press": `${angle}deg` } as React.CSSProperties}
     >
-      {rarity!.foil !== "none" ? <span className={styles.holo} aria-hidden="true" /> : null}
-      <span className={styles.dexNo}>{dexNo(booth)}</span>
-      <Stars count={rarity!.stars} />
-      <span className={styles.creature} aria-hidden="true">
+      <span className={styles.ringOuter} aria-hidden="true" />
+      {tier.rings >= 2 ? <span className={styles.ringInner} aria-hidden="true" /> : null}
+      <span className={styles.slotNo}>{slotNo(booth)}</span>
+      <span className={styles.glyph} aria-hidden="true">
         {booth.stampEmoji ?? "✨"}
       </span>
-      <div className={styles.namePlate}>
-        <strong>{booth.name}</strong>
-        <small>
-          {booth.category}・{rarity!.label}
-        </small>
-      </div>
-      {variant === "detail" ? <span className={styles.shine} aria-hidden="true" /> : null}
-    </div>
+      <span className={styles.arc}>{booth.name}</span>
+      {tier.gold ? (
+        <span className={styles.goldStar} aria-hidden="true">
+          ★
+        </span>
+      ) : null}
+      {size === "detail" ? <span className={styles.grain} aria-hidden="true" /> : null}
+    </span>
   );
 }
 
-function CollectionCard({
+function StampSlot({
   booth,
   depth,
   isNew,
@@ -104,32 +108,33 @@ function CollectionCard({
   reduced: boolean;
   onOpen: () => void;
 }) {
+  const caught = depth !== null;
   return (
     <motion.button
       type="button"
-      className={styles.cardButton}
-      onClick={depth !== null ? onOpen : undefined}
-      disabled={depth === null}
-      aria-label={depth !== null ? `${booth.name} のカードを見る` : "未取得のブース"}
-      initial={reduced || !isNew ? false : { scale: 0.3, rotateY: 180, opacity: 0 }}
-      animate={{ scale: 1, rotateY: 0, opacity: 1 }}
+      className={styles.slot}
+      onClick={caught ? onOpen : undefined}
+      disabled={!caught}
+      aria-label={caught ? `${booth.name} のスタンプを見る` : "まだ押していないマス"}
+      initial={reduced || !isNew ? false : { scale: 1.5, rotate: -14, opacity: 0 }}
+      animate={{ scale: 1, rotate: 0, opacity: 1 }}
       transition={
         reduced
           ? { duration: 0 }
           : isNew
-            ? { type: "spring", stiffness: 260, damping: 18, delay: 0.1 }
+            ? { type: "spring", stiffness: 520, damping: 15, delay: 0.05 }
             : { duration: 0.2 }
       }
-      whileTap={depth !== null && !reduced ? { scale: 0.95 } : undefined}
+      whileTap={caught && !reduced ? { scale: 0.94 } : undefined}
     >
-      <CardFace booth={booth} depth={depth} variant="grid" />
+      <StampMark booth={booth} depth={depth} size="grid" />
       {isNew ? <span className={styles.newBadge}>NEW!</span> : null}
     </motion.button>
   );
 }
 
-/** カード詳細: 指/傾きでホロが動く(ポケカ Pocket のイマーシブ風) */
-function CardDetail({
+/** 詳細: 紙に押された印のクローズアップ(3Dチルトはしない=トレカ回避) */
+function StampDetail({
   booth,
   depth,
   reduced,
@@ -140,27 +145,7 @@ function CardDetail({
   reduced: boolean;
   onClose: () => void;
 }) {
-  const px = useMotionValue(0);
-  const py = useMotionValue(0);
-  const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [12, -12]), { stiffness: 220, damping: 18 });
-  const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-14, 14]), { stiffness: 220, damping: 18 });
-  const glareX = useTransform(px, [-0.5, 0.5], ["12%", "88%"]);
-  const glareY = useTransform(py, [-0.5, 0.5], ["12%", "88%"]);
-
-  function handleMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (reduced) {
-      return;
-    }
-    const rect = event.currentTarget.getBoundingClientRect();
-    px.set((event.clientX - rect.left) / rect.width - 0.5);
-    py.set((event.clientY - rect.top) / rect.height - 0.5);
-  }
-
-  function reset() {
-    px.set(0);
-    py.set(0);
-  }
-
+  const tier = TIER[depth];
   return (
     <motion.div
       className={styles.detailBackdrop}
@@ -171,26 +156,23 @@ function CardDetail({
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className={styles.detailStage}
+        className={styles.detailPaper}
         onClick={(event) => event.stopPropagation()}
-        onPointerMove={handleMove}
-        onPointerLeave={reset}
-        style={reduced ? undefined : { rotateX, rotateY, transformPerspective: 900 }}
-        initial={reduced ? false : { scale: 0.6, y: 40, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }}
-        transition={reduced ? { duration: 0.12 } : { type: "spring", stiffness: 240, damping: 20 }}
+        initial={reduced ? false : { scale: 1.35, rotate: -10, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        exit={reduced ? { opacity: 0 } : { scale: 0.8, opacity: 0 }}
+        transition={reduced ? { duration: 0.12 } : { type: "spring", stiffness: 420, damping: 18 }}
       >
-        <CardFace booth={booth} depth={depth} variant="detail" />
-        {!reduced ? (
-          <motion.span
-            className={styles.detailGlare}
-            style={{ left: glareX, top: glareY }}
-            aria-hidden="true"
-          />
-        ) : null}
+        <span className={styles.detailStage}>
+          <StampMark booth={booth} depth={depth} size="detail" />
+        </span>
+        <div className={styles.detailInfo}>
+          <strong>{booth.name}</strong>
+          <small>
+            {booth.category}・{tier.label}
+          </small>
+        </div>
       </motion.div>
-      <p className={styles.detailHint}>カードを かたむけてみよう</p>
       <button type="button" className={styles.detailClose} onClick={onClose}>
         とじる
       </button>
@@ -241,7 +223,7 @@ export function StampBook({
         </button>
         <div className={styles.headTitle}>
           <p className={styles.kicker}>むらずかん</p>
-          <h1>あつめた ブース</h1>
+          <h1>スタンプ台紙</h1>
         </div>
         <span className={styles.counter}>
           {caughtCount}
@@ -258,20 +240,22 @@ export function StampBook({
         />
       </div>
 
-      <div className={styles.grid}>
-        {DEMO_BOOTHS.map((booth) => (
-          <CollectionCard
-            key={booth.id}
-            booth={booth}
-            depth={depthByBooth.get(booth.id) ?? null}
-            isNew={booth.id === justStampedId}
-            reduced={reduced}
-            onOpen={() => {
-              setOpenBoothId(booth.id);
-              track("item_view", { surface: "concierge", id: booth.id, kind: "zukan_card" });
-            }}
-          />
-        ))}
+      <div className={styles.sheet}>
+        <div className={styles.grid}>
+          {DEMO_BOOTHS.map((booth) => (
+            <StampSlot
+              key={booth.id}
+              booth={booth}
+              depth={depthByBooth.get(booth.id) ?? null}
+              isNew={booth.id === justStampedId}
+              reduced={reduced}
+              onOpen={() => {
+                setOpenBoothId(booth.id);
+                track("item_view", { surface: "concierge", id: booth.id, kind: "zukan_stamp" });
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className={`${styles.reward} ${complete ? styles.rewardDone : ""}`}>
@@ -280,13 +264,13 @@ export function StampBook({
         </span>
         <div>
           <strong>{complete ? "コンプリート！隠しキャラ解放" : "ぜんぶ集めて 隠しキャラGET"}</strong>
-          <small>{complete ? "むらの クラウンレアが なかまに！" : `あと ${total - caughtCount} ブース`}</small>
+          <small>{complete ? "むらの なかまが ひとり ふえた！" : `あと ${total - caughtCount} マス`}</small>
         </div>
       </div>
 
       <AnimatePresence>
         {openBooth !== null && openDepth !== null ? (
-          <CardDetail booth={openBooth} depth={openDepth} reduced={reduced} onClose={() => setOpenBoothId(null)} />
+          <StampDetail booth={openBooth} depth={openDepth} reduced={reduced} onClose={() => setOpenBoothId(null)} />
         ) : null}
       </AnimatePresence>
     </main>

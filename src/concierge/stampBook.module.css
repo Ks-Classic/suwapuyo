@@ -1,6 +1,7 @@
 /*
- * むらずかん。デザインの正: docs/40_yourtime-platform/06_design-guideline.md
- * モデル=ポケモン図鑑(未取得シルエット) × ポケカ Pocket(レア度フレーム/ホロ/傾き)。
+ * むらずかん = スタンプ台紙。デザインの正: docs/40_yourtime-platform/06_design-guideline.md §6.5。
+ * モデル=スタンプラリー(押印メダル)。トレカ(ホロ/レアリティ★/3Dチルト)は使わない。
+ * 未取得=うすい時計の文字盤 / 獲得=時計→ロゴの"押された"インク印。
  */
 
 .root {
@@ -89,31 +90,47 @@
   background: linear-gradient(90deg, var(--color-accent-light), var(--color-accent));
 }
 
-/* ─────────── グリッド ─────────── */
+/* ─────────── 台紙(絵本の見開き) ─────────── */
+.sheet {
+  position: relative;
+  width: min(520px, 100%);
+  margin: 0 auto 16px;
+  padding: 20px 18px;
+  border-radius: var(--radius-xl);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  /* クリーム地の紙 + うっすら方眼(台紙感) */
+  background:
+    linear-gradient(rgba(255, 253, 246, 0.9), rgba(255, 249, 235, 0.9)),
+    repeating-linear-gradient(0deg, rgba(122, 99, 78, 0.05) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(90deg, rgba(122, 99, 78, 0.05) 0 1px, transparent 1px 26px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-lg);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  width: min(520px, 100%);
-  margin: 0 auto 16px;
+  gap: 18px;
 }
 
-.cardButton {
+.slot {
+  position: relative;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
-  perspective: 800px;
 }
 
-.cardButton:disabled {
+.slot:disabled {
   cursor: default;
 }
 
 .newBadge {
   position: absolute;
-  top: -8px;
-  right: -6px;
+  top: -6px;
+  right: 4px;
+  z-index: 4;
   padding: 3px 10px;
   border-radius: var(--radius-full);
   background: var(--color-pink);
@@ -124,198 +141,168 @@
   transform: rotate(8deg);
 }
 
-/* ─────────── カード共通 ─────────── */
-.card {
+/* ─────────── 印(丸メダル・共通) ─────────── */
+.mark {
   position: relative;
   display: grid;
-  aspect-ratio: 63 / 88;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 3px solid #fffdf7;
-  box-shadow: var(--shadow-md);
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
 }
 
-.cardButton {
-  position: relative;
+/* 未取得: 破線のスタンプ枠 + うすい時計 */
+.markEmpty {
+  border: 2px dashed rgba(122, 99, 78, 0.4);
+  background: rgba(255, 255, 255, 0.28);
 }
 
-/* 取得済み: タイプ色のグラデ地 */
-.foil_none,
-.foil_holo,
-.foil_full {
-  background:
-    radial-gradient(120% 80% at 50% 18%, rgba(255, 255, 255, 0.6), transparent 60%),
-    linear-gradient(165deg, color-mix(in srgb, var(--card-color) 30%, #ffffff), var(--card-color));
-}
-
-.dexNo {
+.mada {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 3;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-text-primary);
-  font-size: 11px;
-  font-weight: 900;
-}
-
-.stars {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 3;
-  display: flex;
-  gap: 1px;
-  font-size: 12px;
-}
-
-.starOn {
-  color: #ffd93d;
-  text-shadow: 0 1px 2px rgba(74, 55, 40, 0.4);
-}
-
-.starOff {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.creature {
-  place-self: center;
-  font-size: clamp(46px, 16vw, 72px);
-  filter: drop-shadow(0 6px 8px rgba(74, 55, 40, 0.3));
+  bottom: 14%;
   z-index: 2;
-}
-
-.namePlate {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: 6px;
-  z-index: 3;
-  display: grid;
-  gap: 1px;
-  padding: 7px 9px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.92);
-  text-align: left;
-}
-
-.namePlate strong {
   font-size: 12px;
   font-weight: 900;
-  line-height: 1.15;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+}
+
+/* うすい時計の文字盤 */
+.clock {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  margin-left: -1px;
+  transform-origin: bottom center;
+  /* 外周8pxだけ色をのせて、円周に並ぶ目盛りにする */
+  background: linear-gradient(rgba(122, 99, 78, 0.55) 0 8px, transparent 8px);
+  border-radius: 1px;
+}
+
+.handHour,
+.handMin {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: 50% 100%;
+  background: rgba(122, 99, 78, 0.65);
+  border-radius: 2px;
+}
+
+.handHour {
+  width: 3px;
+  height: 26%;
+  margin-left: -1.5px;
+  transform: rotate(-40deg);
+}
+
+.handMin {
+  width: 2px;
+  height: 36%;
+  margin-left: -1px;
+  transform: rotate(70deg);
+}
+
+/* 獲得: 押されたインク印 */
+.markInked {
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 40%, #fffdf6, color-mix(in srgb, var(--ink) 8%, #fffdf6) 78%);
+  box-shadow:
+    0 6px 12px rgba(74, 55, 40, 0.22),
+    inset 0 0 0 3px color-mix(in srgb, var(--ink) 78%, #fff);
+  transform: rotate(var(--press));
+}
+
+/* 二重リングの縁(ハンコらしさ) */
+.ringOuter {
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--ink) 82%, #fff);
+  opacity: 0.85;
+}
+
+.ringInner {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--ink) 65%, #fff);
+  opacity: 0.75;
+}
+
+.slotNo {
+  position: absolute;
+  top: 12%;
+  z-index: 3;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--ink) 80%, #fff);
+  color: #fffdf6;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.markEmpty .slotNo {
+  background: rgba(122, 99, 78, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.glyph {
+  z-index: 2;
+  font-size: clamp(38px, 13vw, 58px);
+  filter: drop-shadow(0 3px 4px rgba(74, 55, 40, 0.25));
+}
+
+/* 名前を印の下弧に沿わせず、下部にプレートで(可読性優先) */
+.arc {
+  position: absolute;
+  bottom: 11%;
+  z-index: 3;
+  max-width: 78%;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.94);
   color: var(--color-text-primary);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.namePlate small {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
+/* たいけん = 金の格 */
+.markGold {
+  box-shadow:
+    0 6px 14px rgba(74, 55, 40, 0.26),
+    inset 0 0 0 3px #f0b429,
+    0 0 0 2px #ffe08a;
 }
 
-/* ─────────── ホロ演出 ─────────── */
-.holo {
+.markGold .ringOuter {
+  border-color: #f0b429;
+  opacity: 1;
+}
+
+.goldStar {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    115deg,
-    transparent 20%,
-    rgba(255, 0, 128, 0.35),
-    rgba(255, 214, 0, 0.35),
-    rgba(0, 200, 170, 0.35),
-    rgba(90, 120, 255, 0.35),
-    transparent 80%
-  );
-  background-size: 220% 220%;
-  mix-blend-mode: color-dodge;
-  opacity: 0.5;
-  animation: holo-sweep 4s linear infinite;
-}
-
-.foil_full .holo {
-  opacity: 0.7;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 0, 128, 0.4),
-    rgba(255, 214, 0, 0.4),
-    rgba(0, 200, 170, 0.4),
-    rgba(90, 120, 255, 0.4),
-    rgba(255, 0, 128, 0.4)
-  );
-  background-size: 200% 200%;
-  animation: holo-spin 6s linear infinite;
-}
-
-.foil_full {
-  border-color: #ffe98a;
-  box-shadow: 0 0 0 1px #ffd93d, var(--shadow-lg);
-}
-
-@keyframes holo-sweep {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 220% 50%;
-  }
-}
-
-@keyframes holo-spin {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 200% 200%;
-  }
-}
-
-/* ─────────── 未取得(シルエット) ─────────── */
-.cardLocked {
-  background: linear-gradient(165deg, #6f6353, #4a4034);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.cardLocked .dexNo {
-  background: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.silhouette {
-  place-self: center;
-  font-size: clamp(46px, 16vw, 72px);
-  filter: brightness(0) opacity(0.32);
-  z-index: 1;
-}
-
-.lock {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 8%;
+  right: 12%;
   z-index: 3;
   font-size: 15px;
-  opacity: 0.85;
-}
-
-.mystery {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: 6px;
-  z-index: 3;
-  padding: 7px 9px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-align: center;
+  color: #ffcf3f;
+  text-shadow: 0 1px 2px rgba(74, 55, 40, 0.4);
 }
 
 /* ─────────── ご褒美バナー ─────────── */
@@ -354,64 +341,73 @@
   color: var(--color-text-secondary);
 }
 
-/* ─────────── カード詳細(ホロ傾き) ─────────── */
+/* ─────────── 詳細(紙に押された印のクローズアップ) ─────────── */
 .detailBackdrop {
   position: fixed;
   inset: 0;
   z-index: 30;
   display: grid;
   place-items: center;
-  gap: 16px;
+  gap: 18px;
   padding: 24px;
   background: rgba(30, 22, 12, 0.62);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
 
+.detailPaper {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(320px, 82vw);
+  padding: 26px 22px;
+  border-radius: var(--radius-xl);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(rgba(255, 253, 246, 0.96), rgba(255, 249, 235, 0.96)),
+    repeating-linear-gradient(0deg, rgba(122, 99, 78, 0.06) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(122, 99, 78, 0.06) 0 1px, transparent 1px 24px);
+  box-shadow: var(--shadow-lg);
+}
+
 .detailStage {
-  position: relative;
-  width: min(280px, 74vw);
-  aspect-ratio: 63 / 88;
-  transform-style: preserve-3d;
+  display: block;
+  width: min(220px, 60vw);
+  aspect-ratio: 1;
 }
 
-.detailStage .card {
-  width: 100%;
-  height: 100%;
-  border-width: 5px;
-  border-radius: 22px;
+.detailStage .glyph {
+  font-size: clamp(78px, 26vw, 112px);
 }
 
-.detailStage .creature,
-.detailStage .silhouette {
-  font-size: clamp(90px, 30vw, 130px);
-}
-
-.detailGlare {
-  position: absolute;
-  z-index: 4;
-  width: 120px;
-  height: 120px;
-  margin: -60px 0 0 -60px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.7), transparent 62%);
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-}
-
-.shine {
+/* 押印の風合い(かすれ) */
+.grain {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 4;
   pointer-events: none;
-  background: linear-gradient(120deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.5), transparent 42%);
+  mix-blend-mode: soft-light;
+  opacity: 0.7;
 }
 
-.detailHint {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
+.detailInfo {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+
+.detailInfo strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.detailInfo small {
+  font-size: 12px;
   font-weight: 700;
+  color: var(--color-text-secondary);
 }
 
 .detailClose {
@@ -429,6 +425,6 @@
 
 @media (max-width: 360px) {
   .grid {
-    gap: 10px;
+    gap: 12px;
   }
 }
