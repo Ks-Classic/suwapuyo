@@ -63,7 +63,10 @@ export async function initializeLiff(liffId: string | undefined): Promise<LiffSe
     if (liff === null) {
       return { status: "error", inClient: false, errorMessage: "liff_sdk_unavailable" };
     }
-    await liff.init({ liffId, withLoginOnExternalBrowser: true });
+    // withLoginOnExternalBrowser:true は init 時点で外部ブラウザを強制的に
+    // LINEログインへリダイレクトしてしまい、下の「明示ボタンでのみ連携」意図と
+    // ローカルfallback(Supabase/LINE未設定でも全工程成立)を壊す。必ず false。
+    await liff.init({ liffId, withLoginOnExternalBrowser: false });
     const inClient = liff.isInClient();
     if (!inClient && !liff.isLoggedIn()) {
       // 外部ブラウザでは確認なしに自動リダイレクトしない。ユーザーが明示的に
