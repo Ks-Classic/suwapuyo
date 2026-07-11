@@ -1,0 +1,839 @@
+/* 出展者レポート — すわぷよDNA（磨りガラス×絵本の村）× 一流レポートSaaSの情報密度 */
+
+.root {
+  min-height: 100dvh;
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  background:
+    linear-gradient(180deg, rgba(255, 248, 231, 0.35), rgba(184, 229, 247, 0.35)),
+    url("/content/fuwafuwa-land/backgrounds/village-bg.png") center top / cover no-repeat fixed;
+  padding: clamp(16px, 3vw, 40px) clamp(12px, 3vw, 32px) 64px;
+}
+
+.canvas {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vw, 32px);
+}
+
+/* ── 磨りガラスの共通土台 ── */
+.glassPanel,
+.statCard,
+.hero,
+.insightCard,
+.footer {
+  background: rgba(255, 250, 245, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+}
+
+/* ── ヒーロー ── */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: clamp(20px, 3vw, 32px);
+  overflow: hidden;
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.heroKicker {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 2.4rem);
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.titleAccent {
+  color: var(--color-text-primary);
+  text-shadow: 2px 2px 0 rgba(245, 166, 35, 0.35);
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.metaPill {
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.heroMascot {
+  width: clamp(84px, 14vw, 132px);
+  height: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(0 8px 16px rgba(74, 55, 40, 0.22));
+}
+
+/* ── KPIグリッド ── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(12px, 2vw, 20px);
+}
+
+.statCard {
+  --stat-accent: var(--color-accent);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: clamp(16px, 2vw, 22px);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--stat-accent);
+  border-radius: var(--radius-full);
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.statValue {
+  font-size: clamp(1.9rem, 1rem + 3vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.statSuffix {
+  font-size: 0.42em;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+  margin-left: 3px;
+}
+
+.statDelta {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  width: fit-content;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+}
+
+.delta_up {
+  color: #3f8f2e;
+  background: rgba(107, 191, 78, 0.18);
+}
+
+.delta_down {
+  color: #c0483f;
+  background: rgba(255, 107, 107, 0.16);
+}
+
+.delta_flat {
+  color: var(--color-text-secondary);
+  background: rgba(160, 139, 116, 0.16);
+}
+
+.statHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+/* ── セクション ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--color-accent-dark);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: clamp(1.2rem, 0.9rem + 1.4vw, 1.65rem);
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.sectionNote {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── ファネル ── */
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: clamp(18px, 2.5vw, 26px);
+  background: rgba(255, 250, 245, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+}
+
+.funnelRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.funnelHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.funnelIcon {
+  font-size: 1.1rem;
+}
+
+.funnelLabel {
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.funnelConv {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.funnelTrack {
+  height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+.funnelBar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 14px;
+  min-width: 44px;
+  box-shadow: inset 0 -3px 0 rgba(74, 55, 40, 0.14);
+}
+
+.funnelCount {
+  font-weight: 900;
+  color: #fff;
+  font-size: var(--font-size-md);
+  text-shadow: 0 1px 2px rgba(74, 55, 40, 0.3);
+}
+
+.funnelSummary {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.funnelSummary strong {
+  color: var(--color-green);
+  font-weight: 900;
+}
+
+/* ── 深さ3段の中身 ── */
+.depthCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(12px, 2vw, 18px);
+}
+
+.depthCard {
+  --depth-accent: var(--color-accent);
+  background: rgba(255, 250, 245, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-top: 5px solid var(--depth-accent);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+  padding: clamp(16px, 2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.depthCardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.depthIcon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.depthLabelWrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.depthName {
+  font-size: var(--font-size-md);
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.depthShort {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.depthShareRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.depthCount {
+  font-size: clamp(1.6rem, 1rem + 2.2vw, 2.1rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.depthCount small {
+  font-size: 0.42em;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+  margin-left: 2px;
+}
+
+.depthShare {
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.depthBar {
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: rgba(160, 139, 116, 0.14);
+  overflow: hidden;
+}
+
+.depthBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  min-width: 6px;
+}
+
+.depthDef {
+  margin: 4px 0 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.depthMetaRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.depthMetaTag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--depth-accent);
+  letter-spacing: 0.02em;
+}
+
+.depthMetaValue {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.depthAction {
+  margin: auto 0 0;
+  padding-top: var(--space-sm);
+  border-top: 1.5px dashed rgba(160, 139, 116, 0.3);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-accent-dark);
+  line-height: 1.6;
+}
+
+/* ── オーディエンス ── */
+.audienceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+}
+
+.glassPanel {
+  padding: clamp(16px, 2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.panelFoot {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.panelFoot strong {
+  color: var(--color-accent-dark);
+  font-weight: 800;
+}
+
+/* ── ドーナツ ── */
+.donutRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.donutWrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.donutSvg {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.donutTrack {
+  fill: none;
+  stroke: rgba(160, 139, 116, 0.18);
+  stroke-width: 16;
+}
+
+.donutSlice {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: butt;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.donutCenter strong {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.donutCenter span {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.legend strong {
+  margin-left: auto;
+  color: var(--color-text-primary);
+  font-weight: 900;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* ── 横バーリスト ── */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 68px 1fr auto;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.barLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.barTrack {
+  height: 16px;
+  background: rgba(160, 139, 116, 0.14);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  min-width: 6px;
+}
+
+.barValue {
+  font-size: var(--font-size-sm);
+  font-weight: 900;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.barValue small {
+  font-size: 0.7em;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-left: 1px;
+}
+
+.barRowHot .barLabel {
+  color: var(--color-accent-dark);
+}
+
+.barRowHot .barValue {
+  color: var(--color-accent-dark);
+}
+
+/* ── 時間帯バー ── */
+.hourBars {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(6px, 1.5vw, 14px);
+  height: 180px;
+  padding-top: 8px;
+}
+
+.hourCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.hourTrack {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.hourFill {
+  width: 100%;
+  max-width: 46px;
+  border-radius: var(--radius-md) var(--radius-md) 6px 6px;
+  background: linear-gradient(180deg, var(--color-accent-light), var(--color-accent));
+  box-shadow: inset 0 -3px 0 var(--color-accent-dark);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 4px;
+  min-height: 6px;
+}
+
+.hourFillPeak {
+  background: linear-gradient(180deg, #8bd46e, var(--color-green));
+  box-shadow: inset 0 -3px 0 #3f8f2e;
+}
+
+.hourCount {
+  font-size: var(--font-size-xs);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(74, 55, 40, 0.35);
+}
+
+.hourLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* ── コホート・マトリクス ── */
+.cohort {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cohortHead,
+.cohortRow {
+  display: grid;
+  grid-template-columns: 1.3fr repeat(3, 1fr) 0.9fr;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.cohortColHead {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.cohortRow {
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+}
+
+.cohortRowTop {
+  background: rgba(245, 166, 35, 0.12);
+  border: 1.5px solid rgba(245, 166, 35, 0.4);
+}
+
+.cohortRowLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cohortStar {
+  color: var(--color-accent);
+  font-size: 0.9rem;
+}
+
+.cohortCell {
+  text-align: center;
+  padding: 8px 0;
+  border-radius: var(--radius-sm);
+  font-weight: 900;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cohortRate {
+  text-align: center;
+  font-weight: 900;
+  color: var(--color-green);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── インサイト ── */
+.insightGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(12px, 2vw, 18px);
+}
+
+.insightCard {
+  padding: clamp(16px, 2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-left: 5px solid var(--color-accent);
+}
+
+.insight_win {
+  border-left-color: var(--color-green);
+}
+
+.insight_lead {
+  border-left-color: var(--color-pink);
+}
+
+.insight_timing {
+  border-left-color: var(--color-blue);
+}
+
+.insight_watch {
+  border-left-color: var(--color-accent);
+}
+
+.insightBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  padding: 3px 11px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.insightHeadline {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 900;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+.insightDetail {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.75;
+}
+
+/* ── フッター ── */
+.footer {
+  padding: clamp(16px, 2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+}
+
+.footer > p:first-child {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.footerNote {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* ── レスポンシブ ── */
+@media (max-width: 720px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero {
+    flex-direction: row;
+  }
+
+  .heroMascot {
+    width: 76px;
+  }
+
+  .depthCards {
+    grid-template-columns: 1fr;
+  }
+
+  .cohortHead,
+  .cohortRow {
+    grid-template-columns: 1fr repeat(3, 1fr) 0.8fr;
+    gap: 4px;
+  }
+
+  .cohortCell {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 420px) {
+  .kpiGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .barRow {
+    grid-template-columns: 54px 1fr auto;
+  }
+}
