@@ -18,6 +18,10 @@ const PUYO_SLOTS: { id: PuyoSlotId; label: string }[] = [
   { id: "tanuki", label: "4枠目" },
 ];
 
+// 隠しキャラ解除の目安回数（お口の体操 mouth）。今回は予告ポップアップのみで
+// 実解除はスタンプ経由のまま。数値変更はここだけ。
+const MOUTH_UNLOCK_COUNT = 3;
+
 export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScreenProps) {
   const [characters, setCharacters] = useState<SelectableCharacter[]>([]);
   const [buddy, setBuddy] = useState<BuddyRecord | null>(null);
@@ -25,6 +29,7 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
   const [slotSelections, setSlotSelections] = useState(() => getProgress().selected_puyo_character_ids);
   const [activeSlot, setActiveSlot] = useState<PuyoSlotId>("ghost");
   const [message, setMessage] = useState("だれと あそぶ〜？");
+  const [lockedPopup, setLockedPopup] = useState<SelectableCharacter | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -69,7 +74,7 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
   function chooseCharacter(character: SelectableCharacter): void {
     const progress = getProgress();
     if (!isUnlocked(character, progress)) {
-      setMessage("たくさんあそぶと…ひらくかも？");
+      setLockedPopup(character);
       track("tap", { surface: "character_select_locked", id: character.id });
       return;
     }
@@ -162,6 +167,35 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
       <button type="button" className={styles.backButton} onClick={onCancel}>
         ゲームに戻る
       </button>
+
+      {lockedPopup !== null && (
+        <div
+          className={styles.lockPopupOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-label="ひみつのなかま"
+          onClick={() => setLockedPopup(null)}
+        >
+          <div className={styles.lockPopupPanel} onClick={(event) => event.stopPropagation()}>
+            <div className={styles.lockPopupArt} aria-hidden="true">
+              <img src={lockedPopup.image} alt="" />
+              <span className={styles.lockPopupMark}>?</span>
+            </div>
+            <p className={styles.lockPopupTitle}>まだ ひみつの なかま</p>
+            <p className={styles.lockPopupBody}>
+              お口の たいそうを <b>{MOUTH_UNLOCK_COUNT}かい</b> やったら
+              <br />
+              いっしょに あそべるよ！
+            </p>
+            <p className={styles.lockPopupProgress}>
+              いま {getProgress().taisou_counts.mouth}／{MOUTH_UNLOCK_COUNT} かい
+            </p>
+            <button type="button" className={styles.lockPopupClose} onClick={() => setLockedPopup(null)}>
+              とじる
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

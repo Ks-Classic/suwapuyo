@@ -368,6 +368,22 @@ function findAllClearable(
 // ═══════════════════════════════════════
 // PuyoDemo class - PixiJS scene
 // ═══════════════════════════════════════
+// blob:/data: URL は pixi の Assets.load が拡張子/MIMEを判別できず
+// null テクスチャを返して new Sprite() を落とす。お絵描き相棒(self)や
+// data URL 画像はこのヘルパで Image 経由デコードして Texture 化する。
+async function loadImageTexture(url: string): Promise<Texture> {
+  if (url.startsWith("blob:") || url.startsWith("data:")) {
+    const img = new Image();
+    img.decoding = "async";
+    img.crossOrigin = "anonymous";
+    img.src = url;
+    await img.decode();
+    return Texture.from(img);
+  }
+  return Assets.load<Texture>(url);
+}
+
+// ═══════════════════════════════════════
 class PuyoDemo {
   app: Application;
   board: (PuyoType | null)[][] = [];
@@ -432,7 +448,13 @@ class PuyoDemo {
 
     // Load textures
     for (const type of TYPES) {
-      this.textures[type] = await Assets.load(this.puyoSkins[type].imageUrl);
+      try {
+        this.textures[type] = await loadImageTexture(this.puyoSkins[type].imageUrl);
+      } catch (error) {
+        // 1体分の読込失敗でゲーム全体を落とさない。デフォルトスプライトへ退避。
+        console.warn(`puyo skin load failed (${type}), fallback to default`, error);
+        this.textures[type] = await loadImageTexture(SPRITE_PATHS[type]);
+      }
       if (this.destroyed) return;
     }
 
@@ -487,7 +509,7 @@ class PuyoDemo {
       return;
     }
     try {
-      const texture = await Assets.load<Texture>(visual.imageUrl);
+      const texture = await loadImageTexture(visual.imageUrl);
       if (this.destroyed) {
         return;
       }
@@ -676,7 +698,7 @@ class PuyoDemo {
 
   createSprite(type: PuyoType, row: number, col: number): Sprite {
     const sprite = new Sprite({
-      texture: this.textures[type],
+      texture: this.textures[type] ?? Texture.WHITE,
     });
     sprite.anchor.set(0.5);
     sprite.x = this.cellX(col);
