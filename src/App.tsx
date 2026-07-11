@@ -5,6 +5,7 @@ import { LineDemoMenu } from "./components/screens/LineDemoMenu";
 import { FuwafuwaApp } from "./fuwafuwa-land";
 import { ExhibitorReport } from "./report/ExhibitorReport";
 import { ShortsStudioMock } from "./shorts-studio/ShortsStudioMock";
+import { MvpApp } from "./app/MvpApp";
 
 // 旧「当日マップ」(BoothMapScreen)は退役。会場マップは /concierge のマップに一本化した。
 function isLegacyMapPath(): boolean {
@@ -49,18 +50,22 @@ function App() {
     typeof window !== "undefined" &&
     (window.location.pathname === "/concierge" ||
       window.location.pathname.startsWith("/concierge/"));
-  const isReport =
+  const isLegacyReport =
     typeof window !== "undefined" &&
     (window.location.pathname === "/report" ||
       window.location.pathname.startsWith("/report/") ||
       window.location.hash.startsWith("#/report"));
+  const isLegacyGame = typeof window !== "undefined" && window.location.pathname === "/legacy/game";
   if (legacyMap) {
     return null;
   }
   if (isShortsStudio) {
     return <ShortsStudioMock />;
   }
-  if (isReport) {
+  if (isLegacyGame) {
+    return <DemoScreen />;
+  }
+  if (isLegacyReport) {
     return <ExhibitorReport />;
   }
   if (isConcierge) {
@@ -69,7 +74,7 @@ function App() {
   if (isLineDemo) {
     return <LineDemoMenu />;
   }
-  return isFuwafuwa ? <FuwafuwaApp /> : <DemoScreen />;
+  return isFuwafuwa ? <FuwafuwaApp /> : <MvpApp />;
 }
 
 export default App;
