@@ -1492,7 +1492,7 @@ function delay(ms: number): Promise<void> {
 const CANVAS_W = BOARD_W + BOARD_PAD * 2;
 const CANVAS_H = BOARD_H + BOARD_PAD * 2;
 
-export function DemoScreen() {
+export function DemoScreen({ mvpEmbedded = false }: { mvpEmbedded?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const boardWrapperRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<PuyoDemo | null>(null);
@@ -1502,6 +1502,7 @@ export function DemoScreen() {
   const [activeView, setActiveView] = useState<"game" | "reflection">("game");
   const [showSelect, setShowSelect] = useState(false);
   const [showTaisou, setShowTaisou] = useState(() => {
+    if (mvpEmbedded) return false;
     const params = new URLSearchParams(window.location.search);
     return params.get("taisou") === "1";
   });
@@ -1650,7 +1651,7 @@ export function DemoScreen() {
     }
   }, [activeView, loading, scaleCanvas]);
 
-  if (showSelect) {
+  if (showSelect && !mvpEmbedded) {
     return (
       <CharacterSelectScreen
         onCancel={() => {
@@ -1667,6 +1668,7 @@ export function DemoScreen() {
 
   return (
     <div className={styles.wrapper}>
+      {!mvpEmbedded ? <>
       {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.title}>
@@ -1693,6 +1695,7 @@ export function DemoScreen() {
       </div>
 
       <VillageNarrator line="いっぱい消して、なかまを よろこばせよう！" compact />
+      </> : null}
 
       <div
         className={`${styles.viewPane} ${
@@ -1733,6 +1736,7 @@ export function DemoScreen() {
             <div ref={containerRef} className={styles.boardContainer} />
           </div>
 
+          {!mvpEmbedded ? <>
           {/* Character Info */}
           <div className={styles.charInfo}>
             {TYPES.map((type) => (
@@ -1778,8 +1782,10 @@ export function DemoScreen() {
               会場マップ
             </a>
           </div>
+          </> : null}
       </div>
 
+      {!mvpEmbedded ? (
       <div
         className={`${styles.viewPane} ${
           activeView === "reflection" ? styles.viewPaneActive : ""
@@ -1796,6 +1802,7 @@ export function DemoScreen() {
             {activeView === "reflection" ? <YourTimeReflectionDemo /> : null}
           </div>
       </div>
+      ) : null}
       {showTaisou ? <TaisouInterlude onClose={() => setShowTaisou(false)} /> : null}
     </div>
   );
