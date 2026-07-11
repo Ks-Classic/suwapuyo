@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
-
 :root {
   /* ──── Kawaii Color Palette ──── */
   --color-sky-top: #87CEEB;
@@ -41,8 +39,8 @@
   --color-tanuki: #D4B896;
 
   /* ──── Typography ──── */
-  --font-primary: 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Hiragino Maru Gothic Pro', system-ui, sans-serif;
-  --font-game: 'M PLUS Rounded 1c', 'Zen Maru Gothic', monospace;
+  --font-primary: 'Noto Sans JP', 'Hiragino Maru Gothic Pro', system-ui, sans-serif;
+  --font-game: 'Noto Sans JP', ui-monospace, monospace;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
