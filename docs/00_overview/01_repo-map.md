@@ -30,6 +30,7 @@
 | `40_yourtime-platform/` | プラットフォームデモの仕様・TODO |
 | `50_design-strategy-os/` | 設計戦略OS（空気デザイン3動画をskill/agent化した再利用システムの設計図） |
 | `60_shorts-studio/` | ショート動画ラインの検討 |
+| `70_すわぷよ・ユアタイム統合仕様/` | **LINE必須LIFF、すわぷよ、体操、アンケート、出展者レポート、Harnessを横断する現行SSoT** |
 | `_archive/` | 旧統合版md（番号体系に置換済み・履歴温存のため退避） |
 | 各所 `_snapshots/` | 人に見せた時点のHTMLスナップショット（凍結・正ではない） |
 
@@ -41,6 +42,9 @@
 | ふわふわランドの実装仕様 | `docs/10_fuwafuwa-land/06_build-bible.md` |
 | 事業戦略・マネタイズ・YourTIME事実 | `docs/20_business/strategy-2026-06-23.md`（10章=2026-06-25追補が最新） |
 | 設計戦略OSの構成 | `docs/50_design-strategy-os/design-strategy-os.html` |
+| すわぷよ・LINE・アンケート・体操・出展者価値の統合仕様 | `docs/70_すわぷよ・ユアタイム統合仕様/00_案内.md` |
+
+> 統合範囲で旧資料と矛盾する場合は、`70_すわぷよ・ユアタイム統合仕様/`を優先する。ふわふわランド単体の撮影・展示運用は従来どおり`10_fuwafuwa-land/`を正とする。
 
 > 原則: md が正、HTML は「見せる」スナップショット（`docs/20_business` のドキュメント運用ルール）。
 
