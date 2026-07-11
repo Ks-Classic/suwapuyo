@@ -7,8 +7,9 @@ import {
   DEPTH_DETAIL,
   DEPTH_META,
   VISITOR_TYPE_META,
-  engagementAvg,
   experiencedRate,
+  formatAggregateCount,
+  isSuppressedAggregate,
   type DepthBreakdown,
   type ExhibitorReport as ExhibitorReportModel,
   type ReportInsight,
@@ -16,21 +17,36 @@ import {
 
 const DEPTH_ORDER: Array<keyof DepthBreakdown> = ["visited", "explained", "experienced"];
 
-const INSIGHT_META: Record<ReportInsight["kind"], { badge: string; icon: string }> = {
-  win: { badge: "刺さった", icon: "🎯" },
-  lead: { badge: "商談リード", icon: "🤝" },
-  timing: { badge: "運営ヒント", icon: "⏰" },
-  watch: { badge: "次への種", icon: "🌱" },
+const INSIGHT_META: Record<ReportInsight["kind"], { badge: string }> = {
+  win: { badge: "集計で確認" },
+  lead: { badge: "導線の記録" },
+  timing: { badge: "運営のヒント" },
+  watch: { badge: "次に試すこと" },
 };
 
+export interface BizContactClickedEvent {
+  name: "biz_contact_clicked";
+  boothNo: string;
+  exhibitorName: string;
+  dataMode: ExhibitorReportModel["dataMode"];
+}
+
+interface ExhibitorReportProps {
+  report?: ExhibitorReportModel;
+  onBizContactClick?: (event: BizContactClickedEvent) => void;
+  /** アプリシェル側の命名との互換。新規コードは onBizContactClick を優先する。 */
+  onBusinessContact?: (event: BizContactClickedEvent) => void;
+}
+
 function Section({ eyebrow, title, note, children }: { eyebrow: string; title: string; note?: string; children: React.ReactNode }) {
+  const reduced = useReducedMotion();
   return (
     <motion.section
       className={styles.section}
-      initial={{ opacity: 0, y: 20 }}
+      initial={reduced ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
-      transition={{ type: "spring", stiffness: 200, damping: 26 }}
+      transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 200, damping: 26 }}
     >
       <header className={styles.sectionHead}>
         <span className={styles.eyebrow}>{eyebrow}</span>
@@ -42,24 +58,29 @@ function Section({ eyebrow, title, note, children }: { eyebrow: string; title: s
   );
 }
 
-export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorReportModel }) {
+export function ExhibitorReport({ report = DEMO_REPORT, onBizContactClick, onBusinessContact }: ExhibitorReportProps) {
   const reduced = useReducedMotion();
   const { totals, benchmark, audience } = report;
   const totalDepth = totals.depth.visited + totals.depth.explained + totals.depth.experienced;
+  const depthHasSuppressedCell = Object.values(totals.depth).some(isSuppressedAggregate);
   const expRate = experiencedRate(totals.depth);
-  const engAvg = engagementAvg(totals.depth);
   const expDeltaPt = Math.round((benchmark.boothExperiencedRate - benchmark.venueExperiencedRate) * 1000) / 10;
-  const engDelta = Math.round((benchmark.boothEngagementAvg - benchmark.venueEngagementAvg) * 100) / 100;
   const peakHour = report.timeline.reduce((peak, bucket) => (bucket.count > peak.count ? bucket : peak), report.timeline[0]).hour;
 
   const visitorTotal = (Object.values(audience.visitorType) as number[]).reduce((sum, value) => sum + value, 0);
   const topVisitorType = (Object.entries(audience.visitorType) as Array<[keyof typeof VISITOR_TYPE_META, number]>).sort(
     (left, right) => right[1] - left[1],
   )[0];
+  const dataModeLabel = report.dataMode === "demo" ? "デモデータ" : report.dataMode === "test" ? "テストデータ" : "集計データ";
+  const dataModeDescription = report.dataMode === "demo" ? "数値は画面確認用のサンプルです" : "データ種別を表示しています";
 
   return (
     <main className={styles.root}>
       <div className={styles.canvas}>
+        <div className={styles.dataModeBanner} role="status" aria-label={`このレポートのデータ種別は${dataModeLabel}です`}>
+          <span className={styles.dataModeBadge}>{dataModeLabel}</span>
+          <span>{dataModeDescription}</span>
+        </div>
         {/* ── ヘッダー：ブランド＋会期＋キャラ ── */}
         <motion.header
           className={styles.hero}
@@ -83,25 +104,18 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
 
         {/* ── サマリーKPI ── */}
         <div className={styles.kpiGrid}>
-          <StatCard label="総来訪者数" value={totals.uniqueVisitors} suffix="人" hint={`スタンプ${totals.stampScans}回`} accent="var(--color-accent)" />
+          <StatCard label="接点" value={totals.uniqueVisitors} suffix="件" suppressed={isSuppressedAggregate(totals.uniqueVisitors)} hint={isSuppressedAggregate(totals.stampScans) ? "少数のため非表示" : `スタンプ ${totals.stampScans}回`} accent="var(--color-accent)" />
+          <StatCard label="詳細表示" value={totals.detailViews} suffix="件" suppressed={isSuppressedAggregate(totals.detailViews)} hint="ブース詳細を開いた回数" accent="var(--color-blue)" />
+          <StatCard label="CTA" value={totals.ctaClicks} suffix="件" suppressed={isSuppressedAggregate(totals.ctaClicks)} hint="外部案内へ進んだ回数" accent="var(--color-pink)" />
           <StatCard
             label="体験到達率"
             value={expRate * 100}
             decimals={1}
             suffix="%"
+            suppressed={depthHasSuppressedCell}
             delta={{ value: `会場平均+${expDeltaPt}pt`, direction: expDeltaPt >= 0 ? "up" : "down" }}
             accent="var(--color-green)"
           />
-          <StatCard
-            label="エンゲージ平均"
-            value={engAvg}
-            decimals={2}
-            suffix="/3"
-            delta={{ value: `平均比+${engDelta}`, direction: engDelta >= 0 ? "up" : "down" }}
-            hint={benchmark.rankLabel}
-            accent="var(--color-blue)"
-          />
-          <StatCard label="健康関係者リード" value={audience.healthProCount} suffix="人" hint="BtoB商談の母集団" accent="var(--color-pink)" />
         </div>
 
         {/* ── 関与ファネル ── */}
@@ -118,8 +132,11 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
             ]}
           />
           <p className={styles.funnelSummary}>
-            来訪 {totalDepth} 人のうち <strong>{totals.depth.experienced} 人</strong>（{Math.round(expRate * 100)}%）が体験まで到達。
-            会場平均の体験率 {Math.round(benchmark.venueExperiencedRate * 100)}% を上回っています。
+            {depthHasSuppressedCell ? (
+              <>少数セルを含むため、体験到達率は表示していません。</>
+            ) : (
+              <>来訪 {totalDepth} 人のうち <strong>{totals.depth.experienced} 人</strong>（{Math.round(expRate * 100)}%）が体験まで到達。会場平均は {Math.round(benchmark.venueExperiencedRate * 100)}% です。</>
+            )}
           </p>
         </Section>
 
@@ -140,14 +157,14 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
                   key={key}
                   className={styles.depthCard}
                   style={{ "--depth-accent": meta.color } as React.CSSProperties}
-                  initial={{ opacity: 0, y: 18 }}
+                  initial={reduced ? false : { opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.3 }}
-                  transition={{ type: "spring", stiffness: 230, damping: 22, delay: index * 0.08 }}
+                  transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 230, damping: 22, delay: index * 0.08 }}
                 >
                   <div className={styles.depthCardHead}>
                     <span className={styles.depthIcon} aria-hidden="true">
-                      {meta.icon}
+                      {meta.marker}
                     </span>
                     <div className={styles.depthLabelWrap}>
                       <span className={styles.depthName}>{meta.label}</span>
@@ -156,19 +173,19 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
                   </div>
                   <div className={styles.depthShareRow}>
                     <span className={styles.depthCount}>
-                      {count}
+                      {formatAggregateCount(count)}
                       <small>人</small>
                     </span>
-                    <span className={styles.depthShare}>全体の{share}%</span>
+                    <span className={styles.depthShare}>{isSuppressedAggregate(count) ? "少数のため非表示" : `全体の${share}%`}</span>
                   </div>
                   <div className={styles.depthBar}>
                     <motion.div
                       className={styles.depthBarFill}
                       style={{ background: meta.color }}
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${share}%` }}
+                      initial={reduced ? false : { width: 0 }}
+                      whileInView={{ width: `${isSuppressedAggregate(count) ? 0 : share}%` }}
                       viewport={{ once: true, amount: 0.3 }}
-                      transition={{ type: "spring", stiffness: 120, damping: 22, delay: 0.15 + index * 0.08 }}
+                      transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 22, delay: 0.15 + index * 0.08 }}
                     />
                   </div>
                   <p className={styles.depthDef}>{detail.definition}</p>
@@ -200,7 +217,7 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
                   slices={(Object.entries(audience.visitorType) as Array<[keyof typeof VISITOR_TYPE_META, number]>).map(
                     ([key, value]) => ({ label: VISITOR_TYPE_META[key].label, value, color: VISITOR_TYPE_META[key].color }),
                   )}
-                  centerTop={`${Math.round((topVisitorType[1] / Math.max(1, visitorTotal)) * 100)}%`}
+                  centerTop={isSuppressedAggregate(topVisitorType[1]) ? "—" : `${Math.round((topVisitorType[1] / Math.max(1, visitorTotal)) * 100)}%`}
                   centerBottom={VISITOR_TYPE_META[topVisitorType[0]].label}
                 />
                 <ul className={styles.legend}>
@@ -208,7 +225,7 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
                     <li key={key}>
                       <span className={styles.legendDot} style={{ background: VISITOR_TYPE_META[key].color }} />
                       {VISITOR_TYPE_META[key].label}
-                      <strong>{value}</strong>
+                      <strong>{formatAggregateCount(value)}</strong>
                     </li>
                   ))}
                 </ul>
@@ -225,7 +242,7 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
                   highlight: datum.count >= 22,
                 }))}
               />
-              <p className={styles.panelFoot}>ピークは <strong>3〜5歳</strong>。この年齢が体験まで最も進んでいます（下のコホート参照）。</p>
+              <p className={styles.panelFoot}>年齢は単年齢ではなく帯で集計し、少数セルを表示しません。</p>
             </div>
 
             <div className={styles.glassPanel}>
@@ -255,8 +272,8 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
         {/* ── コホート ── */}
         <Section
           eyebrow="COHORT"
-          title="どの層に刺さった？"
-          note="子どもの年齢帯 × 関与の深さ。★ = 体験到達率が最も高い＝いちばん刺さったセグメント。"
+          title="年齢帯ごとの関わり方"
+          note="子どもの年齢帯 × 関与の深さを集計しています。5人未満のセルと、そこから推測できる率は表示しません。"
         >
           <div className={styles.glassPanel}>
             <CohortMatrix
@@ -271,19 +288,18 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
         </Section>
 
         {/* ── 自動インサイト ── */}
-        <Section eyebrow="INSIGHTS" title="次につながる示唆" note="集計から自動で立つ、来場後アクションの手がかり。">
+        <Section eyebrow="INSIGHTS" title="今回わかったこと・次に試すこと" note="集計から考えられる仮説です。効果や個人の状態を判定するものではありません。">
           <div className={styles.insightGrid}>
             {report.insights.map((insight, index) => (
               <motion.article
                 key={insight.id}
                 className={`${styles.insightCard} ${styles[`insight_${insight.kind}`]}`}
-                initial={{ opacity: 0, y: 18 }}
+                initial={reduced ? false : { opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
-                transition={{ type: "spring", stiffness: 230, damping: 22, delay: index * 0.07 }}
+                transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 230, damping: 22, delay: index * 0.07 }}
               >
                 <span className={styles.insightBadge}>
-                  <span aria-hidden="true">{INSIGHT_META[insight.kind].icon}</span>
                   {INSIGHT_META[insight.kind].badge}
                 </span>
                 <h3 className={styles.insightHeadline}>{insight.headline}</h3>
@@ -293,10 +309,30 @@ export function ExhibitorReport({ report = DEMO_REPORT }: { report?: ExhibitorRe
           </div>
         </Section>
 
+        <section className={styles.consultation} aria-labelledby="report-consultation-title">
+          <span className={styles.eyebrow}>FOR EXHIBITORS</span>
+          <h2 id="report-consultation-title" className={styles.consultationTitle}>この計測と発信の仕組みを、自社でも使いたい方へ</h2>
+          <p>イベントでの接点を集計し、次の施策につなげる仕組みについてご相談いただけます。</p>
+          <button
+            type="button"
+            className={styles.consultationButton}
+            onClick={() =>
+              (onBizContactClick ?? onBusinessContact)?.({
+                name: "biz_contact_clicked",
+                boothNo: report.exhibitor.boothNo,
+                exhibitorName: report.exhibitor.name,
+                dataMode: report.dataMode,
+              })
+            }
+          >
+            相談してみる
+          </button>
+        </section>
+
         <footer className={styles.footer}>
           <p>{report.event.generatedLabel}</p>
           <p className={styles.footerNote}>
-            ※ 本ページはデモです。数値はサンプル。個人が特定される情報は出展者に共有せず、集計値のみをレポート化します（子どもの要配慮データは明示ポリシー下でのみ扱います）。
+            {report.dataMode === "demo" ? "本ページはデモです。数値はサンプルです。" : null} 個人を特定できる情報は表示せず、集計値のみをレポート化しています。5人未満の集計セルは非表示です。
           </p>
         </footer>
       </div>

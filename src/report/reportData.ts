@@ -11,7 +11,17 @@
  * 現状はデモ用に1ブース分のリアルな集計を手置きしている。
  */
 
-import type { AcquisitionSource, ChildAgeBand, VisitDepth, VisitorType } from "../fuwafuwa-land/map/boothMapData";
+import type { AcquisitionSource, VisitorType } from "../fuwafuwa-land/map/boothMapData";
+
+export const MIN_REPORT_CELL_SIZE = 5;
+
+export function isSuppressedAggregate(value: number): boolean {
+  return value > 0 && value < MIN_REPORT_CELL_SIZE;
+}
+
+export function formatAggregateCount(value: number): string {
+  return isSuppressedAggregate(value) ? `${MIN_REPORT_CELL_SIZE}未満` : String(value);
+}
 
 export interface DepthBreakdown {
   visited: number; // 寄っただけ
@@ -38,6 +48,8 @@ export interface ReportInsight {
 }
 
 export interface ExhibitorReport {
+  /** UI上でも必ず区別する。Phase 1 fixture は demo 固定。 */
+  dataMode: "demo" | "test" | "live";
   exhibitor: {
     name: string;
     boothNo: string;
@@ -53,31 +65,29 @@ export interface ExhibitorReport {
   totals: {
     uniqueVisitors: number; // このブースにスタンプした実人数
     stampScans: number; // スタンプ総数（再訪含む）
+    detailViews: number; // ブース詳細を開いた集計回数
+    ctaClicks: number; // 外部CTAを押した集計回数
     depth: DepthBreakdown;
   };
   benchmark: {
     // 会場全ブース平均との比較（pt = パーセンテージポイント）
     venueExperiencedRate: number; // 会場平均の体験率
     boothExperiencedRate: number; // このブースの体験率
-    venueEngagementAvg: number; // 会場平均エンゲージ（1〜3）
-    boothEngagementAvg: number; // このブースのエンゲージ（1〜3）
-    rankLabel: string; // 例 "全24ブース中 3位"
   };
   audience: {
     visitorType: Record<VisitorType, number>;
-    childAge: Array<{ ageBand: ChildAgeBand; count: number }>;
+    childAge: Array<{ ageBand: string; count: number }>;
     acquisition: Array<{ source: AcquisitionSource; count: number }>;
-    healthProCount: number; // 医療・健康関係者（BtoBリード見込み）
   };
   timeline: HourBucket[];
   cohort: AgeCohortRow[];
   insights: ReportInsight[];
 }
 
-export const DEPTH_META: Record<keyof DepthBreakdown, { label: string; short: string; color: string; icon: string }> = {
-  visited: { label: "寄っただけ", short: "であった", color: "var(--color-blue)", icon: "🚶" },
-  explained: { label: "説明きいた", short: "はなした", color: "var(--color-accent)", icon: "👂" },
-  experienced: { label: "体験した", short: "たいけん", color: "var(--color-green)", icon: "✨" },
+export const DEPTH_META: Record<keyof DepthBreakdown, { label: string; short: string; color: string; marker: string }> = {
+  visited: { label: "寄っただけ", short: "であった", color: "var(--color-blue)", marker: "1" },
+  explained: { label: "説明きいた", short: "はなした", color: "var(--color-accent)", marker: "2" },
+  experienced: { label: "体験した", short: "たいけん", color: "var(--color-green)", marker: "3" },
 };
 
 /**
@@ -90,21 +100,21 @@ export const DEPTH_DETAIL: Record<
 > = {
   visited: {
     definition: "ブースのQRは押したが、説明・体験までは進まなかった。",
-    meaning: "認知は取れているが接点は浅い層。＝次回の最大の伸びしろ。",
+    meaning: "QR接点はあり、説明・体験の記録はない層。理由まではこの集計から判断できません。",
     action: "入口の一言POP・15秒の即体験で「説明きいた」へ引き上げる。",
     topSegment: "通りがかり／6歳以上が多め",
   },
   explained: {
     definition: "スタッフの説明を受けた。あと一歩で体験まで届く関心層。",
-    meaning: "関心はあるのに体験で止まった＝導線設計で取りこぼしている可能性。",
+    meaning: "説明の記録があり、体験の記録はない層。導線変更を試す候補です。",
     action: "説明の締めに必ず体験へ誘導。待ち時間を作らない配置に。",
     topSegment: "3〜5歳連れの家族",
   },
   experienced: {
-    definition: "実際に体験した。最も濃い接点＝ファン化・見込み層。",
-    meaning: "満足度・記憶が最も高い。BtoBリードもこの層に厚い。",
-    action: "体験直後にLINE継続接続・個別フォロー（good体験の直後に）。",
-    topSegment: "3〜5歳連れ／健康関係者",
+    definition: "実際に体験したことが記録された接点。",
+    meaning: "案内から体験まで導線がつながった層。満足度や将来行動を断定する値ではありません。",
+    action: "体験直後に、希望する方が次の案内へ進める導線を用意する。",
+    topSegment: "3〜5歳連れ",
   },
 };
 
@@ -124,21 +134,9 @@ export const ACQUISITION_META: Record<AcquisitionSource, string> = {
   other: "その他",
 };
 
-const DEPTH_RANK: Record<VisitDepth, number> = { visited: 1, explained: 2, experienced: 3 };
-
 export function experiencedRate(depth: DepthBreakdown): number {
   const total = depth.visited + depth.explained + depth.experienced;
   return total === 0 ? 0 : depth.experienced / total;
-}
-
-export function engagementAvg(depth: DepthBreakdown): number {
-  const total = depth.visited + depth.explained + depth.experienced;
-  if (total === 0) {
-    return 0;
-  }
-  const weighted =
-    depth.visited * DEPTH_RANK.visited + depth.explained * DEPTH_RANK.explained + depth.experienced * DEPTH_RANK.experienced;
-  return weighted / total;
 }
 
 /**
@@ -147,6 +145,7 @@ export function engagementAvg(depth: DepthBreakdown): number {
  * 色は世界観ガイドライン（`06`）のパレット内から（ティール禁止）。
  */
 export const DEMO_REPORT: ExhibitorReport = {
+  dataMode: "demo",
   exhibitor: {
     name: "cOral up ｜ お口の健康ブース",
     boothNo: "01",
@@ -162,28 +161,21 @@ export const DEMO_REPORT: ExhibitorReport = {
   totals: {
     uniqueVisitors: 137,
     stampScans: 152,
+    detailViews: 94,
+    ctaClicks: 18,
     depth: { visited: 58, explained: 47, experienced: 32 },
   },
   benchmark: {
     venueExperiencedRate: 0.18,
     boothExperiencedRate: 32 / 137,
-    venueEngagementAvg: 1.62,
-    boothEngagementAvg: engagementAvg({ visited: 58, explained: 47, experienced: 32 }),
-    rankLabel: "全24ブース中 3位",
   },
   audience: {
     visitorType: { family: 71, with_kids: 39, solo: 21, other: 6 },
     childAge: [
-      { ageBand: "0", count: 6 },
-      { ageBand: "1", count: 9 },
-      { ageBand: "2", count: 14 },
-      { ageBand: "3", count: 22 },
-      { ageBand: "4", count: 25 },
-      { ageBand: "5", count: 19 },
-      { ageBand: "6", count: 12 },
-      { ageBand: "7-9", count: 15 },
-      { ageBand: "10-12", count: 7 },
-      { ageBand: "13+", count: 3 },
+      { ageBand: "0〜2", count: 29 },
+      { ageBand: "3〜6", count: 78 },
+      { ageBand: "7〜9", count: 15 },
+      { ageBand: "10以上", count: 10 },
     ],
     acquisition: [
       { source: "instagram", count: 44 },
@@ -193,7 +185,6 @@ export const DEMO_REPORT: ExhibitorReport = {
       { source: "walk_in", count: 12 },
       { source: "other", count: 4 },
     ],
-    healthProCount: 19,
   },
   timeline: [
     { hour: 10, count: 11 },
@@ -215,16 +206,16 @@ export const DEMO_REPORT: ExhibitorReport = {
     {
       id: "ins-win",
       kind: "win",
-      headline: "3〜5歳連れが「体験」まで最も到達",
+      headline: "3〜5歳帯で体験記録の割合が高い",
       detail:
-        "3〜5歳のコホートは体験到達率が突出（会場平均の約1.4倍）。この年齢の親子に最も刺さっています。次回はこの層向けの導線・体験尺を主役に。",
+        "このデモ集計では、3〜5歳帯の体験記録割合が他の年齢帯より高くなっています。次回はこの層向けの導線を試し、同じ条件で差を確認します。",
     },
     {
-      id: "ins-lead",
+      id: "ins-action",
       kind: "lead",
-      headline: "医療・健康関係者が19名来訪＝BtoB見込み",
+      headline: "詳細94件からCTA18件へ進みました",
       detail:
-        "来訪者の約14%が医療・健康の仕事関係者。物販だけでなく、提携・仕入れ・法人商談のリード母集団として個別フォローの価値があります。",
+        "ブース詳細から外部CTAへ進んだ集計結果です。次回はCTA文言と設置位置を変え、同じ計測条件で差を確認します。",
     },
     {
       id: "ins-timing",
