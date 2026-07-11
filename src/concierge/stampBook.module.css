@@ -90,6 +90,112 @@
   background: linear-gradient(90deg, var(--color-accent-light), var(--color-accent));
 }
 
+/* ─────────── ミッション(小分けの達成可能な目標) ─────────── */
+.missions {
+  width: min(520px, 100%);
+  margin: 0 auto 14px;
+}
+
+.missionsTitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-dark);
+}
+
+.missionList {
+  display: grid;
+  gap: 8px;
+}
+
+.missionCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+
+.missionDone {
+  border-color: #ffe98a;
+  background: linear-gradient(180deg, rgba(255, 245, 200, 0.95), rgba(255, 231, 138, 0.85));
+}
+
+.missionIcon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--color-accent-dark);
+}
+
+.missionDone .missionIcon {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.missionBody {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.missionBody strong {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.missionBody small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.missionBar {
+  height: 8px;
+  margin-top: 2px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(74, 55, 40, 0.14);
+}
+
+.missionFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-accent-light), var(--color-accent));
+}
+
+.missionCount {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--color-accent-dark);
+}
+
+.sheetLead {
+  width: min(520px, 100%);
+  margin: 0 auto 8px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-dark);
+}
+
 /* ─────────── 台紙(絵本の見開き) ─────────── */
 .sheet {
   position: relative;

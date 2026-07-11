@@ -180,6 +180,88 @@ function StampDetail({
   );
 }
 
+/**
+ * ミッション = 小分けの達成可能な目標。100枠は絶対に埋まらないので、
+ * 「全部あつめる」を唯一のゴールにせず、いくつかの手の届く目標に分ける。
+ * 各目標は demo(4件)でも本番(〜100件)でも成立するよう、件数/エリア数/深さで測る。
+ */
+interface MissionState {
+  id: string;
+  icon: string;
+  title: string;
+  desc: string;
+  target: number;
+  progress: number;
+  reward?: string;
+  unlocksHidden?: boolean;
+}
+
+function computeMissions(stamps: ConciergeStamp[]): MissionState[] {
+  const caught = new Set(stamps.map((stamp) => stamp.exhibitor_id)).size;
+  const areas = new Set<string>();
+  for (const stamp of stamps) {
+    const booth = DEMO_BOOTHS.find((entry) => entry.id === stamp.exhibitor_id);
+    if (booth !== undefined) {
+      areas.add(booth.landId);
+    }
+  }
+  const experienced = stamps.filter((stamp) => stamp.depth === "experienced").length;
+  return [
+    { id: "first", icon: "🌱", title: "はじめの一歩", desc: "スタンプを1つ集めよう", target: 1, progress: caught },
+    { id: "explorer", icon: "🧭", title: "たんけん家", desc: "3つのブースを回ろう", target: 3, progress: caught },
+    { id: "variety", icon: "🌈", title: "いろどりの村", desc: "ちがうエリアを3種", target: 3, progress: areas.size },
+    {
+      id: "deep",
+      icon: "✨",
+      title: "じっくり体験",
+      desc: "どれか1つを「たいけん」しよう",
+      target: 1,
+      progress: experienced,
+      reward: "すわぷよ かくしキャラ",
+      unlocksHidden: true,
+    },
+  ];
+}
+
+function MissionBoard({ missions, reduced }: { missions: MissionState[]; reduced: boolean }) {
+  return (
+    <section className={styles.missions} aria-label="ミッション">
+      <p className={styles.missionsTitle}>ミッション</p>
+      <div className={styles.missionList}>
+        {missions.map((mission) => {
+          const done = mission.progress >= mission.target;
+          const pct = Math.min(100, (mission.progress / mission.target) * 100);
+          return (
+            <div key={mission.id} className={`${styles.missionCard} ${done ? styles.missionDone : ""}`}>
+              <span className={styles.missionIcon} aria-hidden="true">
+                {done ? "✓" : mission.icon}
+              </span>
+              <div className={styles.missionBody}>
+                <strong>{mission.title}</strong>
+                <small>
+                  {mission.desc}
+                  {mission.reward !== undefined ? ` ・ごほうび: ${mission.reward}` : ""}
+                </small>
+                <div className={styles.missionBar}>
+                  <motion.div
+                    className={styles.missionFill}
+                    initial={false}
+                    animate={{ width: `${pct}%` }}
+                    transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 140, damping: 20 }}
+                  />
+                </div>
+              </div>
+              <span className={styles.missionCount}>
+                {Math.min(mission.progress, mission.target)}/{mission.target}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function StampBook({
   stamps,
   justStampedId,
@@ -201,16 +283,20 @@ export function StampBook({
 
   const caughtCount = depthByBooth.size;
   const total = DEMO_BOOTHS.length;
-  const complete = caughtCount >= total;
-  const completeRef = useRef(false);
+  const missions = computeMissions(stamps);
+  const allMissionsDone = missions.every((mission) => mission.progress >= mission.target);
 
+  // 隠しキャラは「全集め」でなく「1つをじっくり体験する」で解放する。
+  // 100枠は埋まらないので、達成可能な深い体験に結びつける(体験設計 07 と一致)。
+  const hiddenDone = missions.some((mission) => mission.unlocksHidden === true && mission.progress >= mission.target);
+  const unlockedRef = useRef(false);
   useEffect(() => {
-    if (complete && !completeRef.current) {
-      completeRef.current = true;
+    if (hiddenDone && !unlockedRef.current) {
+      unlockedRef.current = true;
       unlockCharacter(HIDDEN_REWARD_CHARACTER_ID);
       track("unlock_hidden", { surface: "concierge", id: HIDDEN_REWARD_CHARACTER_ID });
     }
-  }, [complete]);
+  }, [hiddenDone]);
 
   const openBooth = openBoothId !== null ? DEMO_BOOTHS.find((booth) => booth.id === openBoothId) ?? null : null;
   const openDepth = openBooth !== null ? depthByBooth.get(openBooth.id) ?? null : null;
@@ -231,15 +317,21 @@ export function StampBook({
         </span>
       </div>
 
-      <div className={styles.progressTrack}>
-        <motion.div
-          className={styles.progressFill}
-          initial={false}
-          animate={{ width: `${(caughtCount / total) * 100}%` }}
-          transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 20 }}
-        />
-      </div>
+      <MissionBoard missions={missions} reduced={reduced} />
 
+      {allMissionsDone ? (
+        <div className={`${styles.reward} ${styles.rewardDone}`}>
+          <span className={styles.rewardIcon} aria-hidden="true">
+            👑
+          </span>
+          <div>
+            <strong>ぜんぶのミッション達成！</strong>
+            <small>むらの なかまが ふえた！</small>
+          </div>
+        </div>
+      ) : null}
+
+      <p className={styles.sheetLead}>あつめたスタンプ</p>
       <div className={styles.sheet}>
         <div className={styles.grid}>
           {DEMO_BOOTHS.map((booth) => (
@@ -255,16 +347,6 @@ export function StampBook({
               }}
             />
           ))}
-        </div>
-      </div>
-
-      <div className={`${styles.reward} ${complete ? styles.rewardDone : ""}`}>
-        <span className={styles.rewardIcon} aria-hidden="true">
-          {complete ? "👑" : "🎁"}
-        </span>
-        <div>
-          <strong>{complete ? "コンプリート！隠しキャラ解放" : "ぜんぶ集めて 隠しキャラGET"}</strong>
-          <small>{complete ? "むらの なかまが ひとり ふえた！" : `あと ${total - caughtCount} マス`}</small>
         </div>
       </div>
 
