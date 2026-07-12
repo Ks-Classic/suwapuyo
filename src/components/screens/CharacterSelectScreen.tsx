@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { loadCharacters, type SelectableCharacter } from "../../config/characters";
 import { ensureDemoBuddy, getBuddy, type BuddyRecord } from "../../shared/buddyStore";
-import { getProgress, randomizePuyoCharacters, setPuyoCharacter, setSelectedBuddy, type PuyoSlotId } from "../../shared/progressStore";
+import {
+  getProgress,
+  randomizePuyoCharacters,
+  setPuyoCharacter,
+  setSelectedBuddy,
+  togglePinnedPuyoSlot,
+  type PuyoSlotId,
+} from "../../shared/progressStore";
 import { track } from "../../shared/analytics";
 import { VillageNarrator } from "../VillageNarrator";
 import styles from "../../styles/demo.module.css";
@@ -23,6 +30,7 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
   const [buddy, setBuddy] = useState<BuddyRecord | null>(null);
   const [buddyUrl, setBuddyUrl] = useState<string | null>(null);
   const [slotSelections, setSlotSelections] = useState(() => getProgress().selected_puyo_character_ids);
+  const [pinnedSlots, setPinnedSlots] = useState(() => getProgress().pinned_puyo_slot_ids);
   const [activeSlot, setActiveSlot] = useState<PuyoSlotId>("ghost");
   const [message, setMessage] = useState("だれと あそぶ〜？");
 
@@ -95,8 +103,18 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
   function randomizeSlots(): void {
     const progress = randomizePuyoCharacters();
     setSlotSelections(progress.selected_puyo_character_ids);
+    setPinnedSlots(progress.pinned_puyo_slot_ids);
     setMessage("おまかせで えらんだよ");
     track("tap", { surface: "character_select", id: "randomize" });
+  }
+
+  function togglePin(slotId: PuyoSlotId): void {
+    const progress = togglePinnedPuyoSlot(slotId);
+    setPinnedSlots(progress.pinned_puyo_slot_ids);
+    const isPinned = progress.pinned_puyo_slot_ids.includes(slotId);
+    const label = PUYO_SLOTS.find((slot) => slot.id === slotId)?.label ?? "この枠";
+    setMessage(isPinned ? `${label}を 固定したよ` : `${label}の 固定を 外したよ`);
+    track("tap", { surface: "character_select", id: "pin_toggle", kind: isPinned ? "pinned" : "unpinned" });
   }
 
   return (
@@ -108,17 +126,47 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
       <div className={styles.puyoSlotGrid} aria-label="ぷよ枠">
         {PUYO_SLOTS.map((slot) => {
           const selected = characterForSlot(slot.id);
+          const isPinned = pinnedSlots.includes(slot.id);
           return (
-            <button
-              key={slot.id}
-              type="button"
-              className={`${styles.puyoSlotTile} ${activeSlot === slot.id ? styles.puyoSlotTileActive : ""}`}
-              onClick={() => setActiveSlot(slot.id)}
-            >
-              <span>{slot.label}</span>
-              {selected.image !== null ? <img src={selected.image} alt="" /> : <strong>?</strong>}
-              <b>{selected.name}</b>
-            </button>
+            <div key={slot.id} className={`${styles.puyoSlotTile} ${activeSlot === slot.id ? styles.puyoSlotTileActive : ""}`}>
+              <button
+                type="button"
+                onClick={() => setActiveSlot(slot.id)}
+                style={{
+                  display: "grid",
+                  justifyItems: "center",
+                  gap: 3,
+                  width: "100%",
+                  padding: 0,
+                  border: "none",
+                  background: "transparent",
+                  font: "inherit",
+                  color: "inherit",
+                  cursor: "pointer",
+                }}
+              >
+                <span>{slot.label}</span>
+                {selected.image !== null ? <img src={selected.image} alt="" /> : <strong>?</strong>}
+                <b>{selected.name}</b>
+              </button>
+              <button
+                type="button"
+                onClick={() => togglePin(slot.id)}
+                aria-pressed={isPinned}
+                style={{
+                  marginTop: 2,
+                  padding: "1px 4px",
+                  border: "none",
+                  background: "transparent",
+                  color: isPinned ? "var(--color-accent)" : "var(--color-text-secondary)",
+                  fontSize: "0.58rem",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                {isPinned ? "📌 固定中" : "📍 固定する"}
+              </button>
+            </div>
           );
         })}
       </div>

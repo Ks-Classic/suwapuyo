@@ -12,7 +12,12 @@ export type TrackEventType =
   | "stamp_get"
   | "reward_reach"
   | "unlock_hidden"
-  | "announce_recv";
+  | "announce_recv"
+  | "maker_viewed"
+  | "problem_selected"
+  | "consultation_started"
+  | "puyo_auto_assign"
+  | "puyo_reroll_unpinned";
 
 export interface TrackMeta {
   surface?: string;
