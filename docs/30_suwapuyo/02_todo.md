@@ -1,4 +1,4 @@
-# すわぷよ 実装TODO — v2.5
+# すわぷよ 実装TODO — v2.6
 
 > **最終更新**: 2026-07-12
 > **現行SSoT**: `docs/70_すわぷよ・ユアタイム統合仕様/`。本ファイルの旧デモ記述と矛盾する場合は統合仕様を優先する。
@@ -6,6 +6,8 @@
 > **実装の正**: `docs/30_suwapuyo/04_demo-detailed-design.md`（v0.2.1）＋ `05_storyboard-and-narrator-script.md`。実装担当=**Codex**。
 
 > **LINE公開の正**: `07_line-required-liff-spec.md`。すわぷよはLINE公式アカウントの友だち追加をプレイ開始条件とする。会場案内所の非強制登録方針とは対象が異なる。
+
+> **配信先(2026-07-12確認)**: 本番はCloudflare Pages(`suwapuyo`プロジェクト、`suwapuyo.pages.dev`)。git連携なし、`npx wrangler pages deploy dist --project-name=suwapuyo --branch=main`の手動デプロイ運用。現時点のproduction sourceはcommit `e4198b0`。Vercel上にも同名`suwapuyo`プロジェクトが存在しgit push契機で自動デプロイされるが、これはPhase 0時代の残置物であり**本番判断には使わない**(下記「旧デモTODO」のVercel連携項目を参照、および`07_サマリー/01_実装ルール・ロードマップ.md`の「旧Vercel記述を現行判断に使わない」)。デプロイ状況を確認する際は必ずwranglerでCloudflare Pages側を見ること。
 
 ---
 
@@ -44,7 +46,7 @@
 - [x] **LINE-203**: 既存すーすー／わーわー透過画像、村背景、旧メニュー素材を棚卸し
 - [ ] **LINE-204**: 2500×1686で3フェーズの完成画像を制作。1MB以下、文字可読性、safe areaを確認
 - [ ] **LINE-205**: すわぷよ独立ロゴ、YourTIME.ロゴ、作り手・ブース・地図・感想等の不足素材を許諾付きで確定
-- [ ] **LINE-206**: Cloudflare本番15遷移先を確定し、未公開routeのfallbackを実装
+- [ ] **LINE-206**: Cloudflare本番15遷移先を確定し、未公開routeのfallbackを実装（Cloudflare Pagesプロジェクト自体は作成済み・手動デプロイ運用中=配信インフラは稼働している。残課題は15遷移先のroute確定とfallback実装のみ）
 - [ ] **LINE-207**: Messaging APIで3 rich menuを作成、画像upload、IDをsecretでない設定として記録
 - [ ] **LINE-208**: 開催前→当日→開催後の手動切替、rollback、per-user link残存確認の運用手順を実装
 - [ ] **LINE-209**: iOS/Android LINE実機で全15領域、ラベル、遷移、計測を確認
