@@ -21,6 +21,8 @@ interface LiffSdk {
   isLoggedIn(): boolean;
   login(input?: { redirectUri?: string }): void;
   getProfile(): Promise<LiffProfile>;
+  getFriendship(): Promise<{ friendFlag: boolean }>;
+  requestFriendship?(): Promise<void>;
 }
 
 type LiffWindow = Window & {
@@ -28,6 +30,17 @@ type LiffWindow = Window & {
 };
 
 let loadingScript: Promise<void> | null = null;
+const LIFF_TIMEOUT_MS = 12_000;
+
+function withTimeout<T>(promise: Promise<T>, code: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(code)), LIFF_TIMEOUT_MS);
+    promise.then(
+      (value) => { window.clearTimeout(timer); resolve(value); },
+      (error: unknown) => { window.clearTimeout(timer); reject(error); },
+    );
+  });
+}
 
 function getLiff(): LiffSdk | null {
   return (window as LiffWindow).liff ?? null;
@@ -47,7 +60,7 @@ function loadLiffScript(): Promise<void> {
     script.async = true;
     script.charset = "utf-8";
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("liff_sdk_load_failed"));
+    script.onerror = () => { loadingScript = null; reject(new Error("liff_sdk_load_failed")); };
     document.head.appendChild(script);
   });
   return loadingScript;
@@ -58,7 +71,7 @@ export async function initializeLiff(liffId: string | undefined): Promise<LiffSe
     return { status: "disabled", inClient: false };
   }
   try {
-    await loadLiffScript();
+    await withTimeout(loadLiffScript(), "liff_sdk_load_timeout");
     const liff = getLiff();
     if (liff === null) {
       return { status: "error", inClient: false, errorMessage: "liff_sdk_unavailable" };
@@ -66,14 +79,14 @@ export async function initializeLiff(liffId: string | undefined): Promise<LiffSe
     // withLoginOnExternalBrowser:true は init 時点で外部ブラウザを強制的に
     // LINEログインへリダイレクトしてしまい、下の「明示ボタンでのみ連携」意図と
     // ローカルfallback(Supabase/LINE未設定でも全工程成立)を壊す。必ず false。
-    await liff.init({ liffId, withLoginOnExternalBrowser: false });
+    await withTimeout(liff.init({ liffId, withLoginOnExternalBrowser: false }), "liff_init_timeout");
     const inClient = liff.isInClient();
     if (!inClient && !liff.isLoggedIn()) {
       // 外部ブラウザでは確認なしに自動リダイレクトしない。ユーザーが明示的に
       // 連携ボタンを押したときだけ loginLiff() でログイン画面へ送る。
       return { status: "login_required", inClient };
     }
-    const profile = await liff.getProfile();
+    const profile = await withTimeout(liff.getProfile(), "liff_profile_timeout");
     return {
       status: "ready",
       inClient,
@@ -95,6 +108,19 @@ export function loginLiff(): void {
     return;
   }
   liff.login({ redirectUri: window.location.href });
+}
+
+export async function getLiffFriendship(): Promise<boolean> {
+  const liff = getLiff();
+  if (liff === null) throw new Error("liff_sdk_unavailable");
+  return (await liff.getFriendship()).friendFlag;
+}
+
+export async function requestLiffFriendship(): Promise<void> {
+  const liff = getLiff();
+  if (liff === null) throw new Error("liff_sdk_unavailable");
+  if (liff.requestFriendship === undefined) throw new Error("liff_request_friendship_unavailable");
+  await liff.requestFriendship();
 }
 
 export function getBoothIdFromLiffUrl(): string | null {
