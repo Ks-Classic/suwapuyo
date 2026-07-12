@@ -47,6 +47,51 @@ export interface ReportInsight {
   detail: string;
 }
 
+/**
+ * チェックイン・ブーススタンプ（`07_初回登録・チェックイン・ブーススタンプ設計.md`）の仮集計。
+ * `uniqueVisitors` はブースQR読取＋確定操作で記録した「訪問した」実人数（証跡＝QR読取）。
+ * `selfReported` は来場者のワンタップ申告（複数選択可・自己申告）で、事実認定や確定売上ではない。
+ * この2つは仕様上つねに別集計として扱い、UIでも混同しない。
+ */
+export interface CheckinEngagementTotals {
+  heardExplanation: number;
+  participated: number;
+  purchased: number;
+  browsing: number;
+}
+
+export interface CheckinRatingTotals {
+  great: number;
+  good: number;
+  neutral: number;
+  notSure: number;
+}
+
+export interface CheckinReportSection {
+  uniqueVisitors: number;
+  selfReported: CheckinEngagementTotals;
+  ratingRespondents: number;
+  rating: CheckinRatingTotals;
+}
+
+export const CHECKIN_ENGAGEMENT_META: Record<keyof CheckinEngagementTotals, { label: string; color: string }> = {
+  heardExplanation: { label: "説明を聞いた", color: "var(--color-blue)" },
+  participated: { label: "体験した", color: "var(--color-accent)" },
+  purchased: { label: "購入した", color: "var(--color-pink)" },
+  browsing: { label: "まだ見学中", color: "var(--color-text-muted)" },
+};
+
+export const CHECKIN_RATING_META: Record<keyof CheckinRatingTotals, { label: string }> = {
+  great: { label: "とても良かった" },
+  good: { label: "良かった" },
+  neutral: { label: "ふつう" },
+  notSure: { label: "まだわからない" },
+};
+
+export function selfReportRate(count: number, uniqueVisitors: number): number {
+  return uniqueVisitors === 0 ? 0 : count / uniqueVisitors;
+}
+
 export interface ExhibitorReport {
   /** UI上でも必ず区別する。Phase 1 fixture は demo 固定。 */
   dataMode: "demo" | "test" | "live";
@@ -82,6 +127,7 @@ export interface ExhibitorReport {
   timeline: HourBucket[];
   cohort: AgeCohortRow[];
   insights: ReportInsight[];
+  checkin: CheckinReportSection;
 }
 
 export const DEPTH_META: Record<keyof DepthBreakdown, { label: string; short: string; color: string; marker: string }> = {
@@ -202,6 +248,12 @@ export const DEMO_REPORT: ExhibitorReport = {
     { ageLabel: "6〜9歳", depth: { visited: 14, explained: 11, experienced: 7 } },
     { ageLabel: "10歳〜", depth: { visited: 9, explained: 4, experienced: 2 } },
   ],
+  checkin: {
+    uniqueVisitors: 137,
+    selfReported: { heardExplanation: 51, participated: 34, purchased: 9, browsing: 21 },
+    ratingRespondents: 44,
+    rating: { great: 19, good: 16, neutral: 7, notSure: 2 },
+  },
   insights: [
     {
       id: "ins-win",

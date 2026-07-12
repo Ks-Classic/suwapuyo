@@ -3,6 +3,8 @@ import styles from "./report.module.css";
 import { BarList, CohortMatrix, DepthFunnel, Donut, HourBars, StatCard } from "./charts";
 import {
   ACQUISITION_META,
+  CHECKIN_ENGAGEMENT_META,
+  CHECKIN_RATING_META,
   DEMO_REPORT,
   DEPTH_DETAIL,
   DEPTH_META,
@@ -10,6 +12,8 @@ import {
   experiencedRate,
   formatAggregateCount,
   isSuppressedAggregate,
+  type CheckinEngagementTotals,
+  type CheckinRatingTotals,
   type DepthBreakdown,
   type ExhibitorReport as ExhibitorReportModel,
   type ReportInsight,
@@ -204,6 +208,40 @@ export function ExhibitorReport({ report = DEMO_REPORT, onBizContactClick, onBus
                 </motion.article>
               );
             })}
+          </div>
+        </Section>
+
+        {/* ── チェックイン・スタンプ仮集計：訪問(QR証跡)と自己申告(任意タップ)を明確に分ける ── */}
+        <Section
+          eyebrow="CHECK-IN & STAMP"
+          title="来場は事実、回答は自己申告"
+          note="ブースQR読取＋確定操作で記録した「訪問した」件数と、来場者がワンタップで答えた「自己申告」は別の集計として区別しています。購入の自己申告を確定売上として扱いません。"
+        >
+          <div className={styles.kpiGrid}>
+            <StatCard label="訪問した" value={report.checkin.uniqueVisitors} suffix="人" suppressed={isSuppressedAggregate(report.checkin.uniqueVisitors)} hint="ブースQR読取＋確定操作の実人数" accent="var(--color-blue)" />
+            <StatCard label="評価に回答" value={report.checkin.ratingRespondents} suffix="人" suppressed={isSuppressedAggregate(report.checkin.ratingRespondents)} hint="任意の1タップ評価に答えた人数" accent="var(--color-accent)" />
+          </div>
+          <div className={styles.glassPanel}>
+            <h3 className={styles.panelTitle}>来場者による回答（複数選択・自己申告）</h3>
+            <BarList
+              data={(Object.entries(report.checkin.selfReported) as Array<[keyof CheckinEngagementTotals, number]>).map(([key, value]) => ({
+                label: CHECKIN_ENGAGEMENT_META[key].label,
+                value,
+                color: CHECKIN_ENGAGEMENT_META[key].color,
+              }))}
+            />
+            <p className={styles.panelFoot}>複数選択のため合計は「訪問した」人数と一致しません。来場者による回答であり、事実認定や確定売上ではありません。</p>
+          </div>
+          <div className={styles.glassPanel}>
+            <h3 className={styles.panelTitle}>任意の1タップ評価（回答した人のみ）</h3>
+            <BarList
+              data={(Object.entries(report.checkin.rating) as Array<[keyof CheckinRatingTotals, number]>).map(([key, value]) => ({
+                label: CHECKIN_RATING_META[key].label,
+                value,
+                color: "var(--color-green)",
+              }))}
+            />
+            <p className={styles.panelFoot}>評価・コメントは任意のため、訪問者全員の回答ではありません。</p>
           </div>
         </Section>
 

@@ -1,0 +1,19 @@
+.characterReveal { display: grid; justify-items: center; gap: 6px; margin: 10px 0; animation: revealPop .5s cubic-bezier(.2,.8,.3,1.3) both; }
+.characterReveal img { width: 140px; height: 140px; object-fit: contain; }
+.characterReveal strong { font-size: 18px; color: #253a34; }
+.milestoneBanner { padding: 10px 14px; border-radius: 12px; background: #fff1bd; border: 2px solid #8a6729; color: #4e3714; font-weight: 850; }
+.boothHeader { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.boothHeader img { width: 120px; height: 120px; object-fit: contain; }
+.commentBox { width: 100%; min-height: 76px; border: 2px solid #7b6c52; border-radius: 14px; background: #fffaf0; color: #283c35; padding: 10px 14px; font: inherit; resize: vertical; }
+.stampList { display: grid; gap: 10px; margin: 16px 0; }
+.stampList li { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 10px; padding: 14px; background: #fff8e8; border-left: 6px solid #cbb997; border-radius: 8px 18px 18px 8px; }
+.stampGot { border-left-color: #335f51 !important; }
+.stampGot span:first-child { color: #1f6e59; font-size: 20px; }
+.stampMissing span:first-child { color: #a0876a; font-size: 20px; }
+.stampList small { display: block; color: #5c665f; }
+.stampList button { border: 1px solid #526d64; background: #e0eee5; color: #264c40; border-radius: 10px; padding: 6px 12px; }
+
+@keyframes revealPop {
+  0% { opacity: 0; transform: scale(.6) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
