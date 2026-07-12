@@ -1,23 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
 import { CharacterSelectScreen } from "../components/screens/CharacterSelectScreen";
 import { CHARACTERS } from "../config/characters";
+import { BoothCheckinScreen } from "../checkin/BoothCheckinScreen";
+import { DEMO_CAMPAIGNS } from "../checkin/checkinRepository";
+import { EventCheckinScreen } from "../checkin/EventCheckinScreen";
+import { StampBook } from "../checkin/StampBook";
 import { ExerciseScreen } from "../exercise/ExerciseScreen";
 import { GameRoute } from "../game/GameRoute";
 import { addLiffFriend, resolveSuwapuyoLiff, startLiffLogin, type SuwapuyoLiffState } from "../integrations/suwapuyoLiff";
+import { MakerPage } from "../maker/MakerPage";
 import { ArrivalScreen } from "../onboarding/ArrivalScreen";
 import { OnboardingFlow } from "../onboarding/OnboardingFlow";
 import { EventSurveyScreen } from "../onboarding/EventSurveyScreen";
 import { SURVEY_COPY } from "../onboarding/surveyCopy";
 import { MissionsScreen, ProgressScreen } from "../progress/ProgressScreens";
 import { ExhibitorReport } from "../report/ExhibitorReport";
-import { createProfileAfterConsent, dailyPreferredExercise, flushEventQueue, getSnapshot, grantConsent, hasConsent, newEvent, PRODUCT_CONSENT_VERSION, recordEvent, saveSurvey, SURVEY_CONSENT_VERSION } from "../shared/localMvpRepository";
-import type { ExerciseType, PreferredActivity } from "../shared/mvpTypes";
+import { createProfileAfterConsent, dailyPreferredExercise, deleteAllUserData, deleteChild, flushEventQueue, getSnapshot, grantConsent, hasConsent, newEvent, PRODUCT_CONSENT_VERSION, recordEvent, revokeConsent, saveSurvey, SURVEY_CONSENT_VERSION, updateChild } from "../shared/localMvpRepository";
+import type { AppSnapshot, ChildGender, ExerciseType, PreferredActivity, SurveyChild } from "../shared/mvpTypes";
 import { ExerciseBoothIntro, VenueMapFallback } from "../village/VillageScreens";
 import { FeaturedBoothCatalog } from "../booths/FeaturedBooths";
 import { DataModeBadge, MvpShell } from "./MvpShell";
 import styles from "./mvp.module.css";
 
 const REPORT_ID = "86da2704-835e-4e7b-9cf0-41f18be8cb21";
+const DEMO_CAMPAIGN_ID = Object.keys(DEMO_CAMPAIGNS)[0] ?? "yourtime-2026-08";
 const SUWAPUYO_LIFF_ID: string | undefined = import.meta.env.VITE_SUWAPUYO_LIFF_MODE === "demo" ? undefined : import.meta.env.VITE_SUWAPUYO_LIFF_ID;
 
 function useRoute() {
@@ -87,12 +93,65 @@ function HomeScreen({ navigate }: { navigate: (path: string) => void }) {
   return <main className={styles.homeScreen}><header><div><p>おはよう！</p><h1>きょうの村</h1></div><button onClick={() => navigate("/settings/family")}>保護者用</button></header><DataModeBadge/><section className={styles.villageHero}>{selected !== undefined ? <img src={selected.image} alt={selected.name}/> : null}<div><strong>{selected?.name ?? "村のなかま"}</strong><span>きょうも待ってるよ</span></div></section><button className={styles.primaryButton} onClick={() => navigate("/play")}>つづきから遊ぶ</button><section className={styles.homeMission}><div><span>今日のミッション</span><b>0/3</b></div><div className={styles.missionTrack}><i/><i/><i/></div><p>{snapshot.arrived ? "なかまと一緒に体操してみよう" : "アンケートで仲間が登場！"}</p><button onClick={() => navigate("/missions")}>くわしく見る</button></section></main>;
 }
 
-function FamilySettings({ navigate }: { navigate: (path: string) => void }) {
+function ChildSettingsRow({ child, index, onChange }: { child: SurveyChild; index: number; onChange: (snapshot: AppSnapshot) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [year, setYear] = useState(String(child.birthYear ?? ""));
+  const [month, setMonth] = useState(String(child.birthMonth ?? ""));
+  const [gender, setGender] = useState<ChildGender>(child.gender);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 19 }, (_, offset) => currentYear - offset);
+  const genderLabel = SURVEY_COPY.gender.options.find(([, value]) => value === child.gender)?.[0] ?? "答えたくない";
+
+  function save(): void {
+    try {
+      onChange(updateChild(child.id, { birthYear: Number(year), birthMonth: Number(month), gender }));
+      setEditing(false);
+      setError(undefined);
+    } catch {
+      setError("生まれた年月を確認してください");
+    }
+  }
+
+  if (editing) return <fieldset className={styles.childCard}>
+    <legend>{index + 1}人目のお子さん</legend>
+    <div className={styles.birthPicker}>
+      <label>生まれた年<select aria-label={`${index + 1}人目の生まれた年`} value={year} onChange={(event) => setYear(event.target.value)}>{years.map((option) => <option key={option} value={option}>{option}年</option>)}</select></label>
+      <label>月<select aria-label={`${index + 1}人目の生まれた月`} value={month} onChange={(event) => setMonth(event.target.value)}>{Array.from({ length: 12 }, (_, offset) => offset + 1).map((option) => <option key={option} value={option}>{option}月</option>)}</select></label>
+    </div>
+    <div className={styles.optionGrid}>{SURVEY_COPY.gender.options.map(([label, value]) => <button type="button" aria-pressed={gender === value} key={value} onClick={() => setGender(value)}>{label}</button>)}</div>
+    {error && <p className={styles.fieldError} role="alert">{error}</p>}
+    <button className={styles.primaryButton} onClick={save}>保存する</button>
+    <button className={styles.textButton} onClick={() => setEditing(false)}>やめる</button>
+  </fieldset>;
+
+  return <div className={styles.childCard}>
+    <div className={styles.childCardTitle}><span>{index + 1}人目・{child.birthYear}年{child.birthMonth}月・{genderLabel}</span></div>
+    {confirmingDelete ? <div><p>{index + 1}人目のお子さんの情報を削除します。よろしいですか？</p><button className={styles.primaryButton} onClick={() => onChange(deleteChild(child.id))}>削除する</button><button className={styles.textButton} onClick={() => setConfirmingDelete(false)}>やめる</button></div> : <div className={styles.optionGrid}>
+      <button onClick={() => setEditing(true)}>変更</button>
+      <button onClick={() => setConfirmingDelete(true)}>削除</button>
+    </div>}
+  </div>;
+}
+
+export function FamilySettings({ navigate }: { navigate: (path: string) => void }) {
   const [snapshot, setSnapshot] = useState(getSnapshot);
+  const [revokeConfirming, setRevokeConfirming] = useState(false);
+  const [deleteConfirming, setDeleteConfirming] = useState(false);
   const survey = snapshot.survey;
   function update(preferredActivity: PreferredActivity) {
     if (survey === null) return;
     setSnapshot(saveSurvey({ ...survey, preferredActivity }));
+  }
+  function handleRevokeConsent(): void {
+    revokeConsent("survey");
+    setSnapshot(getSnapshot());
+    setRevokeConfirming(false);
+  }
+  function handleDeleteAll(): void {
+    deleteAllUserData();
+    navigate("/");
   }
   return <main className={styles.contentScreen}>
     <div className={styles.screenTitleRow}><div><p className={styles.eyebrow}>保護者用</p><h1>遊びの設定</h1></div><button onClick={() => navigate("/")}>閉じる</button></div>
@@ -101,6 +160,19 @@ function FamilySettings({ navigate }: { navigate: (path: string) => void }) {
       <div className={styles.optionGrid}>{SURVEY_COPY.activity.options.map(([label, value]) => <button aria-pressed={survey.preferredActivity === value} key={value} onClick={() => update(value)}>{label}</button>)}</div>
       <p className={styles.successNotice} role="status">現在の設定：{survey.preferredActivity === "mouth" ? "お口あそび" : survey.preferredActivity === "body" ? "からだあそび" : survey.preferredActivity === "random" ? "おまかせ" : "あとで選ぶ"}</p>
     </section>}
+    {survey !== null && <section className={styles.settingsCard}>
+      <h2>お子さんの情報</h2>
+      {survey.children.length === 0 ? <p>登録したお子さんはいません。</p> : <div className={styles.childCards}>
+        {survey.children.map((child, index) => <ChildSettingsRow child={child} index={index} key={child.id} onChange={setSnapshot} />)}
+      </div>}
+    </section>}
+    <section className={styles.settingsCard}>
+      <h2>データの取り扱い</h2>
+      {hasConsent("survey") && <>
+        {revokeConfirming ? <div><p>登録した年月・性別・遊んだ記録の保存を止めます。よろしいですか？</p><button className={styles.primaryButton} onClick={handleRevokeConsent}>同意を撤回する</button><button className={styles.textButton} onClick={() => setRevokeConfirming(false)}>やめる</button></div> : <button className={styles.secondaryButton} onClick={() => setRevokeConfirming(true)}>遊びの記録の保存をやめる</button>}
+      </>}
+      {deleteConfirming ? <div><p>この端末に保存したすべてのデータを削除します。元に戻せません。</p><button className={styles.primaryButton} onClick={handleDeleteAll}>削除する</button><button className={styles.textButton} onClick={() => setDeleteConfirming(false)}>やめる</button></div> : <button className={styles.textButton} onClick={() => setDeleteConfirming(true)}>すべてのデータを削除する</button>}
+    </section>
   </main>;
 }
 
@@ -154,8 +226,18 @@ export function MvpApp() {
   }
   if (path === "/progress") return <MvpShell active="progress" onNavigate={navigate}><ProgressScreen onMissions={() => navigate("/missions")} onPlay={() => navigate("/play")}/></MvpShell>;
   if (path === "/missions") return <MvpShell active="progress" onNavigate={navigate}><MissionsScreen/></MvpShell>;
+  if (path.startsWith("/booths/") && path.endsWith("/check-in")) {
+    const boothId = path.split("/")[2];
+    return <BoothCheckinScreen campaignId={DEMO_CAMPAIGN_ID} boothId={boothId} onFindNext={() => navigate("/booths")}/>;
+  }
   if (path === "/booths" || path === "/village/booths") return <MvpShell active="village" onNavigate={navigate}><FeaturedBoothCatalog onMap={() => navigate("/village/map")}/></MvpShell>;
   if (path === "/village/map") return <MvpShell active="village" onNavigate={navigate}><VenueMapFallback onList={() => navigate("/village/booths")}/></MvpShell>;
+  if (path === "/stamps") return <MvpShell active="village" onNavigate={navigate}><StampBook campaignId={DEMO_CAMPAIGN_ID} onBooth={(boothId) => navigate(`/booths/${boothId}/check-in`)}/></MvpShell>;
+  if (path.startsWith("/event/") && path.endsWith("/check-in")) {
+    const campaignId = path.split("/")[2];
+    return <EventCheckinScreen campaignId={campaignId} onPlay={() => navigate("/play")} onBooths={() => navigate("/booths")}/>;
+  }
+  if (path === "/maker") return <MakerPage onExit={() => navigate("/")}/>;
   if (path.startsWith("/reports/exhibitors/")) {
     const id = path.split("/")[3];
     return id === REPORT_ID ? <ExhibitorReport onBizContactClick={() => { void recordEvent(newEvent("biz_contact_clicked", { reportId: REPORT_ID })); }}/> : <main className={styles.forbiddenScreen}><h1>レポートを表示できません</h1><p>URLを確認してください。</p></main>;

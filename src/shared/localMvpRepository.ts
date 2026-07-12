@@ -3,6 +3,7 @@ import { enqueueEvent, listQueuedEvents, queuedEventCount, removeQueuedEvent } f
 import type {
   AppSnapshot,
   Booth,
+  ChildGender,
   ConsentPurpose,
   ConsentRecord,
   ExerciseSummary,
@@ -10,15 +11,17 @@ import type {
   EventSurveyResponse,
   FamilySurvey,
   MissionProgress,
+  OnboardingDraft,
   ProductEvent,
   PreferredActivity,
 } from "./mvpTypes";
-import { normalizeStoredSurvey, preferredExerciseType } from "../onboarding/surveyDomain";
+import { birthMonthToAgeBand, normalizeStoredSurvey, preferredExerciseType } from "../onboarding/surveyDomain";
 
 const CONSENT_KEY = "suwapuyo_mvp_consents_v1";
 const APP_KEY = "suwapuyo_mvp_state_v1";
 const EVENT_SURVEY_KEY = "suwapuyo_event_surveys_v1";
 const DAILY_EXERCISE_KEY = "suwapuyo_daily_exercise_v1";
+const ONBOARDING_DRAFT_KEY = "suwapuyo_onboarding_draft_v1";
 export const PRODUCT_CONSENT_VERSION = "2026-07-12.product.v2";
 export const SURVEY_CONSENT_VERSION = "2026-07-12.family-purpose.v1";
 
@@ -40,6 +43,16 @@ export const DEMO_BOOTHS: Booth[] = [
 
 function parseJson<T>(key: string, fallback: T): T {
   const raw = window.localStorage.getItem(key);
+  if (raw === null) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function parseSessionJson<T>(key: string, fallback: T): T {
+  const raw = window.sessionStorage.getItem(key);
   if (raw === null) return fallback;
   try {
     return JSON.parse(raw) as T;
@@ -78,6 +91,45 @@ export function grantConsent(purpose: ConsentPurpose, version: string): ConsentR
   return record;
 }
 
+// 決定-018: 同意撤回時はその同意に基づく保存データも削除する。
+export function revokeConsent(purpose: ConsentPurpose): ConsentRecord[] {
+  const records = listConsents().filter((record) => record.purpose !== purpose);
+  window.localStorage.setItem(CONSENT_KEY, JSON.stringify(records));
+  if (purpose === "survey") {
+    const current = readSnapshot();
+    if (current.survey !== null) writeSnapshot({ ...current, survey: null });
+  }
+  if (purpose === "product") {
+    window.localStorage.removeItem(APP_KEY);
+    window.localStorage.removeItem(EVENT_SURVEY_KEY);
+    window.localStorage.removeItem(DAILY_EXERCISE_KEY);
+    window.sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
+  }
+  return records;
+}
+
+export function deleteAllUserData(): void {
+  window.localStorage.removeItem(CONSENT_KEY);
+  window.localStorage.removeItem(APP_KEY);
+  window.localStorage.removeItem(EVENT_SURVEY_KEY);
+  window.localStorage.removeItem(DAILY_EXERCISE_KEY);
+  window.sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
+}
+
+export function loadOnboardingDraft(): OnboardingDraft | null {
+  if (!hasConsent("survey")) return null;
+  return parseSessionJson<OnboardingDraft | null>(ONBOARDING_DRAFT_KEY, null);
+}
+
+export function saveOnboardingDraft(draft: OnboardingDraft): void {
+  if (!hasConsent("survey")) return;
+  window.sessionStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify(draft));
+}
+
+export function clearOnboardingDraft(): void {
+  window.sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
+}
+
 export function createProfileAfterConsent(): AppSnapshot {
   if (!hasConsent("product")) throw new Error("product_consent_required");
   const existing = window.localStorage.getItem(APP_KEY);
@@ -94,6 +146,28 @@ export function saveSurvey(survey: FamilySurvey): AppSnapshot {
   if (!hasConsent("product") || !hasConsent("survey")) throw new Error("survey_consent_required");
   const current = readSnapshot();
   const next = { ...current, survey, arrived: survey.completedAt !== undefined ? true : current.arrived };
+  writeSnapshot(next);
+  return next;
+}
+
+// 削除は権利行使のため、現在の同意状態に関わらず常に実行できる。
+export function deleteChild(childId: string): AppSnapshot {
+  const current = readSnapshot();
+  if (current.survey === null) return current;
+  const next: AppSnapshot = { ...current, survey: { ...current.survey, children: current.survey.children.filter((child) => child.id !== childId) } };
+  writeSnapshot(next);
+  return next;
+}
+
+export function updateChild(childId: string, input: { birthYear: number; birthMonth: number; gender: ChildGender }): AppSnapshot {
+  const current = readSnapshot();
+  if (current.survey === null) throw new Error("survey_not_found");
+  const age = birthMonthToAgeBand({ year: input.birthYear, month: input.birthMonth });
+  if (age === null) throw new Error("invalid_child_input");
+  const children = current.survey.children.map((child) => child.id === childId
+    ? { ...child, birthYear: input.birthYear, birthMonth: input.birthMonth, gender: input.gender, ageBand: age.ageBand, ageAsOf: age.ageAsOf }
+    : child);
+  const next: AppSnapshot = { ...current, survey: { ...current.survey, children } };
   writeSnapshot(next);
   return next;
 }

@@ -42,6 +42,22 @@ export interface FamilySurvey {
   skippedAt?: string;
 }
 
+export type OnboardingStep = "player" | "count" | "children" | "confirm";
+
+export interface OnboardingChildDraft {
+  id: string;
+  year: string;
+  month: string;
+  gender: ChildGender | "";
+}
+
+export interface OnboardingDraft {
+  step: OnboardingStep;
+  survey: FamilySurvey;
+  childDrafts: OnboardingChildDraft[];
+  childIndex: number;
+}
+
 export type EventSurveyPhase = "before" | "during" | "after";
 export interface EventSurveyResponse {
   phase: EventSurveyPhase;

@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
-import { grantConsent, hasConsent, saveSurvey, SURVEY_CONSENT_VERSION } from "../shared/localMvpRepository";
-import type { ChildGender, FamilySurvey, PrimaryPlayer, SurveyChild } from "../shared/mvpTypes";
+import { useEffect, useMemo, useState } from "react";
+import { clearOnboardingDraft, grantConsent, hasConsent, loadOnboardingDraft, saveOnboardingDraft, saveSurvey, SURVEY_CONSENT_VERSION } from "../shared/localMvpRepository";
+import type { FamilySurvey, OnboardingChildDraft, OnboardingStep, PrimaryPlayer, SurveyChild } from "../shared/mvpTypes";
 import { SURVEY_COPY } from "./surveyCopy";
 import { birthMonthToAgeBand } from "./surveyDomain";
 import styles from "../app/mvp.module.css";
 
-type Step = "intro" | "player" | "count" | "children" | "confirm" | "complete";
-type ChildDraft = { id: string; year: string; month: string; gender: ChildGender | ""; error?: string };
+type Step = "intro" | OnboardingStep | "complete";
+type ChildDraft = OnboardingChildDraft & { error?: string };
 
 const EMPTY_SURVEY: FamilySurvey = {
   schemaVersion: 3,
@@ -14,6 +14,8 @@ const EMPTY_SURVEY: FamilySurvey = {
   preferredActivity: "unanswered",
   children: [],
 };
+
+const RESTORABLE_STEPS: readonly Step[] = ["player", "count", "children", "confirm"];
 
 interface Props {
   onSkip: () => void;
@@ -25,12 +27,20 @@ function createChild(index: number): ChildDraft {
 }
 
 export function OnboardingFlow({ onSkip, onComplete }: Props) {
-  const [step, setStep] = useState<Step>(() => hasConsent("survey") ? "player" : "intro");
-  const [draft, setDraft] = useState<FamilySurvey>(EMPTY_SURVEY);
-  const [children, setChildren] = useState<ChildDraft[]>([]);
-  const [childIndex, setChildIndex] = useState(0);
+  const [restored] = useState(loadOnboardingDraft);
+  const [step, setStep] = useState<Step>(() => restored?.step ?? (hasConsent("survey") ? "player" : "intro"));
+  const [draft, setDraft] = useState<FamilySurvey>(() => restored?.survey ?? EMPTY_SURVEY);
+  const [children, setChildren] = useState<ChildDraft[]>(() => restored?.childDrafts ?? []);
+  const [childIndex, setChildIndex] = useState(() => restored?.childIndex ?? 0);
+  const [saveError, setSaveError] = useState(false);
   const currentYear = new Date().getFullYear();
   const years = useMemo(() => Array.from({ length: 19 }, (_, index) => currentYear - index), [currentYear]);
+
+  useEffect(() => {
+    if (!RESTORABLE_STEPS.includes(step)) return;
+    const childDrafts: OnboardingChildDraft[] = children.map((child) => ({ id: child.id, year: child.year, month: child.month, gender: child.gender }));
+    saveOnboardingDraft({ step: step as OnboardingStep, survey: draft, childDrafts, childIndex });
+  }, [step, draft, children, childIndex]);
 
   function choosePlayer(primaryPlayer: PrimaryPlayer): void {
     setDraft((current) => ({ ...current, primaryPlayer, children: [] }));
@@ -74,10 +84,16 @@ export function OnboardingFlow({ onSkip, onComplete }: Props) {
   }
 
   function finish(): void {
-    const next = { ...draft, completedAt: new Date().toISOString() };
-    saveSurvey(next);
-    setDraft(next);
-    setStep("complete");
+    try {
+      const next = { ...draft, completedAt: new Date().toISOString() };
+      saveSurvey(next);
+      setDraft(next);
+      clearOnboardingDraft();
+      setSaveError(false);
+      setStep("complete");
+    } catch {
+      setSaveError(true);
+    }
   }
 
   function goBack(): void {
@@ -99,7 +115,7 @@ export function OnboardingFlow({ onSkip, onComplete }: Props) {
     <p className={styles.privacyNote}>{SURVEY_COPY.intro.note}</p>
     <p className={styles.privacyNote}><a href="/terms">利用規約</a>・<a href="/privacy">プライバシーポリシー</a></p>
     <button className={styles.primaryButton} onClick={() => { grantConsent("survey", SURVEY_CONSENT_VERSION); setStep("player"); }}>{SURVEY_COPY.intro.accept}</button>
-    <button className={styles.secondaryButton} onClick={onSkip}>{SURVEY_COPY.intro.skip}</button>
+    <button className={styles.secondaryButton} onClick={() => { clearOnboardingDraft(); onSkip(); }}>{SURVEY_COPY.intro.skip}</button>
   </main>;
 
   const progress = step === "player" ? 1 : step === "count" ? 2 : step === "children" ? 3 : 4;
@@ -142,6 +158,7 @@ export function OnboardingFlow({ onSkip, onComplete }: Props) {
       <h1>{draft.primaryPlayer === "adult" ? "遊ぶ準備を確認" : `${draft.children.length}人で遊ぶ準備ができたよ`}</h1>
       {draft.children.map((child, index) => <p className={styles.resultMessage} key={child.id}>{index + 1}人目・{child.birthYear}年{child.birthMonth}月・{SURVEY_COPY.gender.options.find(([, value]) => value === child.gender)?.[0]}</p>)}
       <p className={styles.privacyNote}>登録内容は設定からいつでも変更・削除できます。</p>
+      {saveError && <p className={styles.fieldError} role="alert">保存できませんでした。もう一度お試しください。</p>}
       <button className={styles.primaryButton} onClick={finish}>この内容ではじめる</button>
     </>}
 
