@@ -5,8 +5,6 @@
 export class SoundFX {
   private ctx: AudioContext | null = null;
   private masterVolume = 0.35;
-  private toothBuffer: AudioBuffer | null = null;
-  private toothLoading = false;
 
   private getCtx(): AudioContext {
     if (!this.ctx) {
@@ -380,44 +378,38 @@ export class SoundFX {
     }
   }
 
-  /** Play suwa-good-morning.mp3 when tooth (わーわー) pops */
-  async toothPop() {
+  /** Gentle, non-verbal water-drop chime when tooth (わーわー) pops. */
+  toothPop() {
     const ctx = this.getCtx();
+    const now = ctx.currentTime;
 
-    // Load and cache the audio buffer on first call
-    if (!this.toothBuffer && !this.toothLoading) {
-      this.toothLoading = true;
-      try {
-        const resp = await fetch("/content/fuwafuwa-land/audio/suwa-good-morning.mp3");
-        const arrayBuf = await resp.arrayBuffer();
-        this.toothBuffer = await ctx.decodeAudioData(arrayBuf);
-      } catch (e) {
-        console.error("Failed to load tooth pop audio:", e);
-        this.toothLoading = false;
-        // Fallback to synth pop
-        this.pop();
-        return;
-      }
-      this.toothLoading = false;
-    }
+    // Two quiet resonances create an organic droplet without using recorded speech.
+    [880, 1320].forEach((frequency, index) => {
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
 
-    if (!this.toothBuffer) {
-      // Still loading from a concurrent call, use synth fallback
-      this.pop();
-      return;
-    }
+      const offset = index * 0.035;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, now + offset);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        frequency * 0.62,
+        now + offset + 0.18
+      );
 
-    const source = ctx.createBufferSource();
-    const gain = ctx.createGain();
-    source.buffer = this.toothBuffer;
-    source.connect(gain);
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(this.masterVolume * 1.2, ctx.currentTime);
-    source.start(0);
+      gain.gain.setValueAtTime(
+        (this.masterVolume * 0.32) / (index + 1),
+        now + offset
+      );
+      gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.28);
+
+      oscillator.start(now + offset);
+      oscillator.stop(now + offset + 0.28);
+    });
   }
 
   dispose() {
-    this.toothBuffer = null;
     if (this.ctx) {
       this.ctx.close();
       this.ctx = null;

@@ -1202,16 +1202,19 @@ class PuyoDemo {
       ).then(() => {
         this.sfx.land();
         this.updateSpriteMeta(sprite, { animating: true });
+        const meta = this.spriteMeta.get(sprite);
+        const bx = meta?.baseScaleX ?? sprite.scale.x;
+        const by = meta?.baseScaleY ?? sprite.scale.y;
         return tweenTo(
           tweenObject(sprite.scale),
-          { x: 1.2, y: 0.8 },
+          { x: bx * 1.2, y: by * 0.8 },
           80,
           easeOutQuad
         )
           .then(() =>
             tweenTo(
               tweenObject(sprite.scale),
-              { x: 0.9, y: 1.1 },
+              { x: bx * 0.9, y: by * 1.1 },
               100,
               easeOutQuad
             )
@@ -1219,7 +1222,7 @@ class PuyoDemo {
           .then(() =>
             tweenTo(
               tweenObject(sprite.scale),
-              { x: 1, y: 1 },
+              { x: bx, y: by },
               120,
               easeOutBounce
             )

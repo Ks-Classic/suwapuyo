@@ -1,0 +1,28 @@
+.screen { width: min(100%, 760px); min-height: calc(100dvh - 76px); margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 18px 32px; color: #263c35; background: rgba(255,255,255,.68); }
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.header h1 { margin: 6px 0 14px; font-size: clamp(28px, 7vw, 40px); line-height: 1.15; }
+.header > button { min-height: 48px; border: 1px solid #7b6d53; border-radius: 12px; background: #fff8e7; color: #314b43; padding: 8px 12px; }
+.eyebrow { margin: 10px 0 0; color: #80603d; font-size: 13px; font-weight: 900; letter-spacing: .08em; }
+.lead { margin: 0 0 20px; line-height: 1.7; color: #455d55; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.card { overflow: hidden; border: 2px solid #8e7650; border-radius: 24px; background: #fff8e8; box-shadow: 0 8px 22px rgba(57,44,29,.12); }
+.card > img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #eadfc8; }
+.cardBody { padding: 16px; }
+.cardBody h2 { margin: 7px 0; font-size: 22px; }
+.cardBody p { min-height: 4.8em; line-height: 1.6; }
+.cardBody button, .instagram { width: 100%; min-height: 48px; display: grid; place-items: center; border: 2px solid #6d4d22; border-radius: 14px; background: #f1bf5b; color: #342716; font: inherit; font-weight: 900; text-align: center; text-decoration: none; }
+.category { display: inline-flex; padding: 5px 10px; border-radius: 999px; background: #d8efe1; color: #265344; font-size: 12px; font-weight: 900; }
+.backdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; justify-content: center; background: rgba(20,29,26,.58); }
+.detail { width: min(100%, 760px); max-height: 92dvh; overflow-y: auto; border-radius: 28px 28px 0 0; background: #fff8e8; color: #263c35; box-shadow: 0 -18px 50px rgba(22,34,29,.25); }
+.close { position: sticky; z-index: 2; top: 12px; float: right; margin: 12px 12px -60px 0; min-height: 48px; padding: 8px 14px; border: 0; border-radius: 999px; background: rgba(255,248,232,.94); color: #273b35; font-weight: 900; }
+.carousel { display: grid; grid-auto-flow: column; grid-auto-columns: 88%; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 6% 10px; margin: 0; background: #2c3e38; }
+.carousel figure { position: relative; margin: 0; scroll-snap-align: center; }
+.carousel img { display: block; width: 100%; max-height: 64dvh; object-fit: contain; }
+.carousel figcaption { position: absolute; right: 10px; bottom: 10px; padding: 4px 9px; border-radius: 999px; background: rgba(27,37,33,.78); color: white; font-size: 12px; font-weight: 800; }
+.detailBody { padding: 20px; clear: both; }
+.detailBody h2 { margin: 8px 0 2px; font-size: 30px; }
+.detailBody h3 { margin-top: 24px; }
+.detailBody p, .detailBody li { line-height: 1.7; }
+.organizer { margin-top: 0; color: #617068; }
+.notice { padding: 12px; border-radius: 12px; background: #fff1bd; border: 1px solid #8a6729; color: #4e3714; font-size: 13px; }
+@media (max-width: 420px) { .screen { padding-inline: 12px; } .grid { grid-template-columns: 1fr; } .carousel { grid-auto-columns: 92%; padding-inline: 4%; } }

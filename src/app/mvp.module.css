@@ -1,9 +1,9 @@
-:global(body) { background: #f4ead6; color: #24352f; overflow-x: hidden; overflow-y: auto; }
+:global(body) { color: #24352f; overflow-x: hidden; overflow-y: auto; }
 :global(#root) { width: 100%; max-width: none; min-height: 100dvh; height: auto; overflow: visible; border: 0; text-align: left; display: block; position: static; }
 * { box-sizing: border-box; }
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 button { min-height: 48px; cursor: pointer; }
-.appShell { min-height: 100dvh; background: #f4ead6; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+.appShell { min-height: 100dvh; background: transparent; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .shellContent { min-height: calc(100dvh - 76px); }
 .bottomNav { position: fixed; z-index: 30; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 520px); height: calc(68px + env(safe-area-inset-bottom)); padding: 6px 12px env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(3, 1fr); background: #fffaf0; border-top: 2px solid #d8c9ad; box-shadow: 0 -8px 30px rgba(62, 49, 32, .12); }
 .bottomNav button { border: 0; background: transparent; color: #5c665f; display: grid; justify-items: center; gap: 1px; font-weight: 800; font-size: 12px; }
@@ -19,7 +19,7 @@ button { min-height: 48px; cursor: pointer; }
 .eyebrow { color: #80603d; font-size: 13px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .lead { line-height: 1.75; color: #485b54; }
 .demoBadge { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border: 1px solid #755226; background: #fff1bd; color: #4e3517; border-radius: 999px; font-size: 12px; font-weight: 900; }
-.authScreen, .storyScreen, .welcomeScreen, .arrivalScreen, .exerciseScreen, .completeScreen, .forbiddenScreen { min-height: 100dvh; width: min(100%, 520px); margin: 0 auto; padding: max(24px, env(safe-area-inset-top)) 22px 32px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 16px; text-align: center; position: relative; overflow: hidden; background: linear-gradient(#cce9ea 0 45%, #e8d6a9 45% 100%); }
+.authScreen, .storyScreen, .welcomeScreen, .arrivalScreen, .exerciseScreen, .completeScreen, .forbiddenScreen { min-height: 100dvh; width: min(100%, 520px); margin: 0 auto; padding: max(24px, env(safe-area-inset-top)) 22px 32px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 16px; text-align: center; position: relative; overflow: hidden; background: rgba(255, 255, 255, .55); }
 .authScreen img, .storyCharacter { width: 130px; height: 130px; object-fit: contain; align-self: center; animation: gentleFloat 2.4s ease-in-out infinite; }
 .authScreen h1, .storyScreen h1, .welcomeScreen h1, .arrivalScreen h1, .exerciseScreen h1, .completeScreen h1 { margin: 0; color: #253a34; font-size: clamp(28px, 8vw, 42px); line-height: 1.2; font-weight: 950; }
 .devStateButton { margin-top: 20px; border: 0; background: transparent; color: #53665f; font-size: 11px; opacity: .7; }
@@ -27,12 +27,21 @@ button { min-height: 48px; cursor: pointer; }
 .pathDots { display: flex; justify-content: center; gap: 28px; }
 .pathDots span { width: 13px; height: 13px; border: 3px solid #638170; background: #fff8e9; border-radius: 50%; position: relative; }
 .pathDots span:not(:last-child)::after { content: ""; width: 30px; border-top: 2px dashed #638170; position: absolute; left: 10px; top: 3px; }
+.pathDots .pathDotActive { background: #f3b950; border-color: #315f53; box-shadow: 0 0 0 4px rgba(243, 185, 80, .22); }
 .optionGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .optionGrid button, .chipGrid button, .segmented button, .areaGrid button, .filterRow button { border: 2px solid #8b7653; background: #fff9ea; color: #273b35; border-radius: 14px; padding: 12px 8px; font-weight: 850; }
 .optionGrid button[aria-pressed="true"], .chipGrid button[aria-pressed="true"], .segmented button[aria-pressed="true"], .areaGrid button[aria-pressed="true"], .filterRow button[aria-pressed="true"] { border-color: #216b57; background: #d8efe1; box-shadow: inset 0 0 0 2px #fff; }
 .childCards { display: grid; gap: 14px; max-height: 55dvh; overflow-y: auto; }
 .childCard { background: #fff8e8; border: 2px solid #ab8c5f; border-radius: 22px; padding: 16px; text-align: left; }
 .childCard h2 { margin: 0 0 10px; color: #334b43; }
+.childCardTitle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.childCardTitle button { min-height: 40px; border: 0; background: transparent; color: #765033; text-decoration: underline; font-weight: 800; }
+.birthPicker { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; }
+.birthPicker label { display: grid; gap: 6px; color: #455b53; font-size: 13px; font-weight: 850; }
+.birthPicker select { width: 100%; min-height: 52px; padding: 9px 34px 9px 10px; border: 2px solid #796849; border-radius: 13px; background: #fffdf7; color: #263b34; }
+.privacyNote { margin: 0; padding: 10px 12px; border-radius: 12px; background: #e4f1e9; color: #31564a; font-size: 13px; line-height: 1.55; }
+.fieldError { margin: 10px 0 0; color: #8c2f25; font-weight: 800; }
+.resultMessage { margin: 0; padding: 18px; border: 2px solid #c18a30; border-radius: 18px; background: #fff2c8; color: #3e321f; font-size: 18px; font-weight: 900; line-height: 1.6; }
 .chipGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .skyScene { min-height: 250px; display: grid; place-items: center; position: relative; background: radial-gradient(circle at 70% 20%, #fff7bf 0 10%, transparent 11%), linear-gradient(#a9dbe7, #d8efe0); border-bottom: 8px solid #8ec07f; border-radius: 0 0 42% 42%; }
@@ -49,7 +58,7 @@ button { min-height: 48px; cursor: pointer; }
 .arrivalGroup figure { margin: 0; animation: arrive .45s cubic-bezier(.2,.8,.3,1.3) both; animation-delay: var(--delay); }
 .arrivalGroup img { width: 100%; aspect-ratio: 1; object-fit: contain; }
 .arrivalGroup figcaption { font-size: 10px; font-weight: 800; line-height: 1.1; }
-.contentScreen, .homeScreen { width: min(100%, 520px); margin: 0 auto; min-height: calc(100dvh - 76px); padding: max(20px, env(safe-area-inset-top)) 18px 32px; background: #f4ead6; color: #263c35; }
+.contentScreen, .homeScreen { width: min(100%, 520px); margin: 0 auto; min-height: calc(100dvh - 76px); padding: max(20px, env(safe-area-inset-top)) 18px 32px; background: rgba(255, 255, 255, .58); color: #263c35; }
 .contentScreen h1, .homeScreen h1 { font-size: 32px; font-weight: 950; margin: 8px 0 20px; color: #263c35; }
 .contentScreen h2 { color: #344c44; }
 .homeScreen header, .screenTitleRow { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -62,7 +71,7 @@ button { min-height: 48px; cursor: pointer; }
 .homeMission button { border: 0; background: transparent; color: #245f50; font-weight: 800; text-decoration: underline; }
 .missionTrack { display: flex; align-items: center; justify-content: space-between; margin: 15px 0; }
 .missionTrack i { width: 18px; height: 18px; border: 3px solid #42685d; border-radius: 50%; background: #f4ead6; }
-.gameRoute { min-height: 100dvh; background: #132b31; color: white; display: flex; flex-direction: column; overflow: auto; }
+.gameRoute { min-height: 100dvh; background: #b8e5f7 url("/content/fuwafuwa-land/backgrounds/village-bg.png") center / cover no-repeat fixed; color: white; display: flex; flex-direction: column; overflow: auto; }
 .gameTopbar { min-height: 56px; padding: env(safe-area-inset-top) 12px 0; display: flex; justify-content: space-between; align-items: center; }
 .gameTopbar button { background: transparent; border: 0; color: white; }
 .gameCore { flex: 1; min-height: 560px; overflow: hidden; }
@@ -79,6 +88,7 @@ button { min-height: 48px; cursor: pointer; }
 .offlineNotice, .successNotice { padding: 12px; border-radius: 12px; font-weight: 800; }
 .offlineNotice { background: #fff1bd; border: 2px solid #8a6729; color: #4e3714; }
 .successNotice { background: #d7eddb; border: 2px solid #3a7157; color: #214b3c; }
+.errorCode { color: #5c665f; font-family: ui-monospace, monospace; font-size: 12px; }
 .progressHero { padding: 22px; margin: 12px 0 24px; background: #335f51; color: white; border-radius: 26px 8px 26px 8px; display: grid; gap: 8px; }
 .statRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .statRow span { padding: 12px 6px; background: #e4d4ac; border-bottom: 4px solid #876b3f; text-align: center; border-radius: 10px; }
@@ -118,7 +128,10 @@ button { min-height: 48px; cursor: pointer; }
 .simpleList { margin: 18px 0; display: grid; gap: 4px; }
 .simpleList div { padding: 12px; display: grid; grid-template-columns: 40px 1fr; background: #fff8e8; border-bottom: 1px solid #cbb997; }
 .introCard { width: min(calc(100% - 28px), 480px); margin: 12px auto; padding: 18px; background: #fff4d0; border: 3px solid #6c5939; border-radius: 8px 26px 8px 26px; }
-.forbiddenScreen { background: #f4ead6; }
+.settingsCard { padding: 18px; border: 2px solid #927956; border-radius: 20px; background: #fff8e8; }
+.settingsCard h2 { margin-top: 0; }
+.countQuestion { padding: 12px; border: 2px solid #a78c63; border-radius: 16px; background: #fff9ea; text-align: left; }
+.countQuestion h2 { margin: 0 0 10px; font-size: 18px; }
 @keyframes gentleFloat { 50% { transform: translateY(-8px); } }
 @keyframes arrive { from { opacity: 0; transform: translateY(-50px) scale(.5); } to { opacity: 1; transform: none; } }
 @keyframes breathe { 50% { width: 100%; } }
