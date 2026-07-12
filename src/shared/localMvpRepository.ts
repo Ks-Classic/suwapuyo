@@ -6,15 +6,21 @@ import type {
   ConsentPurpose,
   ConsentRecord,
   ExerciseSummary,
+  ExerciseType,
+  EventSurveyResponse,
   FamilySurvey,
   MissionProgress,
   ProductEvent,
+  PreferredActivity,
 } from "./mvpTypes";
+import { normalizeStoredSurvey, preferredExerciseType } from "../onboarding/surveyDomain";
 
 const CONSENT_KEY = "suwapuyo_mvp_consents_v1";
 const APP_KEY = "suwapuyo_mvp_state_v1";
-export const PRODUCT_CONSENT_VERSION = "2026-07-11.product.v1";
-export const SURVEY_CONSENT_VERSION = "2026-07-11.survey.v1";
+const EVENT_SURVEY_KEY = "suwapuyo_event_surveys_v1";
+const DAILY_EXERCISE_KEY = "suwapuyo_daily_exercise_v1";
+export const PRODUCT_CONSENT_VERSION = "2026-07-12.product.v2";
+export const SURVEY_CONSENT_VERSION = "2026-07-12.family-purpose.v1";
 
 const INITIAL_STATE: AppSnapshot = {
   dataMode: "demo",
@@ -43,7 +49,14 @@ function parseJson<T>(key: string, fallback: T): T {
 }
 
 function readSnapshot(): AppSnapshot {
-  return parseJson<AppSnapshot>(APP_KEY, INITIAL_STATE);
+  const snapshot = parseJson<AppSnapshot>(APP_KEY, INITIAL_STATE);
+  const normalizedSurvey = normalizeStoredSurvey(snapshot.survey);
+  if (snapshot.survey !== null && normalizedSurvey !== snapshot.survey) {
+    const migrated = { ...snapshot, survey: normalizedSurvey };
+    writeSnapshot(migrated);
+    return migrated;
+  }
+  return { ...snapshot, survey: normalizedSurvey };
 }
 
 function writeSnapshot(snapshot: AppSnapshot): void {
@@ -83,6 +96,33 @@ export function saveSurvey(survey: FamilySurvey): AppSnapshot {
   const next = { ...current, survey, arrived: survey.completedAt !== undefined ? true : current.arrived };
   writeSnapshot(next);
   return next;
+}
+
+export function listEventSurveys(): EventSurveyResponse[] {
+  return parseJson<EventSurveyResponse[]>(EVENT_SURVEY_KEY, []);
+}
+
+export function saveEventSurvey(response: EventSurveyResponse): EventSurveyResponse[] {
+  if (!hasConsent("product") || !hasConsent("survey")) throw new Error("survey_consent_required");
+  const allowedKeys: Record<EventSurveyResponse["phase"], readonly string[]> = {
+    before: ["attendance_plan"],
+    during: ["adult_count", "child_count"],
+    after: ["attended"],
+  };
+  if (Object.keys(response.answers).some((key) => !allowedKeys[response.phase].includes(key))) throw new Error("event_survey_unknown_answer");
+  const next = [...listEventSurveys().filter((item) => item.phase !== response.phase), response];
+  window.localStorage.setItem(EVENT_SURVEY_KEY, JSON.stringify(next));
+  return next;
+}
+
+export function dailyPreferredExercise(preference: PreferredActivity, now = new Date(), randomValue = Math.random()): ExerciseType {
+  if (preference === "mouth") return "mouth";
+  const date = dailyPeriodKey(now);
+  const stored = parseJson<{ date: string; preference: PreferredActivity; type: ExerciseType } | null>(DAILY_EXERCISE_KEY, null);
+  if (stored !== null && stored.date === date && stored.preference === preference && ["mouth", "breath", "neck"].includes(stored.type)) return stored.type;
+  const type = preferredExerciseType(preference, randomValue);
+  window.localStorage.setItem(DAILY_EXERCISE_KEY, JSON.stringify({ date, preference, type }));
+  return type;
 }
 
 export function selectCharacter(characterId: string): AppSnapshot {

@@ -19,28 +19,35 @@ export interface ConsentRecord {
   grantedAt: string;
 }
 
-export type CountBand = "1" | "2" | "3_plus" | "unanswered";
-export type ChildCountBand = "0" | "1" | "2" | "3_plus" | "unanswered";
 export type ChildAgeBand = "0_2" | "3_6" | "7_9" | "10_12" | "13_plus" | "unanswered";
-export type ChildGender = "male" | "female" | "unanswered";
-export type AcquisitionSource = "instagram" | "friend" | "exhibitor" | "official" | "walk_in" | "other" | "unanswered";
-export type HealthWorkAnswer = "yes" | "no" | "unanswered";
+export type PrimaryPlayer = "child" | "child_and_adult" | "adult" | "unanswered";
+export type PreferredActivity = "mouth" | "body" | "random" | "unanswered";
+export type ChildGender = "female" | "male" | "other" | "prefer_not_to_say";
 
 export interface SurveyChild {
   id: string;
-  ageBand: ChildAgeBand;
+  birthYear: number | null;
+  birthMonth: number | null;
   gender: ChildGender;
+  ageBand: ChildAgeBand;
+  ageAsOf: string | null;
 }
 
 export interface FamilySurvey {
-  adults: CountBand;
-  childCount: ChildCountBand;
+  schemaVersion: 3;
+  primaryPlayer: PrimaryPlayer;
+  preferredActivity: PreferredActivity;
   children: SurveyChild[];
-  acquisitionSource: AcquisitionSource;
-  healthWork: HealthWorkAnswer;
-  interests: string[];
   completedAt?: string;
   skippedAt?: string;
+}
+
+export type EventSurveyPhase = "before" | "during" | "after";
+export interface EventSurveyResponse {
+  phase: EventSurveyPhase;
+  surveyVersion: "event-2026-01";
+  answers: Readonly<Record<string, string>>;
+  completedAt: string;
 }
 
 export type ExerciseType = "mouth" | "breath" | "neck";

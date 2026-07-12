@@ -32,7 +32,7 @@ function starterIds(): string[] {
 }
 
 function randomPuyoCharacterIds(): Record<PuyoSlotId, string> {
-  const pool = starterIds();
+  const pool = CHARACTERS.map((character) => character.id);
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return {
     ghost: shuffled[0] ?? DEFAULT_PUYO_CHARACTER_IDS.ghost,
