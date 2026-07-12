@@ -70,27 +70,38 @@ Response `200`:
 
 ### `PUT /api/surveys/family`
 
-家族アンケートをupsertする。回答と同意版を同一トランザクションで保存する。
+初回登録または家族設定をupsertする。全児分の回答と同意版を同一トランザクションで保存する。
 
 ```json
 {
-  "survey_version": "family-2026-01",
-  "consent_version": "product-2026-01",
-  "adult_count_band": "2",
+  "survey_version": "family-2026-03",
+  "terms_version": "terms-2026-01",
+  "privacy_version": "privacy-2026-01",
+  "purpose_version": "family-purpose-2026-01",
+  "primary_player": "child_and_adult",
   "children": [
-    { "ordinal": 1, "age_band": "3_6", "gender": "female" },
-    { "ordinal": 2, "age_band": "7_9", "gender": "unanswered" }
-  ],
-  "acquisition_source": "instagram",
-  "is_health_professional": false,
-  "interest_categories": ["mouth", "parent_child"]
+    { "client_id": "uuid", "ordinal": 1, "birth_year": 2020, "birth_month": 5, "gender": "female" },
+    { "client_id": "uuid", "ordinal": 2, "birth_year": 2017, "birth_month": 9, "gender": "prefer_not_to_say" }
+  ]
 }
 ```
 
-- 未回答値を既定の年齢として保存しない。
-- `3_plus`等の帯を具体人数へ変換しない。
-- `gender`は子どもごとに任意で受ける（male / female / unanswered。決定-016）。未指定は`unanswered`として扱い、既定値を推定しない。
+- 子どもを含む`primary_player`では1人以上のchildrenを必須とし、全件validの場合だけ一括保存する。
+- `birth_year`、`birth_month`からサーバーで`age_band`と`age_as_of`を算出し、クライアント申告のage bandを信用しない。
+- `primary_player`と`gender`は許可enum以外を拒否する。`prefer_not_to_say`は有効回答として扱う。
+- 正確な日付、氏名、ニックネーム、`preferred_activity`を受け付けず、unknown keyとして400で拒否する。
+- 同意記録成功前にfamily profileとchildrenを保存しない。
 - 回答完了とキャラ登場（全キャラ一括。決定-019）はトランザクションまたは一意制約で一度だけ成立させる。
+
+### イベント・ブースQR API（デモ境界）
+
+- `POST /api/campaigns/:campaign/check-ins`: 入口opaque token、client event ID、利用者確定操作を検証し、同一利用者・campaignを冪等記録して限定報酬を一度だけ付与する。
+- `POST /api/campaigns/:campaign/booths/:booth/visits`: ブースopaque tokenとclient event IDを検証し、訪問スタンプを冪等付与する。
+- `PUT /api/booth-visits/:visit/engagement`: heard_explanation / participated / purchased / browsingの自己申告を保存する。
+- `PUT /api/booth-visits/:visit/feedback`: 任意ratingと短文を保存する。スキップ時は空回答を作らない。
+- `GET /api/campaigns/:campaign/stamps`: 本人の訪問済みブースと回遊節目報酬だけを返す。
+
+デモでは境界関数と仮データまでとし、本番DB/API配線は`02_体験設計/07` §10のGate通過後に行う。QRにLINE user IDや連番利用者IDを入れず、campaign・booth・署名またはサーバー解決用opaque tokenだけを含める。
 
 ### `POST /api/game-sessions`
 
