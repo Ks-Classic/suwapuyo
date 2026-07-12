@@ -4,9 +4,15 @@
 .header > button { min-height: 48px; border: 1px solid #7b6d53; border-radius: 12px; background: #fff8e7; color: #314b43; padding: 8px 12px; }
 .eyebrow { margin: 10px 0 0; color: #80603d; font-size: 13px; font-weight: 900; letter-spacing: .08em; }
 .lead { margin: 0 0 20px; line-height: 1.7; color: #455d55; }
+.search { display: block; margin: 0 0 20px; }
+.searchLabel { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 900; color: #4e6259; }
+.search input { width: 100%; min-height: 48px; border: 2px solid #8e7650; border-radius: 14px; background: #fff8e8; color: #263c35; padding: 0 14px; font: inherit; }
+.empty { margin: 0; padding: 20px; border: 2px dashed #8e7650; border-radius: 20px; background: #fff8e8; line-height: 1.8; }
+.empty > button { margin-left: 8px; min-height: 40px; border: 2px solid #6d4d22; border-radius: 12px; background: #f1bf5b; color: #342716; font: inherit; font-weight: 900; padding: 4px 12px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
 .card { overflow: hidden; border: 2px solid #8e7650; border-radius: 24px; background: #fff8e8; box-shadow: 0 8px 22px rgba(57,44,29,.12); }
-.card > img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #eadfc8; }
+.card > img, .thumbnailPlaceholder { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #eadfc8; }
+.thumbnailPlaceholder { display: grid; place-items: center; color: #80603d; font-weight: 900; }
 .cardBody { padding: 16px; }
 .cardBody h2 { margin: 7px 0; font-size: 22px; }
 .cardBody p { min-height: 4.8em; line-height: 1.6; }
@@ -19,6 +25,7 @@
 .carousel figure { position: relative; margin: 0; scroll-snap-align: center; }
 .carousel img { display: block; width: 100%; max-height: 64dvh; object-fit: contain; }
 .carousel figcaption { position: absolute; right: 10px; bottom: 10px; padding: 4px 9px; border-radius: 999px; background: rgba(27,37,33,.78); color: white; font-size: 12px; font-weight: 800; }
+.carouselPlaceholder { margin: 0; padding: 40px 6%; color: #f1e7c9; text-align: center; }
 .detailBody { padding: 20px; clear: both; }
 .detailBody h2 { margin: 8px 0 2px; font-size: 30px; }
 .detailBody h3 { margin-top: 24px; }
