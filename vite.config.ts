@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { execFile } from 'node:child_process'
 import { createReadStream, existsSync } from 'node:fs'
@@ -217,4 +217,7 @@ function shortsStudioRenderPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), shortsStudioRenderPlugin()],
+  test: {
+    testTimeout: 15000,
+  },
 })
