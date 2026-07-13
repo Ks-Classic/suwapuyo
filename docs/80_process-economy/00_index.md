@@ -9,7 +9,7 @@
 
 1. 実装時のセルフレビューと再発防止。
 2. UIUX・サービス設計の判断根拠。
-3. X、Instagram、note、自社サイト、解説モードの発信素材。
+3. X、Instagram、Threads、note、自社サイト、解説モードの発信素材。
 4. ツナやすが提供できる設計・制作・AI活用の実証。
 
 本アーカイブは`.codex`等のエージェント内部ログを公開する場所ではない。秘密・個人情報・未許諾素材を除き、人が検証可能な事実と判断をプロジェクト資産として残す。
@@ -31,6 +31,7 @@ docs/80_process-economy/
   00_index.md
   01_capture-and-publication-policy.md
   02_character-ip-and-account-strategy.md
+  03_sns-launch-and-creative-spec.md
   assets/
     asset-register.md
   evidence/
@@ -68,5 +69,6 @@ docs/80_process-economy/
 
 1. `01_capture-and-publication-policy.md`
 2. `02_character-ip-and-account-strategy.md`
-3. `sources/source-register.md`
-4. `records/`
+3. `03_sns-launch-and-creative-spec.md`
+4. `sources/source-register.md`
+5. `records/`
