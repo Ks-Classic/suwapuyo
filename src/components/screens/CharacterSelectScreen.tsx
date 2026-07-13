@@ -170,6 +170,13 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
           );
         })}
       </div>
+      <button type="button" className={styles.startGameButton} onClick={startGame}>
+        この4人ですぐ遊ぶ
+      </button>
+      <button type="button" className={styles.randomButton} onClick={randomizeSlots}>
+        おまかせで選び直す
+      </button>
+      <p className={styles.selectionHint}>変えたいときだけ、下からキャラを選べるよ</p>
       <div className={styles.characterGrid}>
         <button type="button" className={`${styles.characterTile} ${styles.selfTile}`} onClick={chooseSelf}>
           <span className={styles.tileBadge}>あたらしいなかま！</span>
@@ -193,12 +200,6 @@ export function CharacterSelectScreen({ onSelect, onCancel }: CharacterSelectScr
       <a className={styles.drawLink} href="/staff">
         管理画面で描く・登録する
       </a>
-      <button type="button" className={styles.randomButton} onClick={randomizeSlots}>
-        おまかせで選ぶ
-      </button>
-      <button type="button" className={styles.startGameButton} onClick={startGame}>
-        この4枠で遊ぶ
-      </button>
       <button type="button" className={styles.backButton} onClick={onCancel}>
         ゲームに戻る
       </button>

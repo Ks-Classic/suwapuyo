@@ -17,6 +17,7 @@ import { MissionsScreen, ProgressScreen } from "../progress/ProgressScreens";
 import { ExhibitorReport } from "../report/ExhibitorReport";
 import { createProfileAfterConsent, dailyPreferredExercise, deleteAllUserData, deleteChild, flushEventQueue, getSnapshot, grantConsent, hasConsent, newEvent, PRODUCT_CONSENT_VERSION, recordEvent, revokeConsent, saveSurvey, SURVEY_CONSENT_VERSION, updateChild } from "../shared/localMvpRepository";
 import type { AppSnapshot, ChildGender, ExerciseType, PreferredActivity, SurveyChild } from "../shared/mvpTypes";
+import { rerollUnpinnedSlots } from "../shared/progressStore";
 import { ExerciseBoothIntro, VenueMapFallback } from "../village/VillageScreens";
 import { FeaturedBoothCatalog } from "../booths/FeaturedBooths";
 import { DataModeBadge, MvpShell } from "./MvpShell";
@@ -217,7 +218,7 @@ export function MvpApp() {
   if (path === "/arrival") return <ArrivalScreen onContinue={() => navigate("/characters")}/>;
   if (path === "/characters") return <CharacterSelectScreen onSelect={() => navigate("/play")} onCancel={() => navigate("/play")}/>;
   if (path === "/settings/family") return <FamilySettings navigate={navigate}/>;
-  if (path === "/play") return <GameRoute onHome={() => navigate("/")} onExercise={() => { setExerciseResult(null); navigate(`/exercise/${dailyPreferredExercise(getSnapshot().survey?.preferredActivity ?? "unanswered")}`); }} onCharacters={() => navigate("/characters")}/>;
+  if (path === "/play") return <GameRoute onHome={() => navigate("/")} onExercise={() => { setExerciseResult(null); navigate(`/exercise/${dailyPreferredExercise(getSnapshot().survey?.preferredActivity ?? "unanswered")}`); }} onNewGame={() => { rerollUnpinnedSlots(); navigate("/characters"); }}/>;
   if (path.startsWith("/exercise/complete")) return <ExerciseComplete queued={exerciseResult === true} navigate={navigate}/>;
   if (path.startsWith("/exercise/")) {
     const candidate = path.split("/")[2];

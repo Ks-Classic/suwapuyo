@@ -560,6 +560,14 @@
   box-shadow: var(--shadow-sm);
 }
 
+.selectionHint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .randomButton {
   border: 0;
   border-radius: var(--radius-full);
