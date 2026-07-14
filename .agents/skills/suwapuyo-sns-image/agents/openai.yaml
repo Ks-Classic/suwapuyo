@@ -1,0 +1,4 @@
+interface:
+  display_name: "すわぷよSNS画像制作"
+  short_description: "すわぷよSNS画像を4:5で生成し、原画と文字を厳密検品"
+  default_prompt: "Use $suwapuyo-sns-image to create and validate a 4:5 Suwapuyo social image."
