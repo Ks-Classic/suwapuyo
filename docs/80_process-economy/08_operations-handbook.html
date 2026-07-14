@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="すわぷよ・ツナやす・いとこキャラの制作とSNS運用マニュアル">
+  <title>いとこキャラ・プロセスエコノミー 運用マニュアル</title>
+  <style>
+    :root { --ink:#18333a; --muted:#5b7479; --bg:#f4fbfa; --card:#fff; --brand:#e98575; --mint:#b9ded3; --line:#d8e9e5; --warn:#fff3d6; --ok:#e8f7ed; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; line-height:1.75; }
+    header { padding:56px 20px 48px; background:linear-gradient(135deg,#d9f1e9 0%,#fff7ee 62%,#ffd5cb 100%); border-bottom:1px solid var(--line); }
+    main { max-width:1080px; margin:auto; padding:24px 20px 80px; }
+    h1 { max-width:900px; margin:0 auto 10px; font-size:clamp(2rem,5vw,4.2rem); line-height:1.15; letter-spacing:-.04em; }
+    header p { max-width:900px; margin:0 auto; color:#426066; font-size:1.05rem; }
+    nav { position:sticky; top:0; z-index:3; background:rgba(244,251,250,.95); border-bottom:1px solid var(--line); padding:10px 20px; overflow:auto; white-space:nowrap; }
+    nav a { color:var(--ink); text-decoration:none; margin-right:18px; font-size:.9rem; }
+    section { margin:42px 0; scroll-margin-top:70px; }
+    h2 { font-size:1.75rem; margin:0 0 14px; border-left:7px solid var(--brand); padding-left:12px; }
+    h3 { font-size:1.15rem; margin-top:24px; }
+    .lead { font-size:1.15rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 7px 24px rgba(24,51,58,.05); }
+    .card h3 { margin:0 0 7px; }
+    .tag { display:inline-block; border-radius:999px; padding:2px 10px; font-size:.78rem; background:var(--mint); margin:2px 4px 2px 0; }
+    .warn { background:var(--warn); border-color:#efd99d; }
+    .ok { background:var(--ok); border-color:#b9dfc4; }
+    table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+    th,td { text-align:left; vertical-align:top; padding:12px; border-bottom:1px solid var(--line); }
+    th { background:#e8f4f0; }
+    tr:last-child td { border-bottom:0; }
+    code { background:#edf4f3; padding:2px 5px; border-radius:5px; font-size:.9em; }
+    pre { overflow:auto; padding:16px; border-radius:12px; background:#19343a; color:#e7faf4; }
+    ol,ul { padding-left:1.4em; }
+    .step { counter-reset:step; }
+    .step li { list-style:none; position:relative; padding-left:38px; margin:12px 0; }
+    .step li::before { counter-increment:step; content:counter(step); position:absolute; left:0; top:2px; width:26px; height:26px; border-radius:50%; background:var(--brand); color:#fff; text-align:center; line-height:26px; font-weight:700; }
+    .small { color:var(--muted); font-size:.9rem; }
+    .top-space { margin-top:16px; }
+    .top-space-lg { margin-top:24px; }
+    footer { max-width:1080px; margin:0 auto; padding:0 20px 40px; color:var(--muted); font-size:.85rem; }
+    @media print { nav { position:static; } body { background:#fff; } .card,table { box-shadow:none; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>やっ太郎・プロセスエコノミー<br>運用マニュアル</h1>
+    <p>すわぷよを作る二人の物語を、キャラ・AI・UIUX・失敗・改善まで一貫して運用するための実務ページ。読む順番どおりに進めれば、企画から投稿、振り返りまで迷わない。</p>
+  </header>
+  <nav aria-label="ページ内目次">
+    <a href="#purpose">目的</a><a href="#roles">役割</a><a href="#flow">制作フロー</a><a href="#selector">方式選択</a><a href="#post">投稿運用</a><a href="#gate">承認Gate</a><a href="#cadence">日次・週次</a><a href="#incident">事故対応</a><a href="#files">ファイル</a>
+  </nav>
+  <main>
+    <section id="purpose">
+      <h2>1. まず、何のための運用か</h2>
+      <p class="lead">目的は「AIで画像を作ること」ではなく、同じキャラが長く愛され、すわぷよ・YourTIME・ツナやすの価値へつながること。</p>
+      <div class="grid">
+        <div class="card"><h3>利用者</h3><p>すわぷよを知り、遊び、YourTIMEへ行くきっかけを作る。</p></div>
+        <div class="card"><h3>キャラ</h3><p>やっ太郎の行動・発見・成長と、公式やすの目的・設計・真面目さを対等なコンビとして積み上げる。</p></div>
+        <div class="card"><h3>事業</h3><p>企画、AI、UIUX、LINE、Web、キャラマーケの実証を相談へつなげる。</p></div>
+        <div class="card"><h3>学び</h3><p>完成品だけでなく、判断・失敗・修正を次の人が使える形で残す。</p></div>
+      </div>
+      <div class="card warn top-space"><strong>大原則：</strong>見た目は本気、構造も本気、オチだけ意外。ふざけても、権利・安全・事実はふざけない。</div>
+    </section>
+
+    <section id="roles">
+      <h2>2. 二人の役割を固定する</h2>
+      <table><thead><tr><th>登場人物</th><th>担当</th><th>やってよいこと</th><th>やらないこと</th></tr></thead><tbody>
+        <tr><td><strong>公式やす</strong><br><span class="tag">編集長・開発者</span></td><td>目的、根拠、設計、安全、仕事への翻訳</td><td>成功理由の説明、訂正、次の実験の設計、ときどき真面目な核心</td><td>やっ太郎の保護者・上司になる、原画のポーズ・服・シャツのAi・顔・尾を勝手に変更する</td></tr>
+        <tr><td><strong>やっ太郎</strong><br><span class="tag">実験隊長</span></td><td>「やったろう！」で先に試す、驚く、成功する、失敗する、発見を次へ蓄積する</td><td>AI実験、ダンス、ガチ広告風、メタ発言、公式やすの考えすぎを突破する</td><td>他者攻撃、差別、医療断定、権利侵害、毎回ただの失敗役、同じ重大事故の反復</td></tr>
+        <tr><td><strong>ツナマヨさん</strong><br><span class="tag">造形・監修</span></td><td>いとこの造形・ブランド承認</td><td>造形hard invariant、正式デザインのレビュー</td><td>承認範囲を会話だけで推測して拡大しない</td></tr>
+      </tbody></table>
+      <p class="small">二人は対等な相棒。基本トーンは「やっ太郎のぶっ飛び × 公式やすのたまに真面目」だが、真面目役を固定せず、作者・子ども・権利・尊厳に触れる時はやっ太郎も真顔になる。「いとこは自由に展開してよい」という承認は、<code>RIGHTS-COUSIN-2026-07-13-ORAL-001</code>で記録済み。</p>
+    </section>
+
+    <section id="flow">
+      <h2>3. 1本を作る標準フロー</h2>
+      <ol class="step">
+        <li><strong>目的を1つ決める。</strong>認知、学び、すわぷよ体験、YourTIME来場、信頼、相談のどれか。</li>
+        <li><strong>読者を1人に絞る。</strong>親子、出展者、AI開発者、デザイナーなど、主対象を1つにする。</li>
+        <li><strong>Briefを書く。</strong>hook、約束、形式、キャラ役割、方式、CTA、成功指標を埋める。</li>
+        <li><strong>制作方式を選ぶ。</strong>下の方式選択表で、必要以上に生成しない。</li>
+        <li><strong>素材と権利を確認する。</strong>入力画像、音源、振付、フォント、ロゴ、人物、モデルを台帳へ記録。</li>
+        <li><strong>1回の変更は1つ。</strong>構図、表情、背景、衣装などを同時に変えない。</li>
+        <li><strong>5レビューを通す。</strong>character、rights、safety、quality、factual。</li>
+        <li><strong>媒体別に書き出す。</strong>無音masterを保管し、音源は各SNS内で付ける。</li>
+        <li><strong>公開後に記録する。</strong>URL、日時、数値、コメント、誤解、次に変える1項目。</li>
+      </ol>
+    </section>
+
+    <section id="selector">
+      <h2>4. どの制作方式を使うか</h2>
+      <table><thead><tr><th>作るもの</th><th>第一選択</th><th>AIを使う範囲</th><th>公開前の追加確認</th></tr></thead><tbody>
+        <tr><td>アイコン・定番表情・説明カード</td><td>承認済み2D部品の合成</td><td>案出しのみ</td><td>32px、円形crop、色</td></tr>
+        <tr><td>会話・寸劇・配信</td><td>Inochi2D / Live2D</td><td>背景・小物</td><td>口・目・尾・tracking</td></tr>
+        <tr><td>全身ダンス・Zoom</td><td>Blender + VRM 1.0</td><td>motion補助</td><td>足滑り、関節、fps、fallback</td></tr>
+        <tr><td>新しいカルーセル場面</td><td>GPT Image 2の参照編集</td><td>構図・背景・小物</td><td>identity、hard invariant、manifest</td></tr>
+        <tr><td>実写motionのキャラ化</td><td>3D retarget</td><td>Wan2.2等はpilot</td><td>演者・振付・音源・temporal QA</td></tr>
+      </tbody></table>
+      <div class="card ok top-space"><strong>迷ったら：</strong>同一性が最優先なら固定2Dまたは3D。新しい場面が必要な時だけ生成。動画は1フレームでなく、最初・中間・最後を確認する。</div>
+    </section>
+
+    <section id="post">
+      <h2>5. SNS投稿の作り方</h2>
+      <h3>初期はフォーマット探索</h3>
+      <p>1枚広告、2枚対比、4コマ、自由枚数カルーセル、6秒loop、短尺寸劇、ダンス、制作画面、text、thread、長文、投票等を広く試す。次の要素は部品であり、7枚固定の順番ではない。</p>
+      <div class="grid"><div class="card"><b>Hook</b><br>結果・違和感を一文で。</div><div class="card"><b>Context</b><br>なぜ作ったか。</div><div class="card"><b>Wow</b><br>AI・デザインの驚き。</div><div class="card"><b>Twist</b><br>いとこのズレ。</div><div class="card"><b>Behind</b><br>人とAIの分担。</div><div class="card"><b>Learning</b><br>次の人が使える原則。</div><div class="card"><b>Next</b><br>次の行動。</div></div>
+      <h3>ガチ広告風</h3><p>見た目は高品質に作る。架空brandまたは自分たちを題材にする。他社広告のcopy、logo、音源、sceneを複製しない。最後にいとこの本音や小さなズレを置く。</p>
+      <h3>トレンド動画</h3><p>流行投稿は素材ではなく観察対象。hook、尺、転換、視線、編集リズムを<code>trend grammar</code>として抽象化し、オリジナルmotion・台詞・背景で再構成する。</p>
+      <h3>CTAの順番</h3><p><span class="tag">見る</span><span class="tag">覚える</span><span class="tag">参加</span><span class="tag">体験</span><span class="tag">深掘り</span><span class="tag">相談</span>の順に関係を育てる。初見でいきなり営業しない。</p>
+    </section>
+
+    <section id="gate">
+      <h2>6. 公開承認Gate</h2>
+      <div class="grid">
+        <div class="card"><h3>Character</h3><p>額記号、牙、手足、尾、服、palette、線、公式やすとの差が守られている。</p></div>
+        <div class="card"><h3>Rights</h3><p>入力、モデル、音源、振付、人物、フォント、logo、媒体の許可が追える。</p></div>
+        <div class="card"><h3>Safety</h3><p>差別、医療断定、危険行為、子ども・個人情報、他者攻撃がない。</p></div>
+        <div class="card"><h3>Quality</h3><p>小サイズ、字幕、音、crop、動画flicker、手足・顔の破綻を確認。</p></div>
+        <div class="card"><h3>Factual</h3><p>日付、料金、成果、AIの役割、協力者、失敗を根拠以上に言っていない。</p></div>
+      </div>
+      <div class="card warn top-space"><strong>承認前は公開しない。</strong>ステータスは<code>generated-draft → selected-draft → reviewed → approved → published</code>。approved assetを上書きせず、新しいversionを作る。</div>
+    </section>
+
+    <section id="cadence">
+      <h2>7. 日次・週次・月次の運用</h2>
+      <table><thead><tr><th>頻度</th><th>やること</th><th>成果物</th></tr></thead><tbody>
+        <tr><td>制作ごと</td><td>Brief、方式、権利、レビュー、manifestを記録</td><td>投稿asset、生成manifest</td></tr>
+        <tr><td>投稿後24時間</td><td>誤解、claim、mute、コメント、完視聴を確認</td><td>PublicationJob更新</td></tr>
+        <tr><td>週1</td><td>TrendObservation、次の1本、失敗1件、学び1件を整理</td><td>process record</td></tr>
+        <tr><td>4週間</td><td>柱・CTA・キャラ比率・相談化・来場導線を見直す</td><td>バイブル変更提案</td></tr>
+        <tr><td>モデル更新時</td><td>license確認、Golden/Holdout regression、rollback確認</td><td>新recipeまたはhold</td></tr>
+      </tbody></table>
+      <p class="small">初期は配分・枚数・尺を固定しない。最低18本、主要patternを同目的・同対象で各3回程度試し、結果・制作負荷・キャラ適合からwinner / challenger / wild cardを決める。</p>
+    </section>
+
+    <section id="incident">
+      <h2>8. 事故が起きた時</h2>
+      <ol class="step">
+        <li>公開variant、広告、予約投稿、再利用assetを止める。</li>
+        <li>URL、asset ID、manifest、input、model、reviewerを特定する。</li>
+        <li>権利、品質、事実、安全のどのGateが破れたか分類する。</li>
+        <li>必要なら非公開・差替え・訂正。説明は人ではなく仕組みと事実を中心にする。</li>
+        <li>原因を修正し、Golden/Holdout regression後に再開する。</li>
+      </ol>
+      <p class="small">実在人物の無断置換、未許諾音源、子どもの個人情報、重大な権利通知は「様子見で投稿継続」しない。</p>
+    </section>
+
+    <section id="files">
+      <h2>9. どのファイルを見ればよいか</h2>
+      <table><thead><tr><th>知りたいこと</th><th>正本</th></tr></thead><tbody>
+        <tr><td>キャラ設計306項目と投稿探索</td><td><code>07_cousin-brand-and-social-series-bible.md</code> Part I／II</td></tr>
+        <tr><td>306項目へ回答したやっ太郎のキャラ案</td><td><code>09_cousin-character-canon-draft-v0.2.md</code></td></tr>
+        <tr><td>2D・3D・生成AIの選び方</td><td><code>06_character-consistency-technology-landscape-2026-07.md</code></td></tr>
+        <tr><td>造形、hard invariant、Golden Set</td><td><code>05_cousin-character-master-and-generative-governance.md</code></td></tr>
+        <tr><td>ダンス、VRM、OBS、音源</td><td><code>04_cousin-vtuber-dance-pipeline-spec.md</code></td></tr>
+        <tr><td>承認・生成・公開の機械台帳</td><td><code>character-system/*.json</code></td></tr>
+        <tr><td>優先順位と未完了Gate</td><td><code>docs/30_suwapuyo/02_todo.md</code></td></tr>
+      </tbody></table>
+      <p class="small">初回投稿前は、07 Part IのMinimum Viable Character 25項目を先にreviewする。性格語だけで投稿へ進まず、圧力テストで行動が一貫するか確認する。</p>
+    </section>
+
+    <section>
+      <h2>10. 最初の実行手順</h2>
+      <pre>1. 07の初期12投稿から1本選ぶ
+2. Briefに objective / audience / source_recipe / CTA を書く
+3. いとこのapproved referenceだけを使う
+4. 方式に応じたmanifestを作る
+5. 5レビューを通す
+6. Instagram / X / Threadsへ媒体別に投稿
+7. 24時間後に数値と違和感を記録
+8. 次の変更を1つだけ決める</pre>
+      <p class="lead">最初のおすすめは「AIでキャラを1枚作るのは簡単。同じキャラを100回出すのは難しい。」というカルーセルです。今回の技術調査・権利承認・Character Masterそのものを、最初のprocess economyとして説明できます。</p>
+    </section>
+  </main>
+  <footer>最終更新: 2026-07-13 / 本ページは制作・運用ガイド。個別の契約・法的助言・各プラットフォーム規約を代替しない。</footer>
+</body>
+</html>
