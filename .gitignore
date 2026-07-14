@@ -37,3 +37,10 @@ shorts/legacy/*.mp4
 __pycache__/
 *.pyc
 *:Zone.Identifier
+*.Zone.Identifier
+
+# 一時作業ディレクトリ（誤混入防止）
+tmp/
+
+# Codex生成の可視化成果物（正本はdocs側）
+.codex/visualizations/
