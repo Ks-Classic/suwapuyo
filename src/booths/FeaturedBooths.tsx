@@ -16,6 +16,14 @@ export interface FeaturedBooth {
   confirmationNote: string;
 }
 
+const COMMON_BOOTH_SLIDES = [
+  "/content/02_ユアタイム/03_出展ブース/01_共通案内/01_子どもの困りごと_共通.jpg",
+  "/content/02_ユアタイム/03_出展ブース/01_共通案内/02_発達の説明_共通.jpg",
+  "/content/02_ユアタイム/03_出展ブース/01_共通案内/03_体験案内_共通.jpg",
+  "/content/02_ユアタイム/03_出展ブース/01_共通案内/04_開催情報_共通.jpg",
+  "/content/02_ユアタイム/03_出展ブース/01_共通案内/05_予約QR_共通.jpg",
+] as const;
+
 export const FEATURED_BOOTHS: readonly FeaturedBooth[] = [
   {
     id: "patakarush",
@@ -26,7 +34,7 @@ export const FEATURED_BOOTHS: readonly FeaturedBooth[] = [
     summary: "声とお口の動きで挑戦する、世代を超えて楽しめるシューティングゲームです。",
     description: "画面に向かって声を出し、お口を動かしながら高得点を目指す体験です。投稿では子どもから高齢者まで、3世代で楽しむ企画として紹介されています。",
     highlights: ["音声で遊ぶシューティングゲーム", "3世代で挑戦", "イベント開催中の体験内容・予約は要確認"],
-    images: ["/content/booths/demo/patakarush/01.jpg", "/content/booths/demo/patakarush/02.jpg"],
+    images: ["/content/02_ユアタイム/03_出展ブース/02_パタカラッシュ/01_紹介.jpg", "/content/02_ユアタイム/03_出展ブース/02_パタカラッシュ/02_体験内容.jpg"],
     sourceUrl: "https://www.instagram.com/your_time.niw/p/Dajs5ghie5J/",
     confirmationNote: "デモ表示。画像・ロゴ・紹介文は公開前にTeesmile／YourTIME.運営の許諾と最終確認が必要です。",
   },
@@ -39,7 +47,13 @@ export const FEATURED_BOOTHS: readonly FeaturedBooth[] = [
     summary: "キッズヨガと発達講座を通して、子どもの今を知るヒントに触れられます。",
     description: "投稿では、キッズヨガを3枠、子どもの姿を根っこから理解する発達講座を2枠実施すると紹介されています。具体的な参加年齢、予約、定員、服装などは主催者への確認が必要です。",
     highlights: ["キッズヨガ 10:45／13:30／15:00", "発達講座 12:00／16:00", "料金・予約・持ち物は要確認"],
-    images: Array.from({ length: 9 }, (_, index) => `/content/booths/demo/kids-yoga-mami/slide-${String(index + 1).padStart(2, "0")}.jpg`),
+    images: [
+      "/content/02_ユアタイム/03_出展ブース/03_キッズヨガ_まみ先生/01_紹介スライド.jpg",
+      "/content/02_ユアタイム/03_出展ブース/03_キッズヨガ_まみ先生/02_紹介スライド.jpg",
+      "/content/02_ユアタイム/03_出展ブース/03_キッズヨガ_まみ先生/03_紹介スライド.jpg",
+      "/content/02_ユアタイム/03_出展ブース/03_キッズヨガ_まみ先生/04_紹介スライド.jpg",
+      ...COMMON_BOOTH_SLIDES,
+    ],
     sourceUrl: "https://www.instagram.com/your_time.niw/p/DaWfvQiieTK/",
     confirmationNote: "デモ表示。画像・人物・紹介文、発達や健康に関する表現は公開前に出展者／YourTIME.運営／専門家の確認が必要です。",
   },
@@ -52,7 +66,13 @@ export const FEATURED_BOOTHS: readonly FeaturedBooth[] = [
     summary: "MCTオイル関連商品を見ながら、使い方などを商品開発者へ質問できます。",
     description: "投稿ではMCTオイル関連商品のYourTIME.限定販売と、商品開発者による質問対応が紹介されています。相談料、予約、具体的な商品価格、在庫、購入制限は記載されていません。",
     highlights: ["MCTオイル関連商品の販売", "商品開発者への質問", "会場価格・在庫・決済方法は要確認"],
-    images: Array.from({ length: 9 }, (_, index) => `/content/booths/demo/shozankan-mct-keto/slide-${String(index + 1).padStart(2, "0")}.jpg`),
+    images: [
+      "/content/02_ユアタイム/03_出展ブース/04_勝山商店/01_紹介スライド.jpg",
+      "/content/02_ユアタイム/03_出展ブース/04_勝山商店/02_紹介スライド.jpg",
+      "/content/02_ユアタイム/03_出展ブース/04_勝山商店/03_紹介スライド.jpg",
+      "/content/02_ユアタイム/03_出展ブース/04_勝山商店/04_紹介スライド.jpg",
+      ...COMMON_BOOTH_SLIDES,
+    ],
     sourceUrl: "https://www.instagram.com/your_time.niw/p/DaUy7DhiYXk/",
     confirmationNote: "デモ表示。商品・価格・健康表現・画像・人物・ロゴは公開前に出展者／YourTIME.運営の許諾と確認が必要です。",
   },

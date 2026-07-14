@@ -1,8 +1,8 @@
 import type { BoothExhibitor } from "../fuwafuwa-land/map/boothMapData";
 
-export const CONCIERGE_MAP_IMAGE_URL = "/content/yourtime-platform/map/map_sample.jpg";
-export const CONCIERGE_RICH_MENU_IMAGE_URL = "/content/yourtime-platform/menu/rich-menu-concierge.png";
-export const CONCIERGE_QR_IMAGE_URL = "/content/yourtime-platform/map/qr-demo-01.png";
+export const CONCIERGE_MAP_IMAGE_URL = "/content/02_ユアタイム/02_会場案内/01_会場マップ_サンプル.jpg";
+export const CONCIERGE_RICH_MENU_IMAGE_URL = "/content/02_ユアタイム/02_会場案内/03_村コンシェルジュ_検討案.png";
+export const CONCIERGE_QR_IMAGE_URL = "/content/02_ユアタイム/02_会場案内/02_体験用QR_デモ.png";
 export const HIDDEN_REWARD_CHARACTER_ID = "sample-kamumu";
 
 // 出展者ごとの正式な対応表がまだ無いため、当面は「どこをタップしても同じサンプル内容が
