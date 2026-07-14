@@ -32,6 +32,20 @@ docs/80_process-economy/
   01_capture-and-publication-policy.md
   02_character-ip-and-account-strategy.md
   03_sns-launch-and-creative-spec.md
+  04_cousin-vtuber-dance-pipeline-spec.md
+  05_cousin-character-master-and-generative-governance.md
+  06_character-consistency-technology-landscape-2026-07.md
+  07_cousin-brand-and-social-series-bible.md
+  08_operations-handbook.html
+  09_cousin-character-canon-draft-v0.2.md
+  10_agent-skill-inventory.md
+  sns/01_やっ太郎_最初のやったろう_v0.1-rejected.md
+  sns/02_やっ太郎_最初のやったろう_v0.2_最終回からつくる.md
+  character-system/
+    cousin-character-master.schema.json
+    cousin-character-master.v0.1-observed.json
+    cousin-generation-manifest.schema.json
+    cousin-generation-manifest.template.json
   assets/
     asset-register.md
   evidence/
@@ -70,5 +84,14 @@ docs/80_process-economy/
 1. `01_capture-and-publication-policy.md`
 2. `02_character-ip-and-account-strategy.md`
 3. `03_sns-launch-and-creative-spec.md`
-4. `sources/source-register.md`
-5. `records/`
+4. `04_cousin-vtuber-dance-pipeline-spec.md`
+5. `05_cousin-character-master-and-generative-governance.md`
+6. `06_character-consistency-technology-landscape-2026-07.md`
+7. `07_cousin-brand-and-social-series-bible.md`
+8. `08_operations-handbook.html`
+9. `09_cousin-character-canon-draft-v0.2.md`
+10. `sns/01_やっ太郎_最初のやったろう_v0.1-rejected.md`
+11. `sns/02_やっ太郎_最初のやったろう_v0.2_最終回からつくる.md`
+12. `character-system/cousin-character-master.v0.1-observed.json`
+13. `sources/source-register.md`
+14. `records/`

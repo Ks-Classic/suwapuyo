@@ -7,3 +7,5 @@
 | SRC-001 | 2026-07-12 | Google Meet自動文字起こし | [MTG: YourTIME.運営 x 木幡](https://docs.google.com/document/d/1IQg68TsfWxhdM-L_TyqdP0MVEUVkJNYcytD5lqRg34M/edit?tab=t.rjjm9exvrfjf) | 木幡さん / Drive権限者 | `小夏深港`表記に小夏さん・かのさんの発言が混在する可能性。自動文字起こし誤りあり | 不可 | 参加者確認後に要約のみ |
 | SRC-002 | 2026-07-13 | キャラクター原画 | リポジトリルート`やすさん.jpg` | 木幡さん保管 | ツナマヨさん制作。2026-07-13に木幡さんからキャラコピー許可取得済みとの申告あり。AI入力・自由改変・動画・商用・再許諾の具体的範囲は未記録 | 範囲確定まで保留 | 範囲確認後 |
 | SRC-003 | 継続 | Codex/Claude等との開発会話 | 各サービス内部ログ | 木幡さん | secret、個人情報、第三者発言を含み得る。全文公開しない | 不可 | 構造化・匿名化後のみ |
+| SRC-004 | 2026-07-13 | いとこキャラ造形・権利承認 | 木幡さんからの申告。原Sourceは木幡さん／ツナマヨさん間 | 木幡さん / 許諾者: ツナマヨさん | ツナマヨさんによる正式な造形・権利承認があり、いとこに関して自由に展開してよい。Character Masterでは`RIGHTS-COUSIN-2026-07-13-ORAL-001`。公式やす・第三者素材は対象外 | 原Sourceは保存しない | 木幡さん・ツナマヨさん確認後に承認事実と制作過程を公開可 |
+| SRC-005 | 2026-07-13 | 同一キャラ技術・OSS一次情報調査 | `06_character-consistency-technology-landscape-2026-07.md` §12の公式docs / repositories | 公開一次情報 | license・機能はversion更新され得る。採用時はcode / model / weight / node / input / outputを再確認 | URL・要約のみ可 | 出典リンク付きの比較・学びは公開可 |
