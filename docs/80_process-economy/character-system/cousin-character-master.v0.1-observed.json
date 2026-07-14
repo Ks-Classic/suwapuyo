@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.1.0",
+  "characterId": "yasu-cousin",
+  "masterVersion": "0.2.0",
+  "status": "observed-draft",
+  "officialName": null,
+  "aliases": ["やすのいとこ", "いとこキャラ"],
+  "rights": {
+    "author": null,
+    "copyrightHolder": null,
+    "supervisor": null,
+    "evidenceRecords": [
+      {
+        "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001",
+        "sourceType": "oral-user-report",
+        "reportedBy": "木幡さん",
+        "grantor": "ツナマヨさん",
+        "recordedOn": "2026-07-13",
+        "summary": "いとこキャラについて、ツナマヨさんによる正式な造形・権利承認があり、自由に展開してよい旨を木幡さんが申告した。",
+        "scope": [
+          "いとこキャラのブランド設定・設計",
+          "2D・3D・動画・SNS・広告・商用への展開",
+          "AIサービスへの参照入力と生成",
+          "表情・ポーズ・動作・姿勢の展開"
+        ],
+        "exclusions": [
+          "公式やすキャラの原画改変・学習・派生利用",
+          "第三者素材・音源・振付・人物・ツール・モデルの権利",
+          "学習weightやsource assetの一般配布・無制限再許諾"
+        ],
+        "verificationStatus": "user-reported",
+        "evidenceLocation": null,
+        "notes": "本記録は制作開始の根拠として用いる。法的著作権帰属、クレジット、終了時、一般配布・再許諾は別項目として残す。"
+      }
+    ],
+    "permissions": {
+      "commercial": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["いとこキャラに限定", "第三者素材・媒体規約は別確認"] },
+      "advertising": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["いとこキャラに限定", "広告素材・音源・表示の権利は別確認"] },
+      "merchandise": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["正式造形承認後", "製造・販売条件は商品化前に記録"] },
+      "live2d": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["Character Master準拠", "sourceとrigの制作者権利は別確認"] },
+      "threeD": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["Character Master準拠", "3D制作者・tool・assetの権利は別確認"] },
+      "video": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["演者・振付・音源・媒体の権利は別確認"] },
+      "aiInput": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["いとこ専用のapproved assetだけ入力", "providerの保存・学習・再利用条件を確認"] },
+      "aiGeneration": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["Character Masterとreview Gateを通す", "公式やすをidentity anchorにしない"] },
+      "training": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["作者承認済みTraining Packだけ使用", "学習weightの外部配布は禁止し別承認"] },
+      "sublicense": { "status": "allowed-with-conditions", "evidenceId": "RIGHTS-COUSIN-2026-07-13-ORAL-001", "conditions": ["制作委託先への必要最小限に限定", "一般配布・再販売・model配布は別承認"] }
+    }
+  },
+  "identity": {
+    "species": null,
+    "ageImpression": null,
+    "genderExpression": null,
+    "silhouette": "Observed: rounded coral-orange reptile/gecko-like character with a large head, short torso, independent arms and legs, and a long tail.",
+    "distinguishingFeatures": [
+      "Observed: three leaf/scale-like forehead marks",
+      "Observed: large black eyes with white highlights",
+      "Observed: pink cheeks, nostrils, open smile, one visible fang",
+      "Observed: cream belly and tail underside",
+      "Observed: yellow open vest with teal circular badge"
+    ],
+    "relationToYasu": "Observed design intent: recognizable as a reptile cousin while remaining distinct from the official green Yasu character.",
+    "hardInvariants": [
+      "Not approved yet: author must define official identity invariants before production use"
+    ]
+  },
+  "construction": {
+    "proportions": { "status": "unresolved", "source": "current candidate image only" },
+    "face": { "status": "unresolved", "questions": "head asymmetry, eyebrow count, fang count and side, exact forehead mark geometry" },
+    "hands": { "status": "unresolved", "questions": "official digit count and pad layout" },
+    "feet": { "status": "unresolved", "questions": "official toe count, heel and pad layout" },
+    "tail": { "status": "unresolved", "questions": "cross section, attachment, underside boundary and tip" },
+    "outfit": { "status": "unresolved", "questions": "vest back, collar, interior, badge meaning and exact placement" }
+  },
+  "style": {
+    "palette": [],
+    "line": { "observed": "dark rounded outline", "status": "unresolved" },
+    "shading": { "observed": "soft gradients/highlights", "status": "unresolved" },
+    "smallSize": { "status": "not-tested" }
+  },
+  "personality": {
+    "coreTraits": ["好奇心過剰", "無鉄砲", "おっちょこちょい", "前向き", "憎めない"],
+    "strengths": ["思いついたら試せる", "失敗から立て直せる"],
+    "flaws": ["早とちり", "確認より先に動きやすい"],
+    "growthRules": ["同じ重大事故を繰り返さない", "失敗を他者のせいにしない", "公式やすの整理を受けて次の行動を変える"],
+    "prohibitedBehaviors": ["現実の権利侵害", "差別", "医療断定", "他者攻撃", "危険行為の推奨", "公式やす本人を装う"]
+  },
+  "mediaMappings": {
+    "static2d": { "status": "draft", "masterAssetId": "YASU-COUSIN-001", "allowedDifferences": [], "prohibitedDifferences": ["unapproved redesign"] },
+    "live2d": { "status": "not-started", "masterAssetId": null, "allowedDifferences": [], "prohibitedDifferences": ["inferred rear geometry without author approval"] },
+    "vrm3d": { "status": "not-started", "masterAssetId": null, "allowedDifferences": [], "prohibitedDifferences": ["inferred rear geometry without author approval"] },
+    "generativeAi": { "status": "draft", "masterAssetId": "YASU-COUSIN-001", "allowedDifferences": ["approved pose and expression only"], "prohibitedDifferences": ["recursive use of unapproved generations as identity anchor", "unapproved anatomy, marks, palette or costume changes"] }
+  },
+  "goldenSet": [],
+  "approvals": [],
+  "unresolved": [
+    { "id": "CHARMASTER-01", "question": "正式名称、種、年齢感、性別表現は何か", "owner": null, "blocking": true, "blockingFor": ["master-approval"] },
+    { "id": "CHARMASTER-02", "question": "正面neutral、頭形、頭身、手指・足趾、眉、牙、額記号の正式constructionは何か", "owner": "木幡さん・ツナマヨさん", "blocking": true, "blockingFor": ["organic-publication", "paid-advertising", "merchandise", "master-approval"] },
+    { "id": "CHARMASTER-03", "question": "公式palette、line、flat/shaded styleは何か", "owner": "木幡さん・ツナマヨさん", "blocking": true, "blockingFor": ["organic-publication", "paid-advertising", "merchandise", "master-approval"] },
+    { "id": "CHARMASTER-04", "question": "ベスト、badge、腹側、尾の前後左右constructionは何か", "owner": "木幡さん・ツナマヨさん", "blocking": true, "blockingFor": ["paid-advertising", "merchandise", "master-approval"] },
+    { "id": "CHARMASTER-06", "question": "法的な著作権帰属、クレジット、master変更承認者、終了時の扱いを記録する", "owner": "木幡さん・ツナマヨさん", "blocking": false, "blockingFor": ["merchandise", "model-distribution", "master-approval"] }
+  ]
+}

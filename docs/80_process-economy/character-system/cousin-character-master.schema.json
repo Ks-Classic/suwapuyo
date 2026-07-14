@@ -1,0 +1,345 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suwapuyo.example/schemas/cousin-character-master.schema.json",
+  "title": "Cousin Character Master",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "characterId",
+    "masterVersion",
+    "status",
+    "rights",
+    "identity",
+    "construction",
+    "style",
+    "personality",
+    "mediaMappings",
+    "approvals"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.1.0" },
+    "characterId": { "type": "string", "const": "yasu-cousin" },
+    "masterVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "status": { "enum": ["observed-draft", "reviewed", "approved", "deprecated", "revoked"] },
+    "officialName": { "type": ["string", "null"] },
+    "aliases": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["author", "copyrightHolder", "supervisor", "evidenceRecords", "permissions"],
+      "properties": {
+        "author": { "type": ["string", "null"] },
+        "copyrightHolder": { "type": ["string", "null"] },
+        "supervisor": { "type": ["string", "null"] },
+        "evidenceRecords": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/rightsEvidence" },
+          "uniqueItems": true
+        },
+        "permissions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["commercial", "advertising", "merchandise", "live2d", "threeD", "video", "aiInput", "aiGeneration", "training", "sublicense"],
+          "properties": {
+            "commercial": { "$ref": "#/$defs/permission" },
+            "advertising": { "$ref": "#/$defs/permission" },
+            "merchandise": { "$ref": "#/$defs/permission" },
+            "live2d": { "$ref": "#/$defs/permission" },
+            "threeD": { "$ref": "#/$defs/permission" },
+            "video": { "$ref": "#/$defs/permission" },
+            "aiInput": { "$ref": "#/$defs/permission" },
+            "aiGeneration": { "$ref": "#/$defs/permission" },
+            "training": { "$ref": "#/$defs/permission" },
+            "sublicense": { "$ref": "#/$defs/permission" }
+          }
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["species", "silhouette", "distinguishingFeatures", "relationToYasu", "hardInvariants"],
+      "properties": {
+        "species": { "type": ["string", "null"] },
+        "ageImpression": { "type": ["string", "null"] },
+        "genderExpression": { "type": ["string", "null"] },
+        "silhouette": { "type": ["string", "null"] },
+        "distinguishingFeatures": { "type": "array", "items": { "type": "string" } },
+        "relationToYasu": { "type": ["string", "null"] },
+        "hardInvariants": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "construction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proportions", "face", "hands", "feet", "tail", "outfit"],
+      "properties": {
+        "proportions": { "$ref": "#/$defs/stringMap" },
+        "face": { "$ref": "#/$defs/stringMap" },
+        "hands": { "$ref": "#/$defs/stringMap" },
+        "feet": { "$ref": "#/$defs/stringMap" },
+        "tail": { "$ref": "#/$defs/stringMap" },
+        "outfit": { "$ref": "#/$defs/stringMap" }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["palette", "line", "shading", "smallSize"],
+      "properties": {
+        "palette": { "type": "array", "items": { "$ref": "#/$defs/color" } },
+        "line": { "$ref": "#/$defs/stringMap" },
+        "shading": { "$ref": "#/$defs/stringMap" },
+        "smallSize": { "$ref": "#/$defs/stringMap" }
+      }
+    },
+    "personality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coreTraits", "strengths", "flaws", "growthRules", "prohibitedBehaviors"],
+      "properties": {
+        "coreTraits": { "type": "array", "items": { "type": "string" } },
+        "strengths": { "type": "array", "items": { "type": "string" } },
+        "flaws": { "type": "array", "items": { "type": "string" } },
+        "growthRules": { "type": "array", "items": { "type": "string" } },
+        "prohibitedBehaviors": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "mediaMappings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["static2d", "live2d", "vrm3d", "generativeAi"],
+      "properties": {
+        "static2d": { "$ref": "#/$defs/mediaMapping" },
+        "live2d": { "$ref": "#/$defs/mediaMapping" },
+        "vrm3d": { "$ref": "#/$defs/mediaMapping" },
+        "generativeAi": { "$ref": "#/$defs/mediaMapping" }
+      }
+    },
+    "goldenSet": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assetId", "path", "sha256", "purpose"],
+        "properties": {
+          "assetId": { "type": "string" },
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/approval" }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "owner", "blocking"],
+        "properties": {
+          "id": { "type": "string" },
+          "question": { "type": "string" },
+          "owner": { "type": ["string", "null"] },
+          "blocking": { "type": "boolean" },
+          "blockingFor": {
+            "type": "array",
+            "items": {
+              "enum": ["concept", "internal-pilot", "organic-publication", "paid-advertising", "merchandise", "model-distribution", "master-approval"]
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "approved" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "required": ["officialName", "goldenSet", "unresolved"],
+        "properties": {
+          "officialName": { "type": "string", "minLength": 1 },
+          "rights": {
+            "type": "object",
+            "properties": {
+              "author": { "type": "string", "minLength": 1 },
+              "copyrightHolder": { "type": "string", "minLength": 1 },
+              "supervisor": { "type": "string", "minLength": 1 },
+              "evidenceRecords": { "type": "array", "minItems": 1 },
+              "permissions": {
+                "type": "object",
+                "properties": {
+                  "commercial": { "$ref": "#/$defs/resolvedPermission" },
+                  "advertising": { "$ref": "#/$defs/resolvedPermission" },
+                  "merchandise": { "$ref": "#/$defs/resolvedPermission" },
+                  "live2d": { "$ref": "#/$defs/resolvedPermission" },
+                  "threeD": { "$ref": "#/$defs/resolvedPermission" },
+                  "video": { "$ref": "#/$defs/resolvedPermission" },
+                  "aiInput": { "$ref": "#/$defs/resolvedPermission" },
+                  "aiGeneration": { "$ref": "#/$defs/resolvedPermission" },
+                  "training": { "$ref": "#/$defs/resolvedPermission" },
+                  "sublicense": { "$ref": "#/$defs/resolvedPermission" }
+                }
+              }
+            }
+          },
+          "mediaMappings": {
+            "type": "object",
+            "properties": {
+              "static2d": {
+                "type": "object",
+                "properties": {
+                  "status": { "const": "approved" },
+                  "masterAssetId": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          },
+          "goldenSet": { "type": "array", "minItems": 12 },
+          "approvals": {
+            "type": "array",
+            "minItems": 3,
+            "allOf": [
+              { "type": "array", "contains": { "$ref": "#/$defs/authorApproval" }, "minContains": 1 },
+              { "type": "array", "contains": { "$ref": "#/$defs/brandApproval" }, "minContains": 1 },
+              { "type": "array", "contains": { "$ref": "#/$defs/rightsApproval" }, "minContains": 1 }
+            ]
+          },
+          "unresolved": {
+            "type": "array",
+            "not": {
+              "type": "array",
+              "contains": {
+                "type": "object",
+                "properties": { "blocking": { "const": true } },
+                "required": ["blocking"]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "rightsEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidenceId", "sourceType", "reportedBy", "grantor", "recordedOn", "summary", "scope", "exclusions", "verificationStatus"],
+      "properties": {
+        "evidenceId": { "type": "string", "minLength": 1 },
+        "sourceType": { "enum": ["written", "oral-user-report", "contract", "provider-terms"] },
+        "reportedBy": { "type": "string", "minLength": 1 },
+        "grantor": { "type": "string", "minLength": 1 },
+        "recordedOn": { "type": "string", "format": "date" },
+        "summary": { "type": "string", "minLength": 1 },
+        "scope": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "exclusions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "verificationStatus": { "enum": ["user-reported", "grantor-confirmed", "contracted"] },
+        "evidenceLocation": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "permission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidenceId"],
+      "properties": {
+        "status": { "enum": ["unknown", "denied", "allowed-with-conditions", "allowed"] },
+        "evidenceId": { "type": ["string", "null"] },
+        "conditions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "resolvedPermission": {
+      "allOf": [
+        { "$ref": "#/$defs/permission" },
+        {
+          "type": "object",
+          "properties": {
+            "status": { "enum": ["denied", "allowed-with-conditions", "allowed"] },
+            "evidenceId": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" },
+          { "type": "null" }
+        ]
+      }
+    },
+    "color": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role", "srgbHex"],
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string" },
+        "srgbHex": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "lab": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }],
+          "items": false
+        },
+        "deltaE2000Tolerance": { "type": "number", "minimum": 0 }
+      }
+    },
+    "mediaMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "masterAssetId", "allowedDifferences", "prohibitedDifferences"],
+      "properties": {
+        "status": { "enum": ["not-started", "draft", "reviewed", "approved"] },
+        "masterAssetId": { "type": ["string", "null"] },
+        "allowedDifferences": { "type": "array", "items": { "type": "string" } },
+        "prohibitedDifferences": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "reviewer", "status", "reviewedAt"],
+      "properties": {
+        "role": { "type": "string" },
+        "reviewer": { "type": "string" },
+        "status": { "enum": ["pending", "approved", "rejected", "changes-requested"] },
+        "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+        "notes": { "type": "string" }
+      }
+    },
+    "authorApproval": {
+      "allOf": [
+        { "$ref": "#/$defs/approval" },
+        { "type": "object", "properties": { "role": { "const": "author-design" }, "status": { "const": "approved" } } }
+      ]
+    },
+    "brandApproval": {
+      "allOf": [
+        { "$ref": "#/$defs/approval" },
+        { "type": "object", "properties": { "role": { "const": "brand-product" }, "status": { "const": "approved" } } }
+      ]
+    },
+    "rightsApproval": {
+      "allOf": [
+        { "$ref": "#/$defs/approval" },
+        { "type": "object", "properties": { "role": { "const": "production-rights" }, "status": { "const": "approved" } } }
+      ]
+    }
+  }
+}

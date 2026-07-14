@@ -1,0 +1,79 @@
+{
+  "manifestVersion": "1.1.0",
+  "generationId": "REPLACE-GENERATION-ID",
+  "assetId": "REPLACE-ASSET-ID",
+  "status": "generated-draft",
+  "createdAt": "2026-07-13T00:00:00+09:00",
+  "createdBy": "REPLACE-OPERATOR-ID",
+  "characterMasterVersion": "1.0.0",
+  "promptTemplateVersion": "1.0.0",
+  "sourceRecipe": "generated-image",
+  "provider": "OpenAI",
+  "surface": "REPLACE-API-OR-PRODUCT-SURFACE",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "size": "REPLACE-SIZE",
+  "background": "transparent",
+  "prompt": "REPLACE-WITH-FULL-RESOLVED-PROMPT",
+  "requestedSingleChange": "REPLACE-WITH-ONE-CHANGE-ONLY",
+  "inputs": [
+    {
+      "index": 1,
+      "assetId": "REPLACE-APPROVED-IDENTITY-ANCHOR-ID",
+      "version": "1.0.0",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "role": "identity-anchor",
+      "approvalStatus": "approved",
+      "rightsEvidenceIds": ["RIGHTS-COUSIN-2026-07-13-ORAL-001"]
+    }
+  ],
+  "components": [
+    {
+      "layer": "base-model",
+      "name": "gpt-image-2",
+      "version": "REPLACE-RESOLVED-MODEL-VERSION",
+      "license": "REPLACE-PROVIDER-TERMS",
+      "licenseEvidence": "REPLACE-TERMS-SNAPSHOT-OR-URL",
+      "commercialUseApproved": false,
+      "notes": "Resolve current provider terms before approval"
+    }
+  ],
+  "output": {
+    "path": "REPLACE-OUTPUT-PATH.png",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "mediaType": "image",
+    "width": 1,
+    "height": 1,
+    "durationSeconds": null,
+    "manualCorrections": []
+  },
+  "hardGate": {
+    "passed": false,
+    "failures": ["not-reviewed"]
+  },
+  "score": null,
+  "temporalQa": {
+    "applicable": false,
+    "passed": false,
+    "sampledFrames": 0,
+    "failures": [],
+    "notes": "Static image"
+  },
+  "reviews": [],
+  "rights": {
+    "evidenceIds": [],
+    "commercialUse": false,
+    "allowedPlatforms": [],
+    "publishable": false,
+    "deleteAfter": null
+  },
+  "publicationUrls": [],
+  "supersedesAssetId": null,
+  "provenance": {
+    "workflowAssetId": null,
+    "workflowSha256": null,
+    "contentCredentials": "unknown",
+    "rollbackAssetId": null,
+    "sbomAssetId": null
+  }
+}
