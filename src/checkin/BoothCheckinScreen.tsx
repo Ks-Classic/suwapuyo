@@ -54,7 +54,7 @@ export function BoothCheckinScreen({ campaignId, boothId, onFindNext }: BoothChe
 
   return <main className={mvpStyles.contentScreen}>
     <div className={styles.boothHeader}>
-      <img src="/content/fuwafuwa-land/characters/display/mogupiyo.png" alt=""/>
+      <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png" alt=""/>
       <h1>{booth.name}にきたよ！</h1>
       {visit !== null ? <p className={mvpStyles.successNotice} role="status">{visit.granted ? CHECKIN_COPY.booth.gained : `${booth.name}${CHECKIN_COPY.booth.alreadyGained}`}</p> : <p role="status">確認中…</p>}
       {visit?.newMilestone !== null && visit?.newMilestone !== undefined ? <p className={styles.milestoneBanner}>{CHECKIN_COPY.booth.milestoneNote(visit.newMilestone)}</p> : null}

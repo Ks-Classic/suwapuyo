@@ -13,7 +13,7 @@ export function EventSurveyScreen({ phase, onDone, onSkip }: { phase: EventSurve
     saveEventSurvey({ phase, surveyVersion: "event-2026-01", answers: next, completedAt: new Date().toISOString() });
     setSaved(true);
   }
-  if (saved) return <main className={styles.storyScreen}><img className={styles.storyCharacter} src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー"/><h1>ありがとう！</h1><p>イベントをもっと遊びやすくするために使います。</p><button className={styles.primaryButton} onClick={onDone}>遊びにもどる</button></main>;
+  if (saved) return <main className={styles.storyScreen}><img className={styles.storyCharacter} src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー"/><h1>ありがとう！</h1><p>イベントをもっと遊びやすくするために使います。</p><button className={styles.primaryButton} onClick={onDone}>遊びにもどる</button></main>;
   return <main className={styles.storyScreen}>
     <p className={styles.eyebrow}>任意・イベントについて</p>
     {phase === "before" && <><h1>YourTIMEに行く予定はある？</h1><p className={styles.privacyNote}>当日の案内をわかりやすくするために使います。</p><div className={styles.optionGrid}>{[["行く予定", "yes"], ["まだわからない", "undecided"], ["行かない", "no"], ["答えない", "unanswered"]].map(([label, value]) => <button key={value} onClick={() => submit({ attendance_plan: value })}>{label}</button>)}</div></>}

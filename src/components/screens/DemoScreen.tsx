@@ -62,10 +62,10 @@ const CHAR_NAMES: Record<PuyoType, string> = {
 };
 
 const SPRITE_PATHS: Record<PuyoType, string> = {
-  ghost: "/content/fuwafuwa-land/sprites/ghost/idle.png",
-  tooth: "/content/fuwafuwa-land/sprites/tooth/idle.png",
-  blob: "/content/fuwafuwa-land/sprites/blob/idle.png",
-  tanuki: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
+  ghost: "/content/01_すわぷよ/02_ゲームスプライト/04_わのの/01_待機.png",
+  tooth: "/content/01_すわぷよ/02_ゲームスプライト/02_わーわー/01_待機.png",
+  blob: "/content/01_すわぷよ/02_ゲームスプライト/01_すーすー/01_待機.png",
+  tanuki: "/content/01_すわぷよ/02_ゲームスプライト/03_たぬぺい/01_待機.png",
 };
 
 interface PuyoSkin {

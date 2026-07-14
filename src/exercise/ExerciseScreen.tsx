@@ -4,9 +4,9 @@ import type { ExerciseType } from "../shared/mvpTypes";
 import styles from "../app/mvp.module.css";
 
 const EXERCISES: Record<ExerciseType, { title: string; line: string; help: string; image: string }> = {
-  mouth: { title: "おくちタイム", line: "あー・いー・うー", help: "ゆっくり、できるところまで", image: "/content/fuwafuwa-land/characters/display/mogupiyo.png" },
-  breath: { title: "いきタイム", line: "すーーー、ふーーー", help: "苦しくない長さで大丈夫", image: "/content/fuwafuwa-land/characters/display/suusuu.png" },
-  neck: { title: "くびタイム", line: "ゆっくり みぎ・ひだり", help: "痛くない範囲でやってみよう", image: "/content/fuwafuwa-land/characters/display/tanupei.png" },
+  mouth: { title: "おくちタイム", line: "あー・いー・うー", help: "ゆっくり、できるところまで", image: "/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png" },
+  breath: { title: "いきタイム", line: "すーーー、ふーーー", help: "苦しくない長さで大丈夫", image: "/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png" },
+  neck: { title: "くびタイム", line: "ゆっくり みぎ・ひだり", help: "痛くない範囲でやってみよう", image: "/content/01_すわぷよ/01_キャラクター/02_表示用/03_たぬぺい.png" },
 };
 
 export function ExerciseScreen({ type, onLater, onComplete }: { type: ExerciseType; onLater: () => void; onComplete: (queued: boolean) => void }) {

@@ -71,7 +71,7 @@ button { min-height: 48px; cursor: pointer; }
 .homeMission button { border: 0; background: transparent; color: #245f50; font-weight: 800; text-decoration: underline; }
 .missionTrack { display: flex; align-items: center; justify-content: space-between; margin: 15px 0; }
 .missionTrack i { width: 18px; height: 18px; border: 3px solid #42685d; border-radius: 50%; background: #f4ead6; }
-.gameRoute { min-height: 100dvh; background: #b8e5f7 url("/content/fuwafuwa-land/backgrounds/village-bg.png") center / cover no-repeat fixed; color: white; display: flex; flex-direction: column; overflow: auto; }
+.gameRoute { min-height: 100dvh; background: #b8e5f7 url("/content/01_すわぷよ/03_背景/01_村_昼.png") center / cover no-repeat fixed; color: white; display: flex; flex-direction: column; overflow: auto; }
 .gameTopbar { min-height: 56px; padding: env(safe-area-inset-top) 12px 0; display: flex; justify-content: space-between; align-items: center; }
 .gameTopbar button { background: transparent; border: 0; color: white; }
 .gameCore { flex: 1; min-height: 560px; overflow: hidden; }

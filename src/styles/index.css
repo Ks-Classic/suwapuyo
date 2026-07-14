@@ -112,7 +112,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 
   /* Village background */
-  background: url('/content/fuwafuwa-land/backgrounds/village-bg.png') center center / cover no-repeat fixed;
+  background: url('/content/01_すわぷよ/03_背景/01_村_昼.png') center center / cover no-repeat fixed;
   background-color: var(--color-sky-top);
 }
 

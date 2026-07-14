@@ -60,15 +60,15 @@ export interface FuwafuwaConfig {
 
 export const SUUSUU_CONFIG: FuwafuwaConfig = {
   brandId: "suusuu-waawaa",
-  background: { imageUrl: "/content/fuwafuwa-land/backgrounds/village-bg.png", color: 0xb8e5f7 },
+  background: { imageUrl: "/content/01_すわぷよ/03_背景/01_村_昼.png", color: 0xb8e5f7 },
   sampleCharacters: SAMPLE_CHARACTERS.map(({ id, imageUrl }) => ({ id, imageUrl })),
   sponsors: [
     {
       id: "suusuu",
       name: "すーすー",
-      characterImg: "/content/fuwafuwa-land/characters/display/suusuu.png",
+      characterImg: "/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png",
       slides: [
-        { src: "/content/yourtime-platform/videos/booth-introduction.mp4", kind: "video", alt: "ブースで流す紹介動画" },
+        { src: "/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4", kind: "video", alt: "ブースで流す紹介動画" },
       ],
       cta: null,
       scale: 1,
@@ -100,7 +100,7 @@ export const SUUSUU_CONFIG: FuwafuwaConfig = {
     triggerSampleId: "sample-waawaa",
     tapCount: 5,
     tapWindowMs: 2500,
-    audioUrl: "/content/fuwafuwa-land/audio/suwa-good-morning.mp3",
+    audioUrl: "/content/01_すわぷよ/04_音声/01_すわ_おはよう.mp3",
     modeText: "わーわーもーど!",
     speedMultiplier: 1.5,
     rainCount: 20,

@@ -253,28 +253,28 @@ $$;
 
 insert into display_characters (id, source_type, source_id, label, image_path, source_image_path, status, display_scale, tap_enabled, sort_order)
 values
-  ('sample-suusuu', 'sample', 'sample-suusuu', 'すーすー', '/content/fuwafuwa-land/characters/display/suusuu.png', '/content/fuwafuwa-land/characters/originals/01_すーすー.png', 'visible', 0.6, false, 10),
-  ('sample-waawaa', 'sample', 'sample-waawaa', 'わーわー', '/content/fuwafuwa-land/characters/display/waawaa.png', '/content/fuwafuwa-land/characters/originals/02_わーわー.png', 'visible', 0.6, false, 20),
-  ('sample-tanupei', 'sample', 'sample-tanupei', 'たぬぺい', '/content/fuwafuwa-land/characters/display/tanupei.png', '/content/fuwafuwa-land/characters/originals/03_たぬぺい.png', 'visible', 0.6, false, 30),
-  ('sample-wanono', 'sample', 'sample-wanono', 'わのの', '/content/fuwafuwa-land/characters/display/wanono.png', '/content/fuwafuwa-land/characters/originals/04_わのの.png', 'visible', 0.6, false, 40),
-  ('sample-shinbo', 'sample', 'sample-shinbo', 'シンボー', '/content/fuwafuwa-land/characters/display/shinbo.png', '/content/fuwafuwa-land/characters/originals/05_シンボー.png', 'visible', 0.6, false, 50),
-  ('sample-ketonyan', 'sample', 'sample-ketonyan', 'けとにゃん', '/content/fuwafuwa-land/characters/display/ketonyan.png', '/content/fuwafuwa-land/characters/originals/06_けとにゃん.png', 'visible', 0.6, false, 60),
-  ('sample-mogupiyo', 'sample', 'sample-mogupiyo', 'もぐぴよ', '/content/fuwafuwa-land/characters/display/mogupiyo.png', '/content/fuwafuwa-land/characters/originals/07_もぐぴよ.png', 'visible', 0.6, false, 70),
-  ('sample-chippippi', 'sample', 'sample-chippippi', 'チッピッピ', '/content/fuwafuwa-land/characters/display/chippippi.png', '/content/fuwafuwa-land/characters/originals/08_チッピッピ.png', 'visible', 0.6, false, 80),
-  ('sample-sanka', 'sample', 'sample-sanka', '酸化', '/content/fuwafuwa-land/characters/display/sanka.png', '/content/fuwafuwa-land/characters/originals/09_酸化.png', 'visible', 0.6, false, 90),
-  ('sample-touka', 'sample', 'sample-touka', '糖化', '/content/fuwafuwa-land/characters/display/touka.png', '/content/fuwafuwa-land/characters/originals/10_糖化.png', 'visible', 0.6, false, 100),
-  ('sample-enshou', 'sample', 'sample-enshou', '炎症', '/content/fuwafuwa-land/characters/display/enshou.png', '/content/fuwafuwa-land/characters/originals/11_炎症.png', 'visible', 0.6, false, 110),
-  ('sample-rapiko', 'sample', 'sample-rapiko', 'ラピ子', '/content/fuwafuwa-land/characters/display/rapiko.png', '/content/fuwafuwa-land/characters/originals/12_ラピ子.png', 'visible', 0.6, false, 120),
-  ('sample-emahime', 'sample', 'sample-emahime', 'えまひめ', '/content/fuwafuwa-land/characters/display/emahime.png', '/content/fuwafuwa-land/characters/originals/13_えまひめ.png', 'visible', 0.6, false, 130),
-  ('sample-hagurin', 'sample', 'sample-hagurin', 'はぐりん', '/content/fuwafuwa-land/characters/display/hagurin.png', '/content/fuwafuwa-land/characters/originals/14_はぐりん.png', 'visible', 0.6, false, 140),
-  ('sample-mieru', 'sample', 'sample-mieru', 'ミエル', '/content/fuwafuwa-land/characters/display/mieru.png', '/content/fuwafuwa-land/characters/originals/15_ミエル.png', 'visible', 0.6, false, 150),
-  ('sample-tenpiyo', 'sample', 'sample-tenpiyo', 'てんぴよ', '/content/fuwafuwa-land/characters/display/tenpiyo.png', '/content/fuwafuwa-land/characters/originals/16_てんぴよ.png', 'visible', 0.6, false, 160),
-  ('sample-kamumu', 'sample', 'sample-kamumu', 'かむむ', '/content/fuwafuwa-land/characters/display/kamumu.png', '/content/fuwafuwa-land/characters/originals/かむむ.png', 'visible', 0.6, false, 170),
-  ('sample-sukusuke', 'sample', 'sample-sukusuke', 'すくすけ', '/content/fuwafuwa-land/characters/display/sukusuke.png', '/content/fuwafuwa-land/characters/originals/すくすけ.png', 'visible', 0.6, false, 180),
-  ('sample-sukumaru', 'sample', 'sample-sukumaru', 'すくまる', '/content/fuwafuwa-land/characters/display/sukumaru.png', '/content/fuwafuwa-land/characters/originals/すくまる.png', 'visible', 0.6, false, 190),
-  ('sample-seiucchi', 'sample', 'sample-seiucchi', 'セイウッチー', '/content/fuwafuwa-land/characters/display/seiucchi.png', '/content/fuwafuwa-land/characters/originals/セイウッチー.png', 'visible', 0.6, false, 200),
-  ('sample-mamyu', 'sample', 'sample-mamyu', 'マミュー', '/content/fuwafuwa-land/characters/display/mamyu.png', '/content/fuwafuwa-land/characters/originals/マミュー.png', 'visible', 0.6, false, 210),
-  ('sample-haisha-gorisan', 'sample', 'sample-haisha-gorisan', '歯医者のごりさん', '/content/fuwafuwa-land/characters/display/haisha-gorisan.png', '/content/fuwafuwa-land/characters/originals/歯医者のごりさん.png', 'visible', 0.6, false, 220)
+  ('sample-suusuu', 'sample', 'sample-suusuu', 'すーすー', '/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png', '/content/01_すわぷよ/01_キャラクター/01_原本/01_すーすー.png', 'visible', 0.6, false, 10),
+  ('sample-waawaa', 'sample', 'sample-waawaa', 'わーわー', '/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png', '/content/01_すわぷよ/01_キャラクター/01_原本/02_わーわー.png', 'visible', 0.6, false, 20),
+  ('sample-tanupei', 'sample', 'sample-tanupei', 'たぬぺい', '/content/01_すわぷよ/01_キャラクター/02_表示用/03_たぬぺい.png', '/content/01_すわぷよ/01_キャラクター/01_原本/03_たぬぺい.png', 'visible', 0.6, false, 30),
+  ('sample-wanono', 'sample', 'sample-wanono', 'わのの', '/content/01_すわぷよ/01_キャラクター/02_表示用/04_わのの.png', '/content/01_すわぷよ/01_キャラクター/01_原本/04_わのの.png', 'visible', 0.6, false, 40),
+  ('sample-shinbo', 'sample', 'sample-shinbo', 'シンボー', '/content/01_すわぷよ/01_キャラクター/02_表示用/05_シンボー.png', '/content/01_すわぷよ/01_キャラクター/01_原本/05_シンボー.png', 'visible', 0.6, false, 50),
+  ('sample-ketonyan', 'sample', 'sample-ketonyan', 'けとにゃん', '/content/01_すわぷよ/01_キャラクター/02_表示用/06_けとにゃん.png', '/content/01_すわぷよ/01_キャラクター/01_原本/06_けとにゃん.png', 'visible', 0.6, false, 60),
+  ('sample-mogupiyo', 'sample', 'sample-mogupiyo', 'もぐぴよ', '/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png', '/content/01_すわぷよ/01_キャラクター/01_原本/07_もぐぴよ.png', 'visible', 0.6, false, 70),
+  ('sample-chippippi', 'sample', 'sample-chippippi', 'チッピッピ', '/content/01_すわぷよ/01_キャラクター/02_表示用/08_チッピッピ.png', '/content/01_すわぷよ/01_キャラクター/01_原本/08_チッピッピ.png', 'visible', 0.6, false, 80),
+  ('sample-sanka', 'sample', 'sample-sanka', '酸化', '/content/01_すわぷよ/01_キャラクター/02_表示用/09_酸化.png', '/content/01_すわぷよ/01_キャラクター/01_原本/09_酸化.png', 'visible', 0.6, false, 90),
+  ('sample-touka', 'sample', 'sample-touka', '糖化', '/content/01_すわぷよ/01_キャラクター/02_表示用/10_糖化.png', '/content/01_すわぷよ/01_キャラクター/01_原本/10_糖化.png', 'visible', 0.6, false, 100),
+  ('sample-enshou', 'sample', 'sample-enshou', '炎症', '/content/01_すわぷよ/01_キャラクター/02_表示用/11_炎症.png', '/content/01_すわぷよ/01_キャラクター/01_原本/11_炎症.png', 'visible', 0.6, false, 110),
+  ('sample-rapiko', 'sample', 'sample-rapiko', 'ラピ子', '/content/01_すわぷよ/01_キャラクター/02_表示用/12_ラピ子.png', '/content/01_すわぷよ/01_キャラクター/01_原本/12_ラピ子.png', 'visible', 0.6, false, 120),
+  ('sample-emahime', 'sample', 'sample-emahime', 'えまひめ', '/content/01_すわぷよ/01_キャラクター/02_表示用/13_えまひめ.png', '/content/01_すわぷよ/01_キャラクター/01_原本/13_えまひめ.png', 'visible', 0.6, false, 130),
+  ('sample-hagurin', 'sample', 'sample-hagurin', 'はぐりん', '/content/01_すわぷよ/01_キャラクター/02_表示用/14_はぐりん.png', '/content/01_すわぷよ/01_キャラクター/01_原本/14_はぐりん.png', 'visible', 0.6, false, 140),
+  ('sample-mieru', 'sample', 'sample-mieru', 'ミエル', '/content/01_すわぷよ/01_キャラクター/02_表示用/15_ミエル.png', '/content/01_すわぷよ/01_キャラクター/01_原本/15_ミエル.png', 'visible', 0.6, false, 150),
+  ('sample-tenpiyo', 'sample', 'sample-tenpiyo', 'てんぴよ', '/content/01_すわぷよ/01_キャラクター/02_表示用/16_てんぴよ.png', '/content/01_すわぷよ/01_キャラクター/01_原本/16_てんぴよ.png', 'visible', 0.6, false, 160),
+  ('sample-kamumu', 'sample', 'sample-kamumu', 'かむむ', '/content/01_すわぷよ/01_キャラクター/02_表示用/17_かむむ.png', '/content/01_すわぷよ/01_キャラクター/01_原本/17_かむむ.png', 'visible', 0.6, false, 170),
+  ('sample-sukusuke', 'sample', 'sample-sukusuke', 'すくすけ', '/content/01_すわぷよ/01_キャラクター/02_表示用/18_すくすけ.png', '/content/01_すわぷよ/01_キャラクター/01_原本/18_すくすけ.png', 'visible', 0.6, false, 180),
+  ('sample-sukumaru', 'sample', 'sample-sukumaru', 'すくまる', '/content/01_すわぷよ/01_キャラクター/02_表示用/19_すくまる.png', '/content/01_すわぷよ/01_キャラクター/01_原本/19_すくまる.png', 'visible', 0.6, false, 190),
+  ('sample-seiucchi', 'sample', 'sample-seiucchi', 'セイウッチー', '/content/01_すわぷよ/01_キャラクター/02_表示用/20_セイウッチー.png', '/content/01_すわぷよ/01_キャラクター/01_原本/20_セイウッチー.png', 'visible', 0.6, false, 200),
+  ('sample-mamyu', 'sample', 'sample-mamyu', 'マミュー', '/content/01_すわぷよ/01_キャラクター/02_表示用/21_マミュー.png', '/content/01_すわぷよ/01_キャラクター/01_原本/21_マミュー.png', 'visible', 0.6, false, 210),
+  ('sample-haisha-gorisan', 'sample', 'sample-haisha-gorisan', '歯医者のごりさん', '/content/01_すわぷよ/01_キャラクター/02_表示用/22_歯医者のごりさん.png', '/content/01_すわぷよ/01_キャラクター/01_原本/22_歯医者のごりさん.png', 'visible', 0.6, false, 220)
 on conflict (id) do update
 set
   label = excluded.label,
@@ -295,7 +295,7 @@ set
 
 insert into tap_content_items (id, tap_content_id, sort_order, title, caption, image_path, video_path, audio_path, alt, thumbnail_path)
 values
-  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000001', 0, null, null, null, '/content/yourtime-platform/videos/booth-introduction.mp4', null, 'ブースで流す紹介動画', null)
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000001', 0, null, null, null, '/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4', null, 'ブースで流す紹介動画', null)
 on conflict (id) do update
 set
   tap_content_id = excluded.tap_content_id,

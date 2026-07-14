@@ -39,7 +39,7 @@ export function FuwafuwaDrawScreen() {
     <main className="fuwafuwa-home fuwafuwa-draw-page">
       <section className="fuwafuwa-panel">
         <div className="fuwafuwa-draw-narrator">
-          <img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー村長" />
+          <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー村長" />
           <p>{message}</p>
         </div>
         <DigitalCanvas width={320} height={420} onComplete={(blob, width, height) => void complete(blob, width, height)} />

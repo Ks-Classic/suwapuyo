@@ -197,7 +197,7 @@ export const DEMO_REPORT: ExhibitorReport = {
     boothNo: "01",
     category: "歯・お口の健康",
     themeColor: "var(--color-accent)",
-    mascotImage: "/content/fuwafuwa-land/characters/display/haisha-gorisan.png",
+    mascotImage: "/content/01_すわぷよ/01_キャラクター/02_表示用/22_歯医者のごりさん.png",
   },
   event: {
     title: "YourTIME 2026",

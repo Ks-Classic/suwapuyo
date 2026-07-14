@@ -108,7 +108,7 @@ export function OnboardingFlow({ onSkip, onComplete }: Props) {
   }
 
   if (step === "intro") return <main className={styles.storyScreen}>
-    <img className={styles.storyCharacter} src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="" />
+    <img className={styles.storyCharacter} src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="" />
     <p className={styles.eyebrow}>保護者・ご本人へ</p>
     <h1>{SURVEY_COPY.intro.title}</h1>
     <p className={styles.lead}>{SURVEY_COPY.intro.body}</p>
@@ -127,7 +127,7 @@ export function OnboardingFlow({ onSkip, onComplete }: Props) {
     </div>}
 
     {step === "player" && <>
-      <img className={styles.guideCharacter} src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー" />
+      <img className={styles.guideCharacter} src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー" />
       <h1>{SURVEY_COPY.player.question}</h1><p>{SURVEY_COPY.player.help}</p>
       <div className={styles.optionGrid}>{SURVEY_COPY.player.options.map(([label, value]) => <button key={value} onClick={() => choosePlayer(value)}>{label}</button>)}</div>
     </>}
@@ -163,7 +163,7 @@ export function OnboardingFlow({ onSkip, onComplete }: Props) {
     </>}
 
     {step === "complete" && <>
-      <img className={styles.storyCharacter} src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー" />
+      <img className={styles.storyCharacter} src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー" />
       <h1>{SURVEY_COPY.complete.title}</h1>
       <button className={styles.primaryButton} onClick={onComplete}>{SURVEY_COPY.complete.action}</button>
     </>}

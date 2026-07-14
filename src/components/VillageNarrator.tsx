@@ -9,7 +9,7 @@ interface VillageNarratorProps {
 export function VillageNarrator({ line, compact = false, onNext }: VillageNarratorProps) {
   return (
     <div className={`${styles.villageNarrator} ${compact ? styles.villageNarratorCompact : ""}`}>
-      <img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー村長" />
+      <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー村長" />
       <p>{line}</p>
       {onNext !== undefined ? (
         <button type="button" onClick={onNext}>

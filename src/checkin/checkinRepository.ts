@@ -24,7 +24,7 @@ export const DEMO_CAMPAIGNS: Record<string, DemoCampaign> = {
     dateLabel: "2026.08.02（土）",
     limitedCharacterId: LIMITED_CHARACTER?.id ?? "sample-waawaa",
     limitedCharacterName: LIMITED_CHARACTER?.name ?? "わーわー",
-    limitedCharacterImage: LIMITED_CHARACTER?.image ?? "/content/fuwafuwa-land/characters/display/waawaa.png",
+    limitedCharacterImage: LIMITED_CHARACTER?.image ?? "/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png",
   },
 };
 

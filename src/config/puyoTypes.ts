@@ -37,10 +37,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "ghost_pop4",
     },
     sprites: {
-      idle: "/content/fuwafuwa-land/sprites/ghost/idle.png",
-      connected: "/content/fuwafuwa-land/sprites/ghost/idle.png",
-      popping: "/content/fuwafuwa-land/sprites/ghost/idle.png",
-      preview: "/content/fuwafuwa-land/sprites/ghost/preview.png",
+      idle: "/content/01_すわぷよ/02_ゲームスプライト/04_わのの/01_待機.png",
+      connected: "/content/01_すわぷよ/02_ゲームスプライト/04_わのの/01_待機.png",
+      popping: "/content/01_すわぷよ/02_ゲームスプライト/04_わのの/01_待機.png",
+      preview: "/content/01_すわぷよ/02_ゲームスプライト/04_わのの/02_プレビュー.png",
     },
   },
   tooth: {
@@ -55,10 +55,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "tooth_pop4",
     },
     sprites: {
-      idle: "/content/fuwafuwa-land/sprites/tooth/idle.png",
-      connected: "/content/fuwafuwa-land/sprites/tooth/idle.png",
-      popping: "/content/fuwafuwa-land/sprites/tooth/idle.png",
-      preview: "/content/fuwafuwa-land/sprites/tooth/preview.png",
+      idle: "/content/01_すわぷよ/02_ゲームスプライト/02_わーわー/01_待機.png",
+      connected: "/content/01_すわぷよ/02_ゲームスプライト/02_わーわー/01_待機.png",
+      popping: "/content/01_すわぷよ/02_ゲームスプライト/02_わーわー/01_待機.png",
+      preview: "/content/01_すわぷよ/02_ゲームスプライト/02_わーわー/02_プレビュー.png",
     },
   },
   blob: {
@@ -73,10 +73,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "blob_pop4",
     },
     sprites: {
-      idle: "/content/fuwafuwa-land/sprites/blob/idle.png",
-      connected: "/content/fuwafuwa-land/sprites/blob/idle.png",
-      popping: "/content/fuwafuwa-land/sprites/blob/idle.png",
-      preview: "/content/fuwafuwa-land/sprites/blob/preview.png",
+      idle: "/content/01_すわぷよ/02_ゲームスプライト/01_すーすー/01_待機.png",
+      connected: "/content/01_すわぷよ/02_ゲームスプライト/01_すーすー/01_待機.png",
+      popping: "/content/01_すわぷよ/02_ゲームスプライト/01_すーすー/01_待機.png",
+      preview: "/content/01_すわぷよ/02_ゲームスプライト/01_すーすー/02_プレビュー.png",
     },
   },
   tanuki: {
@@ -91,10 +91,10 @@ export const PUYO_TYPES: Record<PuyoType, PuyoTypeConfig> = {
       pop4: "tanuki_pop4",
     },
     sprites: {
-      idle: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
-      connected: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
-      popping: "/content/fuwafuwa-land/sprites/tanuki/idle.png",
-      preview: "/content/fuwafuwa-land/sprites/tanuki/preview.png",
+      idle: "/content/01_すわぷよ/02_ゲームスプライト/03_たぬぺい/01_待機.png",
+      connected: "/content/01_すわぷよ/02_ゲームスプライト/03_たぬぺい/01_待機.png",
+      popping: "/content/01_すわぷよ/02_ゲームスプライト/03_たぬぺい/01_待機.png",
+      preview: "/content/01_すわぷよ/02_ゲームスプライト/03_たぬぺい/02_プレビュー.png",
     },
   },
 };

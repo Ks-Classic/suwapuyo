@@ -264,7 +264,7 @@ interface OptionButtonProps {
   onClick: () => void;
 }
 
-const GUIDE_CHARACTER_IMAGE = "/content/fuwafuwa-land/characters/display/waawaa.png";
+const GUIDE_CHARACTER_IMAGE = "/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png";
 
 const STEP_GUIDE_LINES: Partial<Record<VisitorStep, string>> = {
   party: "だれと来たか教えて！",

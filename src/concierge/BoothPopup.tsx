@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { BoothExhibitor } from "../fuwafuwa-land/map/boothMapData";
 import styles from "./boothPopup.module.css";
 
-const GUIDE_CHARACTER_IMAGE = "/content/fuwafuwa-land/characters/display/waawaa.png";
+const GUIDE_CHARACTER_IMAGE = "/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png";
 const YT_LETTERS: Array<{ ch: string; color: string }> = [
   { ch: "Y", color: "#5BC0EB" },
   { ch: "o", color: "#F5A623" },

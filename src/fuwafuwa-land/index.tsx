@@ -59,17 +59,17 @@ function FuwafuwaHome() {
 
       <nav className="fuwafuwa-home-nav" aria-label="ふわふわランドメニュー">
         <a className="fuwafuwa-home-link is-primary" href="/line">
-          <img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="" />
+          <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="" />
           <strong>村の案内所</strong>
           <span>LINE風メニューから全体を見る</span>
         </a>
         <a className="fuwafuwa-home-link is-primary" href="/">
-          <img src="/content/fuwafuwa-land/characters/display/mogupiyo.png" alt="" />
+          <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png" alt="" />
           <strong>すわぷよ</strong>
           <span>選んだなかまとぷよで遊ぶ</span>
         </a>
         <a className="fuwafuwa-home-link" href="/concierge">
-          <img src="/content/fuwafuwa-land/characters/display/suusuu.png" alt="" />
+          <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png" alt="" />
           <strong>会場マップ</strong>
           <span>村の案内所からランド別に出展者を見る</span>
         </a>

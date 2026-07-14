@@ -4,7 +4,7 @@
   overflow-y: auto;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.78)),
-    url("/content/fuwafuwa-land/backgrounds/village-bg.png") center / cover no-repeat;
+    url("/content/01_すわぷよ/03_背景/01_村_昼.png") center / cover no-repeat;
   color: #17324d;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -1059,7 +1059,7 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #b8e5f7 url("/content/fuwafuwa-land/backgrounds/village-bg.png") center / cover no-repeat;
+  background: #b8e5f7 url("/content/01_すわぷよ/03_背景/01_村_昼.png") center / cover no-repeat;
 }
 
 .fuwafuwa-display-links {

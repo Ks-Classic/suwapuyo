@@ -70,7 +70,7 @@ export function LineDemoMenu() {
 
         <section className={styles.chat}>
           <div className={styles.avatar}>
-            <img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="" />
+            <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="" />
           </div>
           <div className={styles.bubble}>
             <p>今日はここから見せれば大丈夫。マップ、ふわふわランド、すわぷよ、体操までつながってるよ。</p>

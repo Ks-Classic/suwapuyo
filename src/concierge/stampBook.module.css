@@ -11,7 +11,7 @@
   overflow-y: auto;
   background:
     linear-gradient(180deg, rgba(197, 232, 247, 0.4), rgba(255, 248, 231, 0.6)),
-    url("/content/fuwafuwa-land/backgrounds/village-bg.png") center top / cover no-repeat fixed;
+    url("/content/01_すわぷよ/03_背景/01_村_昼.png") center top / cover no-repeat fixed;
   color: var(--color-text-primary);
   font-family: var(--font-primary);
 }

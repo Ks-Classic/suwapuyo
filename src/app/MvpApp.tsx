@@ -45,7 +45,7 @@ function useRoute() {
 function AuthScreen({ onContinue }: { onContinue: () => void }) {
   const [status, setStatus] = useState<"checking" | "ready" | "error">("checking");
   useEffect(() => { const timer = window.setTimeout(() => setStatus("ready"), 650); return () => window.clearTimeout(timer); }, []);
-  return <main className={styles.authScreen}><img src="/content/fuwafuwa-land/characters/display/suusuu.png" alt="すーすー"/><h1>むらへ つれていくね…</h1>
+  return <main className={styles.authScreen}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png" alt="すーすー"/><h1>むらへ つれていくね…</h1>
     {status === "checking" ? <p role="status">LINEとの接続を確認しています</p> : null}
     {status === "ready" ? <button className={styles.primaryButton} onClick={onContinue}>村へすすむ</button> : null}
     {status === "error" ? <><p>LINEとの接続を確認できませんでした。</p><button onClick={() => setStatus("checking")}>もういちど</button><button>困ったとき</button></> : null}
@@ -56,15 +56,15 @@ function AuthScreen({ onContinue }: { onContinue: () => void }) {
 function LiffGateScreen({ state, onRetry }: { state: SuwapuyoLiffState; onRetry: () => void }) {
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState(false);
-  if (state.status === "loading") return <main className={styles.authScreen}><img src="/content/fuwafuwa-land/characters/display/suusuu.png" alt="すーすー"/><h1>むらへ つれていくね…</h1><p role="status">LINEとの接続を確認しています</p></main>;
-  if (state.status === "login_required") return <main className={styles.authScreen}><img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー"/><p className={styles.eyebrow}>外部ブラウザで開いています</p><h1>LINEでつづけよう</h1><p>遊んだ記録を同じ家族の続きとして開くために、LINEログインを使います。</p><button className={styles.primaryButton} onClick={startLiffLogin}>LINEでログイン</button><button className={styles.textButton} onClick={onRetry}>接続を確認する</button></main>;
-  if (state.status === "friendship_required") return <main className={styles.authScreen}><img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー"/><h1>村のなかまになろう</h1><p>すわぷよは、村の案内所LINE公式アカウントの友だち限定で遊べます。</p>{addError ? <p className={styles.offlineNotice}>友だち追加画面を開けませんでした。LINEの画面で追加したあと、もう一度確認してください。</p> : null}<button className={styles.primaryButton} disabled={adding} onClick={() => { setAdding(true); setAddError(false); void addLiffFriend().then(onRetry).catch(() => { setAdding(false); setAddError(true); }); }}>{adding ? "確認中…" : "友だち追加へ"}</button><button className={styles.secondaryButton} onClick={onRetry}>追加したので確認する</button></main>;
-  return <main className={styles.authScreen}><img src="/content/fuwafuwa-land/characters/display/suusuu.png" alt="すーすー"/><h1>LINEに接続できませんでした</h1><p>通信を確認して、もう一度お試しください。遊びの途中の記録は消えません。</p><p className={styles.errorCode}>エラー: {state.errorCode ?? "init_failed"}</p><button className={styles.primaryButton} onClick={onRetry}>もう一度確認</button></main>;
+  if (state.status === "loading") return <main className={styles.authScreen}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png" alt="すーすー"/><h1>むらへ つれていくね…</h1><p role="status">LINEとの接続を確認しています</p></main>;
+  if (state.status === "login_required") return <main className={styles.authScreen}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー"/><p className={styles.eyebrow}>外部ブラウザで開いています</p><h1>LINEでつづけよう</h1><p>遊んだ記録を同じ家族の続きとして開くために、LINEログインを使います。</p><button className={styles.primaryButton} onClick={startLiffLogin}>LINEでログイン</button><button className={styles.textButton} onClick={onRetry}>接続を確認する</button></main>;
+  if (state.status === "friendship_required") return <main className={styles.authScreen}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー"/><h1>村のなかまになろう</h1><p>すわぷよは、村の案内所LINE公式アカウントの友だち限定で遊べます。</p>{addError ? <p className={styles.offlineNotice}>友だち追加画面を開けませんでした。LINEの画面で追加したあと、もう一度確認してください。</p> : null}<button className={styles.primaryButton} disabled={adding} onClick={() => { setAdding(true); setAddError(false); void addLiffFriend().then(onRetry).catch(() => { setAdding(false); setAddError(true); }); }}>{adding ? "確認中…" : "友だち追加へ"}</button><button className={styles.secondaryButton} onClick={onRetry}>追加したので確認する</button></main>;
+  return <main className={styles.authScreen}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png" alt="すーすー"/><h1>LINEに接続できませんでした</h1><p>通信を確認して、もう一度お試しください。遊びの途中の記録は消えません。</p><p className={styles.errorCode}>エラー: {state.errorCode ?? "init_failed"}</p><button className={styles.primaryButton} onClick={onRetry}>もう一度確認</button></main>;
 }
 
 function FriendScreen({ onAdded }: { onAdded: () => void }) {
   const [expanded, setExpanded] = useState(false);
-  return <main className={styles.storyScreen}><img className={styles.storyCharacter} src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー"/><h1>ともだちになると<br/>きろくとキャラを<br/>もちかえれるよ</h1><button className={styles.primaryButton} onClick={onAdded}>LINEでともだちになる</button><button className={styles.textButton} aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>なぜ必要？</button>{expanded ? <p>遊んだ記録を同じ家族の続きとして開くために使います。</p> : null}</main>;
+  return <main className={styles.storyScreen}><img className={styles.storyCharacter} src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー"/><h1>ともだちになると<br/>きろくとキャラを<br/>もちかえれるよ</h1><button className={styles.primaryButton} onClick={onAdded}>LINEでともだちになる</button><button className={styles.textButton} aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>なぜ必要？</button>{expanded ? <p>遊んだ記録を同じ家族の続きとして開くために使います。</p> : null}</main>;
 }
 
 function ConsentSheet({ onAccept, onClose }: { onAccept: () => void; onClose: () => void }) {
@@ -85,7 +85,7 @@ function WelcomeScreen({ onSurvey, onPlay }: { onSurvey: () => void; onPlay: () 
     setConsentOpen(false);
     if (intent === "survey") onSurvey(); else onPlay();
   }
-  return <main className={styles.welcomeScreen}><div className={styles.skyScene}><img src="/content/fuwafuwa-land/characters/display/waawaa.png" alt="わーわー"/><div className={styles.speech}>いっしょに遊ぼう</div></div><h1>すわぷよへ ようこそ</h1><button className={styles.primaryButton} onClick={() => { setIntent("play"); accept(onPlay); }}>すわぷよを始める</button><p>村の仲間を教えると、みんなが村へやってくるよ</p><div className={styles.splitActions}><button className={styles.secondaryButton} onClick={() => { setIntent("survey"); accept(onSurvey); }}>先に教える</button><button className={styles.secondaryButton} onClick={() => { setIntent("play"); accept(onPlay); }}>あとで</button></div>{consentOpen ? <ConsentSheet onAccept={acceptConsent} onClose={() => setConsentOpen(false)}/> : null}</main>;
+  return <main className={styles.welcomeScreen}><div className={styles.skyScene}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="わーわー"/><div className={styles.speech}>いっしょに遊ぼう</div></div><h1>すわぷよへ ようこそ</h1><button className={styles.primaryButton} onClick={() => { setIntent("play"); accept(onPlay); }}>すわぷよを始める</button><p>村の仲間を教えると、みんなが村へやってくるよ</p><div className={styles.splitActions}><button className={styles.secondaryButton} onClick={() => { setIntent("survey"); accept(onSurvey); }}>先に教える</button><button className={styles.secondaryButton} onClick={() => { setIntent("play"); accept(onPlay); }}>あとで</button></div>{consentOpen ? <ConsentSheet onAccept={acceptConsent} onClose={() => setConsentOpen(false)}/> : null}</main>;
 }
 
 function HomeScreen({ navigate }: { navigate: (path: string) => void }) {
@@ -180,7 +180,7 @@ export function FamilySettings({ navigate }: { navigate: (path: string) => void 
 function ExerciseComplete({ queued, navigate }: { queued: boolean; navigate: (path: string) => void }) {
   const [showIntro, setShowIntro] = useState(false);
   useEffect(() => { const timer = window.setTimeout(() => setShowIntro(true), 850); return () => window.clearTimeout(timer); }, []);
-  return <main className={styles.completeScreen}><img src="/content/fuwafuwa-land/characters/display/mogupiyo.png" alt="もぐぴよ"/><h1>できたね！</h1><p>きょうの体操を1こ記録しました</p>{queued ? <p className={styles.offlineNotice}>端末にあずかりました。接続後に送ります。</p> : <p className={styles.successNotice}>きろくに残しました</p>}{showIntro ? <ExerciseBoothIntro onOpen={() => navigate("/village/booths")} onLater={() => navigate("/progress")}/> : <p role="status">村からのお祝いを準備中…</p>}</main>;
+  return <main className={styles.completeScreen}><img src="/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png" alt="もぐぴよ"/><h1>できたね！</h1><p>きょうの体操を1こ記録しました</p>{queued ? <p className={styles.offlineNotice}>端末にあずかりました。接続後に送ります。</p> : <p className={styles.successNotice}>きろくに残しました</p>}{showIntro ? <ExerciseBoothIntro onOpen={() => navigate("/village/booths")} onLater={() => navigate("/progress")}/> : <p role="status">村からのお祝いを準備中…</p>}</main>;
 }
 
 export function MvpApp() {
