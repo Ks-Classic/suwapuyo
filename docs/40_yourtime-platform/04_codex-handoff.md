@@ -15,7 +15,7 @@
 - **DBはmigration追加方式**: `supabase/migrations/` に新規 `2026070x_create_concierge.sql` を追加（命名は既存 `YYYYMMDDNNNN_*.sql` に合わせる）。`announcements`（＋任意 `visitors`/`stamps`）を作成・RLS有効・既存テーブルは変更しない。型は `src/fuwafuwa-land/types/database.types.ts` に新テーブル分を追記。
 - **Endpoint URL**（LIFF）= **`https://fuwafuwa-land.vercel.app/concierge`**（既存Vercelプロジェクトに相乗り）。`App.tsx` で `/concierge` と `/concierge/staff` を path routing で分岐。ローカルは未設定でもローカルfallbackで通ること。
   - 2026-07-01 セルフレビューで確認済み：`/concierge`をLIFFエンドポイントにする設計自体は「LINE村の案内所＝1つの器」という企画の方針と合っている。ただし当時は`/concierge`内から`すわぷよ`(`/`)や旧`/map`へ`<a href>`で普通に遷移するとLIFFコンテキストが切れる問題があった。今回`/map`は退役・`/concierge`へ一本化したが、`すわぷよ`への遷移がLIFFコンテキストを保持しない点は未解消（本番までの検討課題）。
-- **マップ画像** = `public/content/yourtime-platform/map/map_sample.jpg`（配置済）。**体験版QR** = `public/content/yourtime-platform/map/qr-demo-01.png`（`https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01` を `qrcode` でPNG化）。
+- **マップ画像** = `public/content/02_ユアタイム/02_会場案内/01_会場マップ_サンプル.jpg`（配置済）。**体験版QR** = `public/content/02_ユアタイム/02_会場案内/02_体験用QR_デモ.png`（`https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01` を `qrcode` でPNG化）。
 
 ### まず読む（この順番・実装前に必ず）
 1. `docs/40_yourtime-platform/03_village-concierge-design.md` ← **実装の正（全章）**。特に **§12（明日デモ詳細＝最優先）**・§4(描画/操作)・§5(画面)・§7(型/DB)・§8(LIFF)・§9(計測)。
@@ -32,7 +32,7 @@
 基盤 → デモ通し の順。
 1. **VC-001 型拡張**: `BoothExhibitor` に `childFriendly?/ageBands?/stampAssetUrl?/mediaUrl?`。`ChildInfo`/`ChildAgeBand`/`VisitDepth`/`VisitorType` を型定義（§7）。
 2. **デモ用 store（ローカル優先）**: `visitorStore`（アンケ結果）/`stampStore`（取得スタンプ・1ブース1回・深さ上書き）を **IndexedDB で実装**（Supabase未設定でも通る）。
-3. **デモseed**: ブース3-4件（§12.2）＋ 体験版QR画像を生成。**`https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01` を `qrcode` でPNG化**（`npx qrcode "https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01" -o public/content/yourtime-platform/map/qr-demo-01.png`）。受付QR（友だち追加）は LINE Official Account Manager が自動発行するものを使う＝作らない。
+3. **デモseed**: ブース3-4件（§12.2）＋ 体験版QR画像を生成。**`https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01` を `qrcode` でPNG化**（`npx qrcode "https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01" -o public/content/02_ユアタイム/02_会場案内/02_体験用QR_デモ.png`）。受付QR（友だち追加）は LINE Official Account Manager が自動発行するものを使う＝作らない。
    - ※ このQRは**標準カメラで撮ってもLINEが開きLIFF（ブース画面）が立ち上がる**（`liff.line.me` がユニバーサルリンク）。LINEカメラ/標準カメラどちらでも同じブース画面に着くこと。LIFF初期化は `import.meta.env.VITE_LIFF_ID` を使う（ハードコード禁止）。
 4. **オンボ B 家族構成アンケート**（§12.3-B）＝**デモの主役**。No ストレス5条件を満たす（キーボードなし/1タップ自動前進/アコーディオン/家族プレビュー/spring）。
 5. **オンボ A ようこそ / C チュートリアル1-2枚**。

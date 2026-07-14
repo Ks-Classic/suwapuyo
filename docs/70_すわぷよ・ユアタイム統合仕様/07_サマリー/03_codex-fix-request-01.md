@@ -16,7 +16,7 @@
 
 **既存の正しい参考実装**: `src/concierge/concierge.module.css` が既に正しくやっている。
 ```css
-background: url("/content/fuwafuwa-land/backgrounds/village-bg.png") center top / cover no-repeat fixed;
+background: url("/content/01_すわぷよ/03_背景/01_村_昼.png") center top / cover no-repeat fixed;
 ```
 カード類は `rgba(255,255,255,0.78)` 等の半透明で村を透かして重ねている。
 

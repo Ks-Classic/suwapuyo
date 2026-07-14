@@ -146,7 +146,7 @@ shorts/out/{episodeId}.v{version}.manifest.json
 
 ## 声
 
-声の基本周波数は `public/content/fuwafuwa-land/character-bible.json` を正とする。台本JSON側の `pitch` はキャラ台帳と一致させる。
+声の基本周波数は `public/content/01_すわぷよ/05_設定/01_キャラクター台帳.json` を正とする。台本JSON側の `pitch` はキャラ台帳と一致させる。
 
 ## 生成前プレビュー
 

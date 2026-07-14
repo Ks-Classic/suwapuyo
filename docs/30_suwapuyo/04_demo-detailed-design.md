@@ -3,7 +3,7 @@
 > 最終更新: 2026-06-27 ／ ステータス: **詳細設計 v0.2.1（実装の正）**
 > v0.2.1 変更: **体操の「出展者“監修”紹介」はデモ対象外**に（木幡指示）。体操は**純粋な遊び**に集中。出展者紹介/送客は本番（§12）。
 > 位置づけ: 「ある程度動くデモWebアプリ」を**感動レベル**で作る実装の正。`06_build-bible.md` 規約に従う。
-> 上流: `../10_fuwafuwa-land/00_strategy/11_system-design-and-flow.md`／ `03_retention-loop-spec.md`／ `../10_fuwafuwa-land/07_sponsor-tap-popup-spec.md`／ `public/content/fuwafuwa-land/character-bible.json`（世界観の正）。
+> 上流: `../10_fuwafuwa-land/00_strategy/11_system-design-and-flow.md`／ `03_retention-loop-spec.md`／ `../10_fuwafuwa-land/07_sponsor-tap-popup-spec.md`／ `public/content/01_すわぷよ/05_設定/01_キャラクター台帳.json`（世界観の正）。
 > 併読: **`05_storyboard-and-narrator-script.md`（絵コンテ＋村長セリフ脚本＝感動の核の詳細）**。
 > 実装担当: **Codex**。本書は設計のみ。
 

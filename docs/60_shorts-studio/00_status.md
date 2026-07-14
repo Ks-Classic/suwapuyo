@@ -7,7 +7,7 @@
 ## できていること（2026-06-27時点）
 
 **レンダエンジン `shorts/render.py`**（依存=PIL+numpy+ffmpegのみ）
-- 正本駆動（`public/content/fuwafuwa-land/character-bible.json` から声/画像を解決）・**色はキャラ画像から自動抽出**
+- 正本駆動（`public/content/01_すわぷよ/05_設定/01_キャラクター台帳.json` から声/画像を解決）・**色はキャラ画像から自動抽出**
 - ゴールデン位置を既定化（縦×H/横×W）・**1人=中央/2人=左右を台本シードで自動**
 - **冒頭フック**（hook）・**シリーズ色シード**・**内容(weather/theme)から背景＆接地を自動**（10シーン）
 - 素材ゼロのアニメ（喋りスクッシュ・呼吸・背景KenBurns）
@@ -21,7 +21,7 @@
 
 **投稿パッケージ** `python3 shorts/package_posts.py`
 - `shorts/out/posts/<title>/` に mp4＋caption-{instagram,youtube,tiktok}.txt＋meta.json
-- キャプション正本＝`public/content/shorts-studio/captions.json`（キャラのセリフ＋チャネル別ハッシュタグ）
+- キャプション正本＝`public/content/03_ショート動画/02_キャプション/01_投稿キャプション.json`（キャラのセリフ＋チャネル別ハッシュタグ）
 
 **正本ドキュメント**（`docs/60_shorts-studio/`）
 - 03 背景プロンプト / 04 台本仕様 / 05 バズ実証 / 06 生成の脳 / 07 笑い・啓もうcraft（Benign Violation＋共感、へぇネタ14、字幕数値、CTA型、そろ谷の学び）

@@ -10,7 +10,7 @@
 ## 0. スコープ
 
 ### やること（このPR）
-1. 設定駆動の**タップ可能スポンサー枠**（`sponsors[]`）を追加。MVPの1件＝`suusuu`（原本=`public/content/fuwafuwa-land/characters/originals/01_すーすー.png`、表示用=`/content/fuwafuwa-land/characters/display/suusuu.png`、動画=`/content/yourtime-platform/videos/booth-introduction.mp4`）。
+1. 設定駆動の**タップ可能スポンサー枠**（`sponsors[]`）を追加。MVPの1件＝`suusuu`（原本=`public/content/01_すわぷよ/01_キャラクター/01_原本/01_すーすー.png`、表示用=`/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png`、動画=`/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4`）。
 2. `FuwafuwaWorld` がスポンサーキャラを world に spawn し、**タップで `onSponsorTap(id)` を発火**（`onFps` と同じリスナー方式）。
 3. **React ポップアップ `SponsorPopup`**：動画または画像スライドを表示し、画像複数枚の場合は**スワイプ／矢印／ドット**で切替、閉じる。任意でCTAボタン。
 4. `DisplayScreen` で `onSponsorTap` を購読し、ポップアップを開閉。
@@ -47,7 +47,7 @@
 ```ts
 // config.ts に追記
 export interface SponsorSlide {
-  src: string;          // 例 "/content/yourtime-platform/videos/booth-introduction.mp4" or "/content/shorts-studio/drafts/yourtime-popup-step-1.png"。読み込み失敗時はスキップ
+  src: string;          // 例 "/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4" or "/content/shorts-studio/drafts/yourtime-popup-step-1.png"。読み込み失敗時はスキップ
   kind?: "image" | "video";
   alt?: string;
 }
@@ -74,8 +74,8 @@ export interface TappableSponsor {
     {
       id: "suusuu",
       name: "すーすー",
-      characterImg: "/content/fuwafuwa-land/characters/display/suusuu.png",
-      slides: [{ src: "/content/yourtime-platform/videos/booth-introduction.mp4", kind: "video" }],
+      characterImg: "/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png",
+      slides: [{ src: "/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4", kind: "video" }],
       cta: null,
     },
   ],
@@ -133,7 +133,7 @@ private async spawnSponsors(): Promise<void> {
 - 正本: `public/content/fuwafuwa-land/characters/originals/`。ここにあるキャラ画像をデフォルトサンプルキャラの正とする。
 - 表示用派生: `public/content/fuwafuwa-land/characters/display/`。原本を最大1024pxに縮小し、ASCIIファイル名で配置する。PixiJS/WebGLのテクスチャメモリを抑えるため、アプリ表示は原則こちらを参照する。
 - 現在の派生対象: 番号付き16体 + `かむむ` / `すくすけ` / `すくまる` / `セイウッチー` / `マミュー` / `歯医者のごりさん`。重複の `suusuu.png` / `てんぴよ.png` は一覧重複を避ける。
-- すーすー動画: `public/content/yourtime-platform/videos/booth-introduction.mp4`。`SponsorPopup` は動画スライドを `autoPlay muted controls playsInline` で表示する。
+- すーすー動画: `public/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4`。`SponsorPopup` は動画スライドを `autoPlay muted controls playsInline` で表示する。
 
 ## 4.1 デフォルトサンプルキャラ
 
@@ -211,7 +211,7 @@ nextWorld.onSponsorTap((sponsorId) => {
 ## 8. 受け入れ基準（Acceptance / 手動QA）
 
 1. `/display`（or `#/fuwafuwa/display`）で、すーすーキャラが world に浮いて表示される。カーソルが pointer。
-2. すーすーをタップ/クリック→ポップアップが開き、`/content/yourtime-platform/videos/booth-introduction.mp4` が表示される。
+2. すーすーをタップ/クリック→ポップアップが開き、`/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4` が表示される。
 3. 動画は `controls` で再生/停止でき、動画操作中にカルーセルのスワイプ処理が干渉しない。
 4. オーバーレイ/×/Escで閉じる。再タップで再度開く。
 5. スタッフページの表示キャラ管理に `public/content/fuwafuwa-land/characters/originals` 由来のサンプル全員が出る。表示/非表示/削除ボタンは小さく、一覧性を優先する。
@@ -243,7 +243,7 @@ nextWorld.onSponsorTap((sponsorId) => {
 | 編集 | `components/StaffPanel.tsx` / `ArtworkList.tsx` | サンプル仮想Artworkを表示管理一覧へ合成、操作ボタン小型化 |
 | 編集 | `store/displayState.ts` | サンプルIDの表示/非表示/削除をDB作品更新なしで扱う |
 | 編集 | `styles.css` | `.fuwafuwa-sponsor-*`、一覧行・操作ボタンのコンパクト化 |
-| 追加アセット | `public/content/fuwafuwa-land/characters/display/*.png`（原本から最大1024pxへ縮小した表示用派生）／`public/content/yourtime-platform/videos/booth-introduction.mp4` |
+| 追加アセット | `public/content/fuwafuwa-land/characters/display/*.png`（原本から最大1024pxへ縮小した表示用派生）／`public/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4` |
 
 ---
 

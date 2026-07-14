@@ -35,10 +35,10 @@
 
 | ID | 表示名 | 見た目 | テーマカラー | スプライトパス |
 |---|---|---|---|---|
-| `ghost` | **わのの** | 原子マーク付きゴースト | `#C8E6F0`（アイスブルー） | `/content/fuwafuwa-land/sprites/ghost/idle.png` |
-| `tooth` | **わーわー** | 笑っている歯のキャラ | `#FFF5E0`（クリーム） | `/content/fuwafuwa-land/sprites/tooth/idle.png` |
-| `blob` | **すーすー** | おしゃぶりしたゴースト | `#E8E8F0`（ラベンダーグレー） | `/content/fuwafuwa-land/sprites/blob/idle.png` |
-| `tanuki` | **たぬぺい** | ネクタイ着用のタヌキ | `#B08860`（タン） | `/content/fuwafuwa-land/sprites/tanuki/idle.png` |
+| `ghost` | **わのの** | 原子マーク付きゴースト | `#C8E6F0`（アイスブルー） | `/content/01_すわぷよ/02_ゲームスプライト/04_わのの/01_待機.png` |
+| `tooth` | **わーわー** | 笑っている歯のキャラ | `#FFF5E0`（クリーム） | `/content/01_すわぷよ/02_ゲームスプライト/02_わーわー/01_待機.png` |
+| `blob` | **すーすー** | おしゃぶりしたゴースト | `#E8E8F0`（ラベンダーグレー） | `/content/01_すわぷよ/02_ゲームスプライト/01_すーすー/01_待機.png` |
+| `tanuki` | **たぬぺい** | ネクタイ着用のタヌキ | `#B08860`（タン） | `/content/01_すわぷよ/02_ゲームスプライト/03_たぬぺい/01_待機.png` |
 
 ### 2.2 キャラクター別ゲーム設定
 

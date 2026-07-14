@@ -59,7 +59,7 @@
 6. **やさしいモーション**：squash&stretch・confetti・WebAudio効果音（すわぷよ資産流用）・節目で達成感。
 
 ### 描画方式（確定）= SVGハイブリッド
-- 背景＝絵本マップ。**当面は `public/content/yourtime-platform/map/map_sample.jpg`（配置済・1724×1012）を SVG `<image>` で1枚貼る**（配信URL `/content/yourtime-platform/map/map_sample.jpg`）。本番は小夏さんのSVG/高解像PNGに差し替え（同じ仕組みのまま）。
+- 背景＝絵本マップ。**当面は `public/content/02_ユアタイム/02_会場案内/01_会場マップ_サンプル.jpg`（配置済・1724×1012）を SVG `<image>` で1枚貼る**（配信URL `/content/02_ユアタイム/02_会場案内/01_会場マップ_サンプル.jpg`）。本番は小夏さんのSVG/高解像PNGに差し替え（同じ仕組みのまま）。
 - ブース当たり判定＝SVG `<g id="booth-{id}">`/`<circle>` を `mapX/mapY`(%) で重ねる（画像と座標を分離。素材差替えで座標だけ調整）。
 - 全体を pan/zoom コンテナ（`react-zoom-pan-pinch` 等）に格納。ベクター/画像どちらでも拡大OK・タップ判定native・状態で姿が変わる。
 - ❌ DOM全再現（崩れる）・❌ ラスターimage-map（`<area>`＝ボケ・演出不可）は不採用。
@@ -314,9 +314,9 @@ type VisitDepth = "visited" | "explained" | "experienced";
 - **省く（デモでは出さない）**: 企業レポート、チュートリアル多枚、実出展者全件（seed 3-4件でよい）、報酬の梯子の実報酬（「全部で隠しキャラ✨」の文言だけ）。
 
 ### 12.2 デモ用シード / 素材
-- マップ画像＝**`public/content/yourtime-platform/map/map_sample.jpg`（配置済・1724×1012）**、配信URL `/content/yourtime-platform/map/map_sample.jpg`。
+- マップ画像＝**`public/content/02_ユアタイム/02_会場案内/01_会場マップ_サンプル.jpg`（配置済・1724×1012）**、配信URL `/content/02_ユアタイム/02_会場案内/01_会場マップ_サンプル.jpg`。
 - ブースseed **3-4件**（`id / name / category / themeColor / stampAssetUrl(無ければ色丸+絵文字) / mapX,mapY`）。例: `demo-01 ○○歯科 / demo-02 ○○眼科 / demo-03 ○○整骨院`。
-- **体験版QR画像**: `https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01` をエンコードしたPNGを `public/content/yourtime-platform/map/qr-demo-01.png` に生成（`qrcode`）。諏訪さんがLINEで読む用。
+- **体験版QR画像**: `https://liff.line.me/2010561128-QPFfdoJF?booth=demo-01` をエンコードしたPNGを `public/content/02_ユアタイム/02_会場案内/02_体験用QR_デモ.png` に生成（`qrcode`）。諏訪さんがLINEで読む用。
 
 ### 12.3 画面別 詳細（状態つき）
 

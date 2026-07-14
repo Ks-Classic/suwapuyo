@@ -384,7 +384,7 @@ shorts/out/yt-001.v003.mp4
       "slot": "left",
       "id": "waawaa",
       "name": "わーわー",
-      "assetPath": "/content/fuwafuwa-land/characters/display/waawaa.png",
+      "assetPath": "/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png",
       "facing": "right",
       "voice": {
         "baseHz": 920,
@@ -396,7 +396,7 @@ shorts/out/yt-001.v003.mp4
       "slot": "right",
       "id": "mogupiyo",
       "name": "もぐぴよ",
-      "assetPath": "/content/fuwafuwa-land/characters/display/mogupiyo.png",
+      "assetPath": "/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png",
       "facing": "left",
       "voice": {
         "baseHz": 700,
@@ -407,7 +407,7 @@ shorts/out/yt-001.v003.mp4
   ],
   "background": {
     "id": "village-morning",
-    "assetPath": "/content/fuwafuwa-land/backgrounds/village-bg.png",
+    "assetPath": "/content/01_すわぷよ/03_背景/01_村_昼.png",
     "variant": "morning"
   },
   "layout": {

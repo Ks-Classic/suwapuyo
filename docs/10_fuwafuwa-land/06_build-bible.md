@@ -4,7 +4,7 @@
 > スコープ厳守: 触ってよいのは **新規 `src/fuwafuwa-land/` 配下と `App.tsx` の最小分岐のみ**。既存ゲーム(`DemoScreen`等)・`.env*`・本番デプロイ・DBスキーマには触れない。`any`禁止・イミュータブル更新・1ファイル200〜400行目安。
 
 > 🔄 **同期アーキの更新（2026-06-23・D-4上書き）**: ネット接続前提に変更。**同期は Supabase Realtime（マネージドWebSocket）を第一**とする。**正本は Supabase**（Storage=画像 / Postgres=メタ・`display_state`）、**IndexedDB はキャッシュ/復帰用**。スマホ`#/staff` → Supabase → 表示`#/display` を最初から作る（本番と同一構成＝テストになる）。単一PC/BroadcastChannel/LAN-WS自前サーバは**ローカルフォールバック**の位置づけ。依存に `@supabase/supabase-js` を追加。**本書の型/ファイル木/画像処理アルゴリズムはそのまま有効、同期・データ保存に関する記述は本注記が優先**。スキーマ・環境変数は「Codex引継ぎプロンプト(Supabase版)」に従い、`.env*`はコミットしない。
-> 🎨 **素材適用（2026-06-23追記）**: ふわふわランド表示画面は既存ゲームの `public/content/fuwafuwa-land/backgrounds/village-bg.png` と `public/content/fuwafuwa-land/sprites/{ghost,tooth,blob,tanuki}/idle.png` をそのまま使う。作品0件時は4キャラが待機表示として漂い、作品登録後は登録作品を優先表示する。
+> 🎨 **素材適用（2026-06-23追記）**: ふわふわランド表示画面は既存ゲームの `public/content/01_すわぷよ/03_背景/01_村_昼.png` と `public/content/fuwafuwa-land/sprites/{ghost,tooth,blob,tanuki}/idle.png` をそのまま使う。作品0件時は4キャラが待機表示として漂い、作品登録後は登録作品を優先表示する。
 > 📱 **スタッフ入力（2026-06-23追記）**: staff UI は「カメラ」「画像」「描く」の3導線を独立表示する。スマホのカメラ主導線は `input type="file" accept="image/*" capture="environment"` でOS標準カメラを開く方式とし、撮影後のファイルを全体画像としてプレビュー→登録→`display_state`反映まで通す。ライブ `getUserMedia` は補助導線。
 > 🗑️ **削除（2026-06-23追記）**: イベント中のスタッフ削除は `artworks.status='archived'` へのアーカイブ削除とする。`display_state.visible_artwork_ids` と `featured_artwork_id` から即除外し、Storage物理削除は運用後の管理作業に分離する。
 > 🖍️ **塗り絵主導線（2026-06-23追記）**: 本番MVPは顔写真/人物写真を扱わない。主入力は **黒輪郭の下絵入りA4塗り絵台紙＋四隅マーカー**、自由描画版も同じ台紙仕様で併用する。撮影はスタッフ手持ち前提。低コスト導線は **デジタル描画の透明PNG**。背景透過はAIではなく、端からつながる近白背景だけを消すflood fillを第一にする。AI変換は本人写真ではなく作品画像加工としてGate後に別ADRで検討する。
@@ -120,7 +120,7 @@ export interface FuwafuwaConfig {
     triggerSampleId: "sample-tooth";
     tapCount: 5;
     tapWindowMs: 2500;
-    audioUrl: "/content/fuwafuwa-land/audio/suwa-good-morning.mp3";
+    audioUrl: "/content/01_すわぷよ/04_音声/01_すわ_おはよう.mp3";
     modeText: "わーわーもーど!";
     speedMultiplier: 1.5;
     rainCount: 20;
@@ -295,9 +295,9 @@ Props: `{ width:number; height:number; onComplete:(blob:Blob, w:number, h:number
 
 - `await app.init({ resizeTo: parentEl, background: config.background.color, antialias:true })`。
 - 作品スプライト: `getImageURL(id)`→`createImageBitmap`→`Texture.from`。角丸＋ソフト影は、生成時に1度だけ角丸マスク済みテクスチャを作る（毎フレームfilter禁止＝性能）。
-- 背景: `config.background.imageUrl` があれば `public/content/fuwafuwa-land/backgrounds/village-bg.png` をPixiステージ最背面にcover配置する。CSS側も同画像を背景に指定し、WebGL初期化前も白画面にしない。
+- 背景: `config.background.imageUrl` があれば `public/content/01_すわぷよ/03_背景/01_村_昼.png` をPixiステージ最背面にcover配置する。CSS側も同画像を背景に指定し、WebGL初期化前も白画面にしない。
 - サンプル: `config.sampleCharacters` / `sampleCharacters.ts` は既存 `public/content/fuwafuwa-land/sprites/*/idle.png` を参照する。作品登録後も削除せず、世界観の住人として背面寄りに漂わせる。
-- 裏モード: サンプルの `sample-tooth`（わーわー）は `pointertap` 対象。タップごとに `/content/fuwafuwa-land/audio/suwa-good-morning.mp3` を再生し、`tapWindowMs` 内に5回タップされたら `わーわーもーど!` がぐるぐる登場し、最後に約2秒どーんと中央表示される。同時に表示中の全キャラを名前/枠/背景なしのわーわー見た目へ差し替えて大きくし、約20匹のわーわーが上から回転しながら降ってくる。裏モード中は全キャラをぐるぐる回しながら約1.5倍速で動かす。裏モード中はサンプル全員をタップ対象にし、わーわーを再度5回タップで元に戻す。登録作品のSupabase画像/メタデータは変更しない。
+- 裏モード: サンプルの `sample-tooth`（わーわー）は `pointertap` 対象。タップごとに `/content/01_すわぷよ/04_音声/01_すわ_おはよう.mp3` を再生し、`tapWindowMs` 内に5回タップされたら `わーわーもーど!` がぐるぐる登場し、最後に約2秒どーんと中央表示される。同時に表示中の全キャラを名前/枠/背景なしのわーわー見た目へ差し替えて大きくし、約20匹のわーわーが上から回転しながら降ってくる。裏モード中は全キャラをぐるぐる回しながら約1.5倍速で動かす。裏モード中はサンプル全員をタップ対象にし、わーわーを再度5回タップで元に戻す。登録作品のSupabase画像/メタデータは変更しない。
 - 各スプライトの状態 `{ id, sprite, x,y, vx,vy, phase }`。`artworkMotion.update(dt)` で：ゆっくり等速ドリフト＋正弦の上下(bob)＋微回転、画面端で反射、重なり過多を避ける弱い反発。速度は `config.motion`。
 - モード:
   - `idle`: 作品0件→`sampleCharacters`を漂わせる。

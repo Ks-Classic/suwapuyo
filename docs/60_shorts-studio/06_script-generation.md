@@ -2,7 +2,7 @@
 
 > render.py は**描くだけ**。テーマ/ストーリー/セリフの面白さは**台本**が決める。
 > 本ファイルは「テーマ → 自然で楽しい台本JSON」を生む**生成ルールの正本**。AI（Claude等）にこの制約を毎回注入して台本を作る。
-> 関連: 台本仕様=`04_script-authoring.md` / バズ実証=`05_research-virality.md` / **笑いと啓もうのcraft=`07_humor-and-edutainment-craft.md`（必読）** / コンプラ=`../20_business/medical-ad-content-policy.md` / キャラ正本=`public/content/fuwafuwa-land/character-bible.json`
+> 関連: 台本仕様=`04_script-authoring.md` / バズ実証=`05_research-virality.md` / **笑いと啓もうのcraft=`07_humor-and-edutainment-craft.md`（必読）** / コンプラ=`../20_business/medical-ad-content-policy.md` / キャラ正本=`public/content/01_すわぷよ/05_設定/01_キャラクター台帳.json`
 
 ## 0. 狙いとターゲット（確定・2026-06-26）
 - **目的＝YourTIMEコンセプト告知 × 集客 × 口腔育成/未病の啓もう**（スワさん向け本命）。

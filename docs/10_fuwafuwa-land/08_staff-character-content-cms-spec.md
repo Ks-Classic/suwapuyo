@@ -434,7 +434,7 @@ CLI/自動確認:
 - remote `display_characters` は22件。
 - 2026-06-26 backfill後、remote `display_characters` は `sample=22` / `artwork=19`。既存登録作品も `CharacterList` に統合済み。
 - remote `display_characters.display_scale` は全サンプル 0.2。
-- remote `sample-suusuu` は `tap_enabled=true`、公開済み `tap_contents` と `/content/yourtime-platform/videos/booth-introduction.mp4` を持つ。
+- remote `sample-suusuu` は `tap_enabled=true`、公開済み `tap_contents` と `/content/02_ユアタイム/04_映像・開始終了カード/01_出展ブース紹介.mp4` を持つ。
 - remote `character-content` bucket はpublic、50MB、画像/動画/音声MIME許可。
 - remote `tap_events` に `tap`, `popup_open`, `item_view` の保存を確認。
 - remote `display_state.display_event` に残っていたbattle状態はQA後に `null` へ戻した。

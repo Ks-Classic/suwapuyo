@@ -18,7 +18,7 @@
    - `src/fuwafuwa-land/digital/DigitalCanvas.tsx`（`onComplete(blob,w,h)`＝描画確定。透過PNG）。
    - `src/fuwafuwa-land/renderer/FuwafuwaWorld.ts` / `components/SponsorPopup.tsx`（P2の流用元）。
    - `src/App.tsx`（ルーティング） / `src/config/puyoTypes.ts` / `src/fuwafuwa-land/renderer/sampleCharacters.ts`（村キャラの母体）。
-   - `public/content/fuwafuwa-land/character-bible.json`（世界観の正＝わーわー村長/もぐぴよ等）。
+   - `public/content/01_すわぷよ/05_設定/01_キャラクター台帳.json`（世界観の正＝わーわー村長/もぐぴよ等）。
 5. 参考規約: `docs/10_fuwafuwa-land/06_build-bible.md`。
 
 ### 着手順（P0から・1コミット=1機能=CR-4）
