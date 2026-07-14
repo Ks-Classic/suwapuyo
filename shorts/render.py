@@ -49,7 +49,7 @@ def resolve(path):
 def load_rgba(path): return Image.open(resolve(path)).convert("RGBA")
 
 # ---------- キャラ正本（character-bible.json） ----------
-BIBLE_REL = "public/content/fuwafuwa-land/character-bible.json"
+BIBLE_REL = "public/content/01_すわぷよ/05_設定/01_キャラクター台帳.json"
 _bible = None
 def load_bible():
     """全キャラの声・性格・画像の正本。台本は名前を呼ぶだけ→ここから自動解決。"""
@@ -133,15 +133,15 @@ def maybe_random_cast(spec):
     return {slots[i]: chosen[i] for i in range(min(len(slots), len(chosen)))}
 
 # ---------- シーン（背景＋接地）。内容(weather/theme)から自動選択 ----------
-BG_DIR = "public/content/fuwafuwa-land/backgrounds/"
+BG_DIR = "public/content/01_すわぷよ/03_背景/"
 SCENES = {  # scene -> (ファイル, キャラ接地 characterBaselineY)
-    "day":     ("village-day.png",     0.66),
-    "morning": ("village-morning.png", 0.66),
-    "dusk":    ("village-dusk.png",    0.66),
-    "night":   ("village-night.png",   0.66),
-    "rain":    ("village-rain.png",    0.66),
-    "cloudy":  ("village-cloudy.png",  0.66),
-    "snow":    ("village-snow.png",    0.66),
+    "day":     ("01_村_昼.png", 0.66),
+    "morning": ("02_村_朝.png", 0.66),
+    "dusk":    ("05_村_夕方.png", 0.66),
+    "night":   ("06_村_夜.png", 0.66),
+    "rain":    ("04_村_雨.png", 0.66),
+    "cloudy":  ("03_村_くもり.png", 0.66),
+    "snow":    ("07_村_雪.png", 0.66),
     "room":    ("room-cozy.png",       0.74),
     "seaside": ("seaside.png",         0.72),
     "festival":("festival.png",        0.70),

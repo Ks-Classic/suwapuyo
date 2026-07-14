@@ -2,12 +2,12 @@
   "title": "oguchi-de-asobo",
   "size": [1080, 1920],
   "fps": 30,
-  "background": "public/content/fuwafuwa-land/backgrounds/village-bg.png",
+  "background": "public/content/01_すわぷよ/03_背景/01_村_昼.png",
   "topTitle": "お口で遊ぼう",
-  "topIllust": "public/content/fuwafuwa-land/characters/originals/14_はぐりん.png",
+  "topIllust": "public/content/01_すわぷよ/01_キャラクター/01_原本/14_はぐりん.png",
   "characters": {
-    "mogu": { "img": "public/content/fuwafuwa-land/characters/originals/07_もぐぴよ.png", "side": "left",  "pitch": 680, "color": [56, 152, 224] },
-    "wawa": { "img": "public/content/fuwafuwa-land/characters/originals/02_わーわー.png", "side": "right", "pitch": 920, "color": [222, 120, 44] }
+    "mogu": { "img": "public/content/01_すわぷよ/01_キャラクター/01_原本/07_もぐぴよ.png", "side": "left",  "pitch": 680, "color": [56, 152, 224] },
+    "wawa": { "img": "public/content/01_すわぷよ/01_キャラクター/01_原本/02_わーわー.png", "side": "right", "pitch": 920, "color": [222, 120, 44] }
   },
   "cta": { "color": [214, 158, 44] },
   "audio": { "bgm": true, "animalese": true },

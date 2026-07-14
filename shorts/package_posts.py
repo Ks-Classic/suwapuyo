@@ -8,14 +8,14 @@
   out/_work/          … preview/draft/storyboard（確認用・捨ててOK）
   out/post-ledger.csv … 台帳（据え置き）
 
-キャプション正本: public/content/shorts-studio/captions.json
+キャプション正本: public/content/03_ショート動画/02_キャプション/01_投稿キャプション.json
 使い方: python3 shorts/package_posts.py   （本番書き出しの後に実行）
 """
 import glob, json, os, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "shorts", "out")
-CAP = json.load(open(os.path.join(ROOT, "public/content/shorts-studio/captions.json"), encoding="utf-8"))
+CAP = json.load(open(os.path.join(ROOT, "public/content/03_ショート動画/02_キャプション/01_投稿キャプション.json"), encoding="utf-8"))
 HASHTAGS = CAP.get("_hashtags", {})
 CHANNELS = ["instagram", "youtube", "tiktok"]
 
@@ -55,7 +55,7 @@ def main():
             "  - `meta.json` 動画メタ\n"
             "- `_work/` … preview/draft/storyboard（確認用・捨ててOK）\n"
             "- `post-ledger.csv` … 全投稿の台帳（投稿後に指標を手入力）\n\n"
-            "※ このフォルダは .gitignore（再生成可能）。キャプション正本は `public/content/shorts-studio/captions.json`。\n"
+            "※ このフォルダは .gitignore（再生成可能）。キャプション正本は `public/content/03_ショート動画/02_キャプション/01_投稿キャプション.json`。\n"
         )
     print(f"packaged {len(packaged)} posts -> {posts}")
     for t in sorted(packaged):

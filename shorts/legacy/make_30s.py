@@ -10,8 +10,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-BG_PATH   = os.path.join(ROOT, "public/content/fuwafuwa-land/backgrounds/village-bg.png")
-CHAR_PATH = os.path.join(ROOT, "public/content/fuwafuwa-land/characters/originals/02_わーわー.png")
+BG_PATH   = os.path.join(ROOT, "public/content/01_すわぷよ/03_背景/01_村_昼.png")
+CHAR_PATH = os.path.join(ROOT, "public/content/01_すわぷよ/01_キャラクター/01_原本/02_わーわー.png")
 FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 OUT_MP4   = os.path.join(os.path.dirname(__file__), "waawaa_30s.mp4")
 
