@@ -5,15 +5,15 @@ LINEリッチメニュー画像(2500x843・compactサイズ)を生成する。
 (暖色クリーム×キャラクター)に合わせた仕上げにしている。
 
 使い方: python3 tools/line/generate_rich_menu_image.py
-出力: public/content/yourtime-platform/menu/rich-menu-2500x843.png
+出力: public/content/02_ユアタイム/01_リッチメニュー/90_旧形式_2500x843.png
 """
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 WIDTH, HEIGHT = 2500, 843
-OUT = "public/content/yourtime-platform/menu/rich-menu-2500x843.png"
+OUT = "public/content/02_ユアタイム/01_リッチメニュー/90_旧形式_2500x843.png"
 BOLD_FONT = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 REGULAR_FONT = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
-CHAR_DIR = "public/content/fuwafuwa-land/characters/display"
+CHAR_DIR = "public/content/01_すわぷよ/01_キャラクター/02_表示用"
 
 CELL_W = WIDTH // 2
 CELL_H = HEIGHT // 2
@@ -27,7 +27,7 @@ TILES = [
         "body": "なかまと遊んで、お口体操へ",
         "accent": "#f5a623",
         "card": "#fff7e4",
-        "character": "suusuu.png",
+        "character": "01_すーすー.png",
         "char_side": "right",
     },
     {
@@ -35,7 +35,7 @@ TILES = [
         "body": "マップ・スタンプラリー",
         "accent": "#69bdb5",
         "card": "#eef8f5",
-        "character": "waawaa.png",
+        "character": "02_わーわー.png",
         "char_side": "left",
     },
     {
@@ -43,7 +43,7 @@ TILES = [
         "body": "描いた絵と村を見る",
         "accent": "#8bd46e",
         "card": "#f2f9ec",
-        "character": "rapiko.png",
+        "character": "12_ラピ子.png",
         "char_side": "right",
     },
     {
@@ -51,7 +51,7 @@ TILES = [
         "body": "もぐぴよとすぐ体操する",
         "accent": "#ff8fab",
         "card": "#fff0f4",
-        "character": "mogupiyo.png",
+        "character": "07_もぐぴよ.png",
         "char_side": "left",
     },
 ]

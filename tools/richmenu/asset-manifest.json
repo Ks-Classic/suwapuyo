@@ -1,0 +1,13 @@
+{
+  "status": "approved",
+  "generation_model": "gpt-image-2",
+  "generation_method": "openai-imagegen",
+  "asset": "public/content/02_ユアタイム/01_リッチメニュー/01_開催前_gpt-image2_v6.jpg",
+  "sha256": "1974d547d3240df9c18e81c069e2700e943118d33ee5eed64b8f30088dc97da2",
+  "human_review": {
+    "visual": true,
+    "text_exact": true,
+    "reviewed_by": "user",
+    "reviewed_at": "2026-07-14T00:00:00+09:00"
+  }
+}

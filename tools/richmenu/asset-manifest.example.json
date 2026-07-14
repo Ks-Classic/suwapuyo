@@ -1,0 +1,12 @@
+{
+  "status": "approved",
+  "generation_model": "gpt-image-2",
+  "generation_method": "openai-imagegen",
+  "sha256": "<sha256-of-the-final-image>",
+  "human_review": {
+    "visual": true,
+    "text_exact": true,
+    "reviewed_by": "<human reviewer>",
+    "reviewed_at": "<ISO-8601>"
+  }
+}
