@@ -1,0 +1,49 @@
+{
+  "status": "generation_brief",
+  "tool": "GPT Image built-in",
+  "asset": {
+    "name": "rich-menu-before-gpt-image2-v3",
+    "purpose": "LINE公式アカウントの開催前5枠リッチメニュー",
+    "targetCanvas": { "width": 2500, "height": 1686 },
+    "outputReview": ["文字の正確さ", "5領域の対応", "1MB以下への書き出し"]
+  },
+  "inputImages": [
+    {
+      "path": "public/content/01_すわぷよ/03_背景/01_村_昼.png",
+      "role": "primary_style_reference",
+      "use": "青空、丸い雲、黄緑の丘、花、やわらかい濃色輪郭線、絵本の村の空気を引き継ぐ"
+    },
+    {
+      "path": "public/content/fuwafuwa-land/backgrounds/ChatGPT Image 2026年7月12日 18_50_25.png",
+      "role": "composition_reference_only",
+      "use": "中央が息苦しくならない余白と、端から楽しい世界が広がる構図だけを参照する",
+      "doNotCopy": ["YourTIME.ロゴ", "画像内のキャラクター", "固有の意匠や配置"]
+    }
+  ],
+  "interactionAreas": [
+    { "key": "play", "bounds": [0, 0, 1000, 1686], "label": "すわぷよで遊ぶ", "icon": "4色の丸いぷよパズル", "priority": "primary" },
+    { "key": "booths", "bounds": [1000, 0, 750, 843], "label": "出展ブース", "icon": "旗のある小さな村の屋台" },
+    { "key": "event_info", "bounds": [1750, 0, 750, 843], "label": "YourTIME.・日時／アクセス", "icon": "太陽・小さなカレンダー・道しるべ" },
+    { "key": "makers", "bounds": [1000, 843, 750, 843], "label": "すわぷよの作り手", "icon": "鉛筆・小さな花・きらめき" },
+    { "key": "about_suwapuyo", "bounds": [1750, 843, 750, 843], "label": "すわぷよって？", "icon": "絵本と小さな4色のぷよパズル", "purpose": "初めての人へ、どんなゲームで何をして遊ぶかを短く説明し、主導線へ戻す" }
+  ],
+  "artDirection": {
+    "scene": "一枚につながる、明るいすわぷよの村。左の大きな丘の遊び場から、右の4つの小さな村の目印へ小道と花が自然につながる。",
+    "style": "日本の子ども向け絵本ゲームの手描きイラスト。丸みのある輪郭、やわらかい陰影、澄んだ水色、春の黄緑、花のピンク・黄・青。",
+    "areaSeparation": "タップ領域に合わせて内容を置くが、太い罫線・白カード・ガラスパネルでは分けない。小道、丘、雲、花、淡い色のまとまりで自然に読み分けられるようにする。",
+    "characters": "キャラクターは飾りとして無理に入れない。既存キャラクターを生成で描き直さない。"
+  },
+  "exactText": ["すわぷよで遊ぶ", "出展ブース", "YourTIME.・日時／アクセス", "すわぷよの作り手", "すわぷよって？"],
+  "negativeConstraints": [
+    "開催前という文字を入れない",
+    "QRコード、URL、英語の飾り文句、透かしを入れない",
+    "汎用ビジネスUI、太い格子線、白いカード、ガラスUI、細い線の外部アイコンセットを使わない",
+    "YourTIME.ロゴ、Instagramロゴ、未許諾キャラクターを描かない"
+  ],
+  "decisionLog": {
+    "replaces": "なかまたち",
+    "rejected": "キャラをえらぶ",
+    "newLabel": "すわぷよって？",
+    "reason": "キャラ選択はゲーム開始後に必ず触れられる機能であり、リッチメニューの独立枠としては重複する。"
+  }
+}
