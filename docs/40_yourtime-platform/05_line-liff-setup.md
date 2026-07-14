@@ -1,19 +1,19 @@
-# 05 — LINEテスト公式アカウント＋LIFF セットアップ手順
+# 05 — LINE公式アカウント＋単一LIFF セットアップ手順
 
-> 目的: 明日の感動デモ（`03`§12 / `04`）を動かすための **テスト用LINE公式アカウント＋LIFFアプリ** を用意し、Codexに渡す `LIFF_ID` を取得する。
-> 所要: 30〜45分。**HTTPSのデプロイ先URLが要る**（先にVercel等へデモを上げるか、ローカルはトンネル）。
-> ※ コンソールのボタン文言は時期で多少変わる。構造は同じ。
+> **2026-07-13更新**: 旧「村の案内所」デモ手順を廃止し、すわぷよLINE公式アカウントを固定ホーム、`VITE_SUWAPUYO_LIFF_ID`のLIFF 1つをWeb体験本体とする現行手順へ更新した。公開先はCloudflare Pagesであり、Vercelは本番に使わない。
+>
+> 正本: `docs/30_suwapuyo/07_line-required-liff-spec.md`。LINE Developersの画面・要件が変わり得るため、外部設定時は公式ドキュメントも再確認する。
 
 ---
 
-## 全体像（3ステップ＋仕上げ）
+## 全体像
 ```
 LINE Developers Console
- ├ STEP1 プロバイダー作成
- ├ STEP2 Messaging APIチャネル作成（＝公式アカウントが紐づく）
- └ STEP3 LIFFアプリ追加 → 【LIFF_ID / LIFF URL】取得 ★Codexに渡す
+ ├ STEP1 プロバイダー確認
+ ├ STEP2 LINE LoginチャネルにLIFFアプリを1つ登録
+ └ STEP3 LIFFと既存Messaging APIチャネル（公式アカウント）を連携
 LINE Official Account Manager
- └ STEP4 あいさつメッセージ＋友だち追加QR（＝受付QR）
+ └ STEP4 あいさつ、友だち追加QR、リッチメニュー、キーワード応答を設定
 ```
 
 ---
@@ -23,53 +23,51 @@ LINE Official Account Manager
 2. 「Create a new provider」→ 名前（例: `TsunaYasu`）→ 作成。
    - プロバイダー＝アプリ群の入れ物。1つでよい。
 
-## STEP2: Messaging APIチャネル作成（公式アカウントが付いてくる）
-1. プロバイダー内 →「Create a new channel」→ **Messaging API** を選択。
-2. 入力:
-   - チャネル名（＝公式アカウント名）: 例 `村の案内所（テスト）`
-   - 説明 / 大業種・小業種 / メール / 地域=日本 など必須項目。
-3. 作成すると **LINE公式アカウントが自動で出来る**（友だち追加QRはSTEP4で取得）。
-4. （会場アナウンスを**LINE全体配信でやる場合のみ**）「Messaging API設定」タブで **チャネルアクセストークン（long-lived）** を発行してメモ。Realtime方式（推奨）なら不要。
-   - Webhookは今回 **不要**（あいさつは管理画面で設定するため）。
+## STEP2: LINE Loginチャネルと単一LIFFを確認
 
-> 補足: LIFFで `userId` を取るのに必要な LINE Login は、Messaging APIチャネルにLIFFを足せば内部で有効になる（別途LINE Loginチャネルを作らなくてよい）。
+1. 既存のLINE Loginチャネルを使う。なければ、公式アカウントのMessaging APIチャネルと**同じプロバイダー内**に1つ作る。
+2. LINE LoginチャネルのBasic settingsで、すわぷよLINE公式アカウントをLinked LINE Official Accountとして設定する。
+3. LINE LoginチャネルのLIFFタブで既存のすわぷよLIFFを1つだけ使う。入口を増やす目的で新しいLIFFを複製しない。
+4. 設定値:
+   - LIFF app name: `すわぷよ`
+   - Size: `Full`
+   - Endpoint URL: `https://suwapuyo.pages.dev/`
+   - Scope: `openid`、`profile`
+   - Add friend option: `On (aggressive)`。起動後も`getFriendship()`で確認し、未追加／ブロック中は`requestFriendship()`の理由を表示する
+5. 発行済みLIFF IDをローカルの`.env.local`では`VITE_SUWAPUYO_LIFF_ID`へ設定する。旧`VITE_LIFF_ID`を増やさない。
 
-## STEP3: LIFFアプリ追加（★ここで LIFF_ID が出る）
-1. 作ったチャネル →「**LIFF**」タブ →「Add」。
-2. 入力:
-   - LIFF app name: 例 `村の案内所`
-   - Size: **Full**（全画面）
-   - **Endpoint URL**: デモのデプロイ先 ＋ `/concierge`
-     - 例: `https://fuwafuwa-land.vercel.app/concierge`（または専用デプロイ/プレビューURL）
-     - ローカル検証は `cloudflared`/`ngrok` のHTTPSを一時利用。
-   - Scope: **`profile`** に必ずチェック（＝`liff.getProfile().userId`）。`openid` は任意。
-   - Bot link feature: **On（Aggressive）** 任意（LIFFから友だち追加を促せる）。
-3. 作成後に発行される:
-   - **LIFF ID**: 例 `2000000000-xxxxxxxx`
-   - **LIFF URL**: `https://liff.line.me/{LIFF_ID}`  ← **これがブースQRの素**
-4. ★ **この2つ（LIFF_ID / LIFF URL）をCodexに渡す**（`04`の `{LIFF_ID}`）。
-   - ブースQR = `https://liff.line.me/{LIFF_ID}?booth=demo-01` を `qrcode` でPNG化。
-   - 標準カメラで撮ってもLINEが開く（ユニバーサルリンク）。
+> LIFFアプリはLINE Loginチャネルへ追加する。Messaging APIチャネルへLIFFを直接追加する旧記述は使用しない。LINE LoginチャネルとMessaging APIチャネルが異なるプロバイダーにある場合、同じLINE user IDとして扱えないため、本番前に所属プロバイダーを確認する。
+>
+> LINE公式は新規アプリにLINE MINI Appも推奨しているが、今回は発行済みのすわぷよLIFFを統合先として維持する。別アプリへの移行は認証・URL・実機検証へ影響するため、この作業の中で暗黙に行わない。
+
+## STEP3: 入口とrouteを分ける
+
+- 通常入口: LINE公式アカウントの友だち追加QR → あいさつ／リッチメニュー → LIFF。
+- リッチメニューのゲームURI: `https://liff.line.me/{VITE_SUWAPUYO_LIFF_ID}/?source=richmenu_before`。
+- 作品QR: `https://liff.line.me/{VITE_SUWAPUYO_LIFF_ID}/claim/{opaque_token}`。作品ID、LINE user ID、個人情報をQRへ直接入れない。
+- LIFF IDは1つのまま、ゲーム、マップ、ブース、スタンプ、作品受取をrouteで分ける。
 
 ## STEP4: 公式アカウント側の仕上げ（LINE Official Account Manager）
 1. https://manager.line.biz/ に同じLINEアカウントでログイン → 該当アカウントを選択。
-2. **あいさつメッセージ**: 友だち追加直後に届くメッセージを設定。
-   - 文面＋「**はじめる**」ボタン（リンク= LIFF URL `https://liff.line.me/{LIFF_ID}`）を入れる。
-   - ※ 友だち追加で **自動的にLIFFは開かない**。「追加 → あいさつが届く → 『はじめる』をタップ → アンケート」の**1タップ挟む**のが実装上の正（デモ説明でもこの流れ）。
-3. **友だち追加QR/URL**（＝**受付QR**）をここで取得 → 受付掲示や打合せで読んでもらう。
-4. リッチメニュー（マップ/スタンプ帳/すわぷよ…）は本番で設定（デモは任意）。
+2. 友だち追加直後のあいさつで、リッチメニューから「すわぷよ」「出店ブース」「日時・アクセス」を開けることを短く説明する。
+3. 友だち追加QR/URLを通常入口として取得する。
+4. 開催前リッチメニューは`docs/70_すわぷよ・ユアタイム統合仕様/06_運用/04_5枠リッチメニュー制作・登録仕様.md`に従う。
+5. `YourTIME 出店ブース`と`YourTIME 日時・アクセス`の応答は、確定情報だけをOfficial Account Managerまたは承認済みWebhookへ設定する。
 
 ---
 
 ## 木幡が用意して渡すもの（チェックリスト）
-- [ ] **LIFF_ID / LIFF URL**（STEP3）→ Codex / config へ
-- [ ] デモのデプロイ先HTTPS URL（Endpoint）
-- [ ] 既存ふわふわランド **Supabase接続情報**（相乗り・会場アナウンスRealtime用）
-- [ ] （LINE全体配信で会場アナウンスする場合のみ）**チャネルアクセストークン**
-- [ ] **受付QR**（友だち追加・管理画面から）
-- [ ] `map_sample.jpg` をリポに配置
+- [ ] `VITE_SUWAPUYO_LIFF_ID`とLIFF URL
+- [ ] LINE LoginチャネルとMessaging APIチャネルが同じプロバイダーであること
+- [ ] LIFFのEndpointがCloudflare Pages本番URLであること
+- [ ] LINE公式アカウントの友だち追加QR
+- [ ] 開催前リッチメニュー画像の最終承認
+- [ ] 出店カテゴリ、日時、アクセス、申込／チケットの正規URL
+- [ ] iOS／Android LINE内の実機確認
 
 ## つまずきポイント
-- Endpoint は **HTTPS必須**。`http://localhost` は不可 → デプロイ or トンネル。
-- `userId` はLINEアプリ内（またはLIFFログイン後）でのみ取得可。外部ブラウザ直開きは `liff.login()` 経由。デモは諏訪さんのLINEで動かすので不問。
-- Endpoint URLは後から変更可。先にURLを決めてデプロイ→LIFFに設定、の順が楽。
+- `VITE_SUWAPUYO_LIFF_ID`は公開IDであり、チャネルアクセストークンではない。
+- `LINE_CHANNEL_ACCESS_TOKEN`はリッチメニューCLI実行中のWSL shell環境変数にだけ置き、`.env.local`、Git、`VITE_`変数、Cloudflare Pagesへ保存しない。
+- クライアントから受け取ったID token/access tokenを本人確認の根拠にするときは、Product WorkerでLINEへ検証してから内部sessionを発行する。クライアント送信のuser ID文字列だけを信用しない。
+- ログイン、友だち追加、サービス同意／データ利用説明を1つの同意として扱わない。
+- 子ども単独利用と保護者確認年齢はONBOARD-303のGateが決まるまで推測しない。

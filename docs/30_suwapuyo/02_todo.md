@@ -1,11 +1,11 @@
-# すわぷよ 実装TODO — v2.9
+# すわぷよ 実装TODO — v3.5
 
 > **最終更新**: 2026-07-13
 > **現行SSoT**: `docs/70_すわぷよ・ユアタイム統合仕様/`。本ファイルの旧デモ記述と矛盾する場合は統合仕様を優先する。
 > **現在**: 統合MVPフェーズ1。最新の初回登録、5枠リッチメニュー、ブースLIFF、チェックイン／スタンプデモ、作り手導線を現行最優先とする。旧SURVEY、6/30デモ、ふわふわランド、Shorts Auto Studioは履歴として後段に残す。
 > **実装の正**: `docs/30_suwapuyo/04_demo-detailed-design.md`（v0.2.1）＋ `05_storyboard-and-narrator-script.md`。実装担当=**Codex**。
 
-> **LINE公開の正**: `07_line-required-liff-spec.md`。すわぷよはLINE公式アカウントの友だち追加をプレイ開始条件とする。会場案内所の非強制登録方針とは対象が異なる。
+> **LINE公開の正**: `07_line-required-liff-spec.md`。LINE公式アカウントを通常入口・再訪ホームとし、Web体験は`VITE_SUWAPUYO_LIFF_ID`の単一LIFFへ統合する。ログイン、友だち追加、サービス同意は別の境界として扱う。
 
 > **配信先(2026-07-12確認)**: 本番はCloudflare Pages(`suwapuyo`プロジェクト、`suwapuyo.pages.dev`)。git連携なし、`npx wrangler pages deploy dist --project-name=suwapuyo --branch=main`の手動デプロイ運用。現時点のproduction sourceはcommit `e4198b0`。Vercel上にも同名`suwapuyo`プロジェクトが存在しgit push契機で自動デプロイされるが、これはPhase 0時代の残置物であり**本番判断には使わない**(下記「旧デモTODO」のVercel連携項目を参照、および`07_サマリー/01_実装ルール・ロードマップ.md`の「旧Vercel記述を現行判断に使わない」)。デプロイ状況を確認する際は必ずwranglerでCloudflare Pages側を見ること。
 
@@ -30,6 +30,8 @@
 - [x] **DEVAGENT-102**: 軽量モデル単独の仕様決定・完了判定・本番反映を禁止し、B以上の再確認と高リスク時のA昇格条件を固定
 - [x] **DEVAGENT-103**: モデル選択はアプリ機能ではなく開発運用限定とし、アプリへのGPT API導入要件を追加しない
 - [ ] **DEVAGENT-104**: 各実装報告で、使用クラス、セルフレビュー、検証結果、commit / push / Cloudflare deploy / LINE反映を区別して記録する運用を継続
+- [x] **DEVAGENT-105**: Skillを標準／Plugin管理／個人／workspace固有へ棚卸し。壊れた`waawaa-short`を削除し、別案件用Webhook SkillをLiberate AIXへ移管
+- [x] **DEVAGENT-106**: workspace Skillの表示名を日本語で分かりやすくし、内部slugと分離。`すわぷよSNS画像制作`で4:5、文字完全一致、公式やす原画不変、公開Gateを自動検査
 
 ### 制作過程・ブランド資産化 [PROCESS-1xx]
 
@@ -38,6 +40,11 @@
 - `docs/80_process-economy/00_index.md`
 - `docs/80_process-economy/01_capture-and-publication-policy.md`
 - `docs/80_process-economy/02_character-ip-and-account-strategy.md`
+- `docs/80_process-economy/03_sns-launch-and-creative-spec.md`
+- `docs/80_process-economy/04_cousin-vtuber-dance-pipeline-spec.md`
+- `docs/80_process-economy/05_cousin-character-master-and-generative-governance.md`
+- `docs/80_process-economy/06_character-consistency-technology-landscape-2026-07.md`
+- `docs/80_process-economy/07_cousin-brand-and-social-series-bible.md`
 
 - [x] **PROCESS-101**: Source / Structured / Publishableの3段階と、制作過程アーカイブのディレクトリ・テンプレートを作成
 - [x] **PROCESS-102**: 修正前後スクリーンショット、再現、比較案、AIと人の分担、セルフレビューの記録規約を作成
@@ -45,20 +52,59 @@
 - [ ] **PROCESS-104**: 現行主要画面と既知バグを台帳化し、個人情報・未許諾素材を除いたbefore証拠を採取
 - [ ] **PROCESS-105**: 最初の公開記事を1本作り、X / Instagram / Threads / note / 自社サイトへの媒体別派生を作成
 - [ ] **PROCESS-106**: commit・TODO・テスト結果から非公開process draftを生成し、人の承認後だけ公開候補にする補助フローを実装
-- [x] **PROCESS-107**: プロセスエコノミーの目的、2キャラの物語、媒体別役割、初回投稿、評価指標、公開GateをSNS開設仕様として文書化
+- [x] **PROCESS-107**: プロセスエコノミーの目的、2キャラの物語、媒体別役割、初回投稿、評価指標、公開GateをSNS開設仕様として文書化。二人がすわぷよを開発する物語内の会話と、キャラブランド／AI／SNSの外側をときどきのぞくメタ層を分離し、事実説明は曖昧にしない原則を追加
+- [x] **PROCESS-108**: いとこの権利承認、同一キャラ技術調査、ブランド設計自体をSNSのprocess economy素材へ変換できるよう、技術SSoT・シリーズバイブル・初期12投稿backlogを作成
+- [x] **PROCESS-109**: 上記SSoTを担当者向けHTML運用マニュアルへ統合し、制作方式選択、投稿、承認Gate、日次・週次・事故対応、ファイル導線を1ページで説明
 
 ### やすキャラ・IP・アカウント [BRAND-1xx]
 
 - [ ] **BRAND-101**: キャラコピー許可は取得済み。ツナマヨさんと公式やすの著作権帰属、媒体、商用、改変、動画、AI入力、監修、クレジット、終了条件の具体的範囲を文書化
 - [ ] **BRAND-102**: 公式やすと「爬虫類のいとこ」と分かりつつ単独で誤認されない、手足付き・動画展開可能なサンゴ色ヤモリ系デザイン候補をツナマヨさん監修で確定
-- [ ] **BRAND-103**: 公式やすといとこの性格、口調、ぶれてよい範囲、禁止表現、危機対応をキャラクターバイブル化
+- [ ] **BRAND-103**: 公式やすとやっ太郎の性格、口調、ぶれてよい範囲、禁止表現、危機対応をキャラクターバイブル化。物語内／メタ層／現実説明の境界と権利確認を確定
+- [x] **BRAND-103A**: いとこを`実験隊長`、公式やすを`編集長・開発者`として、キャラクターIPを内面・意思決定・関係性・物語生成・ブランド・統制の6系統、CB-001〜306の原子項目、MVC必須25項目、圧力テスト、専門15視点へ分解したv0.9バイブルを作成
+- [ ] **BRAND-103B**: v0.9をツナマヨさん・木幡さんがreview。正式名称は`やっ太郎`に決定済み。species、口調、造形hard invariant、master変更承認者を確定してv1.0へ昇格
+- [ ] **BRAND-103C**: MVC 25項目をapproved/reviewedへ更新し、10状況の圧力テスト、台詞だけの識別、公式やすとの関係性test、最低10episode生成testを実施。現行L0.7からL1 Recognizableへ昇格
+- [x] **BRAND-103D**: CB-001〜306全項目へ、日本語名・英語名・具体的なキャラ案・Invariant/Range/Arc/Variantを記入したCanon draft v0.1を作成。没案フォルダから孵る、思いつきを試作品化する、急ぐほど重要条件が一つ抜ける等の非人間的な固有性と、消されたくない／役に立ちたいという共感核を分離
+- [x] **BRAND-103E**: 正式名を`やっ太郎`（やす太郎＋「やったろう！／何でもやってやろう！」）に決定。公式やすを保護者・上司にせず対等な相棒とし、やっ太郎は行動・成功・失敗から必ず成長する方針、`ぶっ飛び × たまに真面目な公式やす`の基本トーンをCanon draft v0.2へ反映
+- [ ] **BRAND-103F**: 投稿形式を事前固定せず、静止画・連続画像・動画・文章・参加型を最低18本探索。同目的・同対象で各patternを最低3回比較後、winner / challenger / wild cardを決める
 - [ ] **BRAND-104**: すわぷよLINE / ツナやすX・Instagram・Threads / ツナやすWeb / いとこシリーズの役割、表示名、共通handleを確定
 - [ ] **BRAND-105**: YourTIME、ツナやす、出展者間でデータ取得主体、利用目的、レポート、事例利用、削除責任を文書化
 - [ ] **BRAND-106**: 公式やす＋いとこのSNS共通アイコンのドラフト(v3/v5)を制作済み。公式やすのポーズ・シャツ・ベスト・しっぽ・顔を原画のまま保持し、円形クロップ、32px視認性、両者識別、既存22体との非衝突を確認して採用版を確定
 - [ ] **BRAND-107**: Xヘッダー、Instagram固定紹介キービジュアル、Threads初回紹介キービジュアルのドラフトを制作済み。各実機クロップを確認して採用版を確定
 - [ ] **BRAND-108**: 業務用メール、運営主体、回復担当、パスワード管理、2要素認証、回復コード、誤投稿防止を確定
 - [ ] **BRAND-109**: Instagram → Threads → Xの順でアカウントを作成し、同一表示名・handle・アイコン・リンクを設定。公開操作は木幡さん確認後に実施
-- [ ] **BRAND-110**: はじめまして／すわぷよの始まり／公開する理由の初回3投稿を媒体別に作成し、権利・事実・個人情報レビュー後に公開
+- [ ] **BRAND-110**: はじめまして／すわぷよの始まり／公開する理由の初回3投稿を媒体別に作成し、権利・事実・個人情報レビュー後に公開。初回投稿ではYourTIME.が未病×エンタメイベントであることを先に説明し、すわぷよの狙い、`やす太郎`といとこ`やっ太郎`、制作過程の公開方針へつなぐ
+- [ ] **BRAND-111**: `やっ太郎、最初のやったろう`を初回コンテンツ候補として制作。v0.1の「目的を教える」案は木幡さんreviewで却下記録化し、v0.2を「ゲームが一秒もないのに最終回だけ先につくる」物語へ再設計。目的・媒体別派生・ASCII storyboard・Character Master準拠の生成・人の公開review Gateまで作成。木幡さんの笑い／reference選択／台詞review後にだけ画像生成と公開候補化へ進む
+- [x] **BRAND-112**: 公式やすは`やすさん.jpg`を生成AIへ入力せず、SHA確認済み原画を1:1・無変形でのみ合成する絶対ルールを固定。AI再描画したYT-001 Slide 2をrejectedへ隔離
+- [ ] **BRAND-113**: YT-001 Slide 2を、公式やす原画をAIへ渡さず、4:5背景・文字生成後に保護原画を無変形合成して再制作。文字転記・完全一致・pixel一致・人レビューを通す
+
+### いとこVTuber・トレンドダンス [VTUBE-1xx]
+
+正本:
+
+- `docs/80_process-economy/04_cousin-vtuber-dance-pipeline-spec.md`
+
+- [x] **VTUBE-101**: Instagram / YouTube / TikTokのトレンド発見、権利Gate、motion capture、VRM、OBS、媒体別音源、計測までの実装設計を作成
+- [x] **VTUBE-101A**: 2D / Live2D / 3D / GPT Image 2を横断するCharacter Master、Identity Lock、Golden Set、drift risk、生成manifest、3-role review、version、rollback、incident対応を実装SSoT・JSON Schema・observed draftへ落とす
+- [x] **VTUBE-101B**: 2026-07時点の海外を含むOSS・commercial事例を比較し、固定2D / rigged 2D / VRM 3D / reference image / generated videoのsource selector、6層license、Training / Golden / Holdout分離、temporal QA、provenanceを技術SSoT化
+- [ ] **VTUBE-102**: いとこの造形・権利・自由展開はツナマヨさん承認済み（`RIGHTS-COUSIN-2026-07-13-ORAL-001`）。正式名称・Character Master造形値・master変更承認者・クレジットを確定し、一般配布・学習weight・無制限再許諾だけ別Gateで補完
+- [ ] **VTUBE-102A**: 現行いとこ案の種、neutral頭形、頭身、手指・足趾、眉、牙、額記号、腹側、尾、ベスト、badge、palette、line、陰影をツナマヨさんと確定し、Character Master 1.0.0へ昇格
+- [ ] **VTUBE-102B**: 正面・3/4・側面・背面turnaround、face、hands/feet/tail、outfit、palette/line、24表情、32pose、foreshortening/occlusionの各sheetを制作・承認
+- [ ] **VTUBE-102C**: Golden Set 12条件を作者承認し、GPT Image 2のreference slot、固定prompt、hard gate、95点rubric、生成manifestをproduction版へ固定
+- [ ] **VTUBE-102D**: 生成10scene以上でhard failure 0・平均95点以上、3秒同一認識90%以上・公式やす誤認5%未満をpilot検証し、結果と修正をprocess record化
+- [ ] **VTUBE-102E**: 作者承認assetをTraining Pack / Golden Set / Holdout Stress Setへ重複なしで分割し、caption・hash・外部送信・weight配布条件を登録
+- [ ] **VTUBE-103**: 3D制作担当、費用、Blender source、VRM 1.0、stream/render版、表情・しっぽ・修正回数・納品条件を確定
+- [ ] **VTUBE-104**: 仮VRMでSysMocap / XR Animator / Warudoを同一5動作・10秒動画・Zoom小窓で比較し、fps、遅延、足滑り、表情、ライセンス、外部通信、運用難度を記録
+- [ ] **VTUBE-104A**: 同一原画・5表情・5動作でInochi2D / Live2Dを比較し、制作工数、tracking、破綻、商用、source納品、運用担当から2D rigを選定
+- [ ] **VTUBE-104B**: 同一briefでBlender/VRM retarget、GPT Image 2、ComfyUI + IP-Adapter/ControlNet、Wan2.2-Animate、LTX-2、closed benchmark 1種を比較し、品質・temporal drift・時間・費用・license説明を記録
+- [ ] **VTUBE-105**: 演者同意、raw動画保持期限、motion再利用・販売、子ども除外、ローカル処理の運用を確定
+- [ ] **VTUBE-106**: TrendObservation / MotionClip / PublicationJob台帳を実装し、元動画・音源の無断保存を禁止するvalidatorを追加
+- [ ] **VTUBE-107**: いとこVRM 1.0の正式stream版・render版を制作し、Tポーズ、歩行、回転、しゃがみ、ジャンプ、手振り、指さし、表情、しっぽを受入確認
+- [ ] **VTUBE-108**: 権利確認済みの演者motionを取得し、foot lock、関節制限、欠損補間、しっぽ、表情を含むリターゲットpresetを確定
+- [ ] **VTUBE-109**: 無音・無watermarkの1080×1920 masterを3本制作し、Instagram / YouTube / TikTokへ媒体別音源を手動付与する運用を実機確認
+- [ ] **VTUBE-110**: OBS Virtual CameraをZoomとGoogle Meetで確認し、左右反転、音声同期、30分負荷、camera disconnect、60秒復帰、通常カメラfallbackを検証
+- [ ] **VTUBE-111**: character / rights / safety / quality / factualの5レビューと、24時間・72時間・7日指標を台帳化
+- [ ] **VTUBE-112**: Wan2.2-Animate / LTX-2等は許諾済み自作motionだけでpilotし、code / checkpoint / dependency / custom node / input / outputのlicenseを固定。license不在・academic/non-commercial条件のものを営業・広告・有償制作へ使わないvalidatorを維持
 
 ### 初回登録 [ONBOARD-3xx]
 
@@ -82,13 +128,13 @@
 
 ### LINEリッチメニュー [LINE-2xx]
 
-- [x] **LINE-201**: 開催前・当日・開催後の5枠と役割を決定
-- [x] **LINE-202**: 3フェーズ×5枠のラベル、座標、遷移先、計測、fallback対応表を固定
+- [x] **LINE-201**: LINE公式アカウントを通常入口・再訪ホーム、すわぷよ単一LIFFをゲーム／マップ／ブース／スタンプ／作品受取のWeb体験本体とする。公式アカウントQRを通常導線、作品QRを同一LIFFの`/claim/{opaque_token}`へ入る例外導線として役割分担を決定
+- [ ] **LINE-202**: 開催前・当日・開催後×5枠のラベル、座標、遷移先、計測、fallback対応表を固定（開催前5枠のラベル・座標・message/URI actionはv5で固定。開催前の応答本文、当日・開催後は未確定）
 - [x] **LINE-203**: 既存すーすー／わーわー透過画像、村背景、旧メニュー素材を棚卸し
-- [ ] **LINE-204**: 2500×1686で3フェーズの完成画像を制作。1MB以下、文字可読性、safe areaを確認
+- [ ] **LINE-204**: 2500×1686で3フェーズの完成画像を制作。開催前v5を作成済み（5枠の淡い区切り、下段ラベル入替、文字完全一致）。当日・開催後は未採用。各画像で1MB以下、文字可読性、safe areaを確認
 - [ ] **LINE-205**: すわぷよ独立ロゴ、YourTIME.ロゴ、作り手・ブース・地図・感想等の不足素材を許諾付きで確定
-- [ ] **LINE-206**: Cloudflare本番15遷移先を確定し、未公開routeのfallbackを実装（Cloudflare Pagesプロジェクト自体は作成済み・手動デプロイ運用中=配信インフラは稼働している。残課題は15遷移先のroute確定とfallback実装のみ）
-- [ ] **LINE-207**: Messaging APIで3 rich menuを作成、画像upload、IDをsecretでない設定として記録
+- [ ] **LINE-206**: 単一LIFFのrouteとキーワード応答を確定し、未公開routeのfallbackを実装（開催前は`すわぷよで遊ぶ`のLIFF URI、`YourTIME.出展ブース紹介`、`YourTIME.日時・アクセス`、`すわぷよって？`、`すわぷよの作り手`のmessage actionまで固定。日時・会場・チケットURLはYourTIME公式サイトで確認済み。応答本文、確認済み出展カテゴリ、当日・開催後routeは未確定）
+- [ ] **LINE-207**: 安全CLIで3 rich menuを作成、画像upload、IDをsecretでない設定として記録（`tools/line/richmenu.mjs`は開催前の検証・定義・作成・明示的default切替まで対応。LINE本番作成・画像uploadは未実施）
 - [ ] **LINE-208**: 開催前→当日→開催後の手動切替、rollback、per-user link残存確認の運用手順を実装
 - [ ] **LINE-209**: iOS/Android LINE実機で全15領域、ラベル、遷移、計測を確認
 
@@ -350,7 +396,7 @@
 - **複数端末(B案)・同期(2026-06-23更新)**: スマホ撮影→Supabase→表示PC即反映(ネット前提)。**Supabase Realtime第一・正本=Supabase(Storage+Postgres)・IndexedDBはキャッシュ**。Gateから本番同一構成で実装(単一PCはフォールバック)。LAN-WS自前は不採用。iPad撮影は標準Safariタブ。`.env*`非コミット・RLS厳守。
 - **配信**: イベントはローカル/PWA。URL要時のみCloudflare Pages。Vercel Hobbyは商用NG。
 - **動画(並行・Gate後)**: Remotion回避→完全$0 OSS(Live2D FREE/Synfig＋Revideo/FFmpeg＋VOICEVOX)。
-- **表示素材**: `public/content/fuwafuwa-land/backgrounds/village-bg.png` と `public/content/fuwafuwa-land/sprites/{ghost,tooth,blob,tanuki}/idle.png` をふわふわランド表示画面にもそのまま適用する。
+- **表示素材**: `public/content/01_すわぷよ/03_背景/01_村_昼.png` と `public/content/fuwafuwa-land/sprites/{ghost,tooth,blob,tanuki}/idle.png` をふわふわランド表示画面にもそのまま適用する。
 - **削除**: イベント中の削除は物理削除ではなく `status='archived'` にする。Storageファイル削除は事故防止のため運用後の管理作業に分ける。
 - **背景透過**: 顔写真AI変換は採用しない。紙作品/画像アップはスタッフ画面で `台紙用` / `白背景` / `そのまま` を切替できる。`台紙用` は外周2.8%トリム＋端からつながる近白背景だけ透過、`白背景` は端からつながる近白背景だけ透過、`そのまま` はJPEGカード表示。デジタル描画は最初から透明PNG。
 - **AI変換**: 将来検討する場合も本人写真ではなく作品画像の世界観加工に限定し、同意・費用・待ち時間・保存先を別ADRで確定してから着手する。
