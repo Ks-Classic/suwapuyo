@@ -4,6 +4,7 @@ import { FuwafuwaWorld } from "../renderer/FuwafuwaWorld";
 import type { Artwork, CharacterContentBundle, ConnectionStatus, DisplayCharacter, DisplayState, FuwafuwaServices, MetricsSnapshot, SpeechLine } from "../types";
 import { CharacterContentPopup } from "./CharacterContentPopup";
 import { MetricsOverlay } from "./MetricsOverlay";
+import { loadDisplaySnapshot, stateFromCharacters } from "./displaySnapshot";
 
 interface DisplayScreenProps {
   services: FuwafuwaServices;
@@ -64,19 +65,6 @@ function artworkFromCharacter(character: DisplayCharacter, artwork?: Artwork): A
   };
 }
 
-function stateFromCharacters(base: DisplayState, characters: DisplayCharacter[] | null): DisplayState {
-  if (characters === null) {
-    return base;
-  }
-  const visibleArtworkIds = characters.filter((character) => character.status === "visible").map((character) => character.id);
-  return {
-    ...base,
-    visibleArtworkIds,
-    featuredArtworkId: base.featuredArtworkId !== undefined && visibleArtworkIds.includes(base.featuredArtworkId) ? base.featuredArtworkId : undefined,
-    maxVisibleCount: Math.max(1, Math.min(30, visibleArtworkIds.length)),
-  };
-}
-
 export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const worldRef = useRef<FuwafuwaWorld | null>(null);
@@ -129,12 +117,12 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   }, [services.characterContent]);
 
   useEffect(() => {
-    void Promise.all([services.repository.list(), services.displayState.getDisplayState(), services.characterContent.listCharacters(), services.speechLines.list()])
-      .then(([loadedArtworks, loadedState, loadedCharacters, loadedSpeechLines]) => {
-        setArtworks(loadedArtworks);
-        setDisplayState(loadedState);
-        setDisplayCharacters(loadedCharacters);
-        setSpeechLines(loadedSpeechLines);
+    void loadDisplaySnapshot(services)
+      .then((snapshot) => {
+        setArtworks(snapshot.artworks);
+        setDisplayState(snapshot.displayState);
+        setDisplayCharacters(snapshot.characters);
+        setSpeechLines(snapshot.speechLines);
       })
       .catch(() => {
         setConnectionStatus("error");
@@ -166,7 +154,7 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
       void characterSub.unsubscribe();
       void speechSub.unsubscribe();
     };
-  }, [services.characterContent, services.displayState, services.repository, services.speechLines]);
+  }, [services]);
 
   const effectiveDisplayState = useMemo(() => stateFromCharacters(displayState, displayCharacters), [displayCharacters, displayState]);
   const worldArtworks = useMemo(() => {
