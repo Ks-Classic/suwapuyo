@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "include": [
+    "/staff",
+    "/staff/*",
+    "/fuwafuwa/staff",
+    "/fuwafuwa/staff/*",
+    "/concierge/staff",
+    "/concierge/staff/*",
+    "/api/admin",
+    "/api/admin/*"
+  ],
+  "exclude": []
+}

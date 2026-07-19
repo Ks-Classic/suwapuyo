@@ -13,7 +13,7 @@ type FuwafuwaRoute = "home" | "draw" | "staff" | "display" | "debug";
 
 function readRoute(): FuwafuwaRoute {
   const path = window.location.pathname.replace(/\/$/, "");
-  if (path === "/staff" || path.startsWith("/staff/") || path === "/fuwafuwa/staff" || path.startsWith("/fuwafuwa/staff/")) {
+  if (path === "/staff" || path.startsWith("/staff/")) {
     return "staff";
   }
   if (path === "/debug" || path === "/fuwafuwa/debug") {
@@ -27,9 +27,6 @@ function readRoute(): FuwafuwaRoute {
   }
 
   const hash = window.location.hash;
-  if (hash.startsWith("#/fuwafuwa/staff")) {
-    return "staff";
-  }
   if (hash.startsWith("#/fuwafuwa/debug")) {
     return "debug";
   }
@@ -100,13 +97,13 @@ function MissingConfig() {
 
 export function FuwafuwaApp() {
   const [route, setRoute] = useState<FuwafuwaRoute>(() => readRoute());
-  const [staffTab, setStaffTab] = useState<OperationsTab>(() => readStaffTab(window.location.pathname, window.location.hash));
+  const [staffTab, setStaffTab] = useState<OperationsTab>(() => readStaffTab(window.location.pathname));
   const services = useMemo(() => (getSupabaseRuntimeConfig() === null ? null : createFuwafuwaServices()), []);
 
   useEffect(() => {
     const syncFromLocation = () => {
       setRoute(readRoute());
-      setStaffTab(readStaffTab(window.location.pathname, window.location.hash));
+      setStaffTab(readStaffTab(window.location.pathname));
     };
     window.addEventListener("hashchange", syncFromLocation);
     window.addEventListener("popstate", syncFromLocation);
@@ -120,8 +117,7 @@ export function FuwafuwaApp() {
   // タブ変更時にURLへ同期し、ブラウザバックでタブが戻れるようにする。
   const openStaffTab = useCallback((tab: OperationsTab): void => {
     setStaffTab(tab);
-    const base = window.location.pathname.startsWith("/fuwafuwa") ? "/fuwafuwa/staff" : "/staff";
-    const nextPath = tab === "home" ? base : `${base}/${tab}`;
+    const nextPath = tab === "home" ? "/staff" : `/staff/${tab}`;
     if (window.location.pathname.replace(/\/$/, "") !== nextPath) {
       window.history.pushState(null, "", nextPath);
     }

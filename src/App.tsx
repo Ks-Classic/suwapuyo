@@ -6,6 +6,7 @@ import { FuwafuwaApp } from "./fuwafuwa-land";
 import { ExhibitorReport } from "./report/ExhibitorReport";
 import { ShortsStudioMock } from "./shorts-studio/ShortsStudioMock";
 import { MvpApp } from "./app/MvpApp";
+import { legacyStaffRedirect } from "./fuwafuwa-land/staffRouting";
 
 // 旧「当日マップ」(BoothMapScreen)は退役。会場マップは /concierge のマップに一本化した。
 function isLegacyMapPath(): boolean {
@@ -21,12 +22,15 @@ function isLegacyMapPath(): boolean {
 
 function App() {
   const legacyMap = isLegacyMapPath();
+  const legacyStaff = typeof window === "undefined" ? null : legacyStaffRedirect(window.location.pathname, window.location.hash);
 
   useEffect(() => {
     if (legacyMap) {
       window.location.replace("/concierge");
+    } else if (legacyStaff !== null) {
+      window.location.replace(legacyStaff);
     }
-  }, [legacyMap]);
+  }, [legacyMap, legacyStaff]);
 
   const isShortsStudio =
     typeof window !== "undefined" &&
@@ -57,7 +61,7 @@ function App() {
       window.location.pathname.startsWith("/report/") ||
       window.location.hash.startsWith("#/report"));
   const isLegacyGame = typeof window !== "undefined" && window.location.pathname === "/legacy/game";
-  if (legacyMap) {
+  if (legacyMap || legacyStaff !== null) {
     return null;
   }
   if (isShortsStudio) {
