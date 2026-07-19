@@ -1,11 +1,12 @@
 import { DISPLAY_STATE_ID } from "../config";
 import { getSupabaseClient, type FuwafuwaSupabaseClient } from "../lib/supabase";
-import type { Database } from "../types/database.types";
-import type { Artwork, ConnectionStatus, DisplayEvent, DisplayState, DisplayStateService, RealtimeSubscription } from "../types";
+import type { Database, Json } from "../types/database.types";
+import { DISPLAY_EVENT_TYPES, BGM_TRACK_IDS, type Artwork, type BgmTrackId, type ConnectionStatus, type DisplayEvent, type DisplayEventType, type DisplaySettings, type DisplayState, type DisplayStateService, type RealtimeSubscription } from "../types";
 import { SAMPLE_CHARACTERS } from "../renderer/sampleCharacters";
 import { cacheDisplayState, getCachedDisplayState } from "./db";
 import { SupabaseArtworkRepository } from "./artworkStore";
 import { SupabaseCharacterContentRepository } from "./characterContentStore";
+import { SupabaseSpeechLineRepository } from "./speechLineStore";
 import { appendOperationLog } from "./operationLog";
 
 type DisplayStateRow = Database["public"]["Tables"]["display_state"]["Row"];
@@ -13,6 +14,10 @@ const DEFAULT_SAMPLE_ARTWORK_IDS = SAMPLE_CHARACTERS.map((sample) => sample.id);
 
 function isSampleArtworkId(id: string): boolean {
   return DEFAULT_SAMPLE_ARTWORK_IDS.includes(id);
+}
+
+function isDisplayEventType(value: unknown): value is DisplayEventType {
+  return typeof value === "string" && (DISPLAY_EVENT_TYPES as readonly string[]).includes(value);
 }
 
 function isDisplayEvent(value: unknown): value is DisplayEvent {
@@ -23,9 +28,51 @@ function isDisplayEvent(value: unknown): value is DisplayEvent {
     "type" in value &&
     "startedAt" in value &&
     typeof value.id === "string" &&
-    value.type === "battle" &&
+    isDisplayEventType(value.type) &&
     typeof value.startedAt === "string"
   );
+}
+
+function isBgmTrackId(value: unknown): value is BgmTrackId {
+  return typeof value === "string" && (BGM_TRACK_IDS as readonly string[]).includes(value);
+}
+
+// settings jsonb を安全にパース(未知キー・不正値は捨てて既定 {} に倒す)
+export function settingsFromJson(value: Json | null | undefined): DisplaySettings {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {};
+  }
+  const settings: DisplaySettings = {};
+  if (isBgmTrackId(value.bgmTrackId)) {
+    settings.bgmTrackId = value.bgmTrackId;
+  }
+  if (typeof value.bgmVolume === "number" && Number.isFinite(value.bgmVolume)) {
+    settings.bgmVolume = Math.min(1, Math.max(0, value.bgmVolume));
+  }
+  if (typeof value.speechIntervalMs === "number" && Number.isFinite(value.speechIntervalMs)) {
+    settings.speechIntervalMs = Math.min(120_000, Math.max(15_000, value.speechIntervalMs));
+  }
+  return settings;
+}
+
+export function settingsToJson(settings: DisplaySettings): Json {
+  const json: { [key: string]: Json | undefined } = {};
+  if (settings.bgmTrackId !== undefined) {
+    json.bgmTrackId = settings.bgmTrackId;
+  }
+  if (settings.bgmVolume !== undefined) {
+    json.bgmVolume = settings.bgmVolume;
+  }
+  if (settings.speechIntervalMs !== undefined) {
+    json.speechIntervalMs = settings.speechIntervalMs;
+  }
+  return json;
+}
+
+// idb 旧キャッシュには settings が無いことがあるため既定値を補う
+function withSettingsFallback(state: DisplayState): DisplayState {
+  const settings = (state as Partial<DisplayState>).settings ?? {};
+  return { ...state, settings };
 }
 
 function stateFromRow(row: DisplayStateRow): DisplayState {
@@ -38,6 +85,7 @@ function stateFromRow(row: DisplayStateRow): DisplayState {
     mode: row.mode,
     maxVisibleCount: useDefaultSamples ? Math.max(row.max_visible_count, DEFAULT_SAMPLE_ARTWORK_IDS.length) : row.max_visible_count,
     displayEvent: isDisplayEvent(row.display_event) ? row.display_event : undefined,
+    settings: settingsFromJson(row.settings),
     updatedAt: row.updated_at,
   };
 }
@@ -49,10 +97,17 @@ function isDisplayStateRow(value: unknown): value is DisplayStateRow {
 function patchToRow(patch: Partial<Omit<DisplayState, "id" | "updatedAt">>): Database["public"]["Tables"]["display_state"]["Update"] {
   const row: Database["public"]["Tables"]["display_state"]["Update"] = {
     visible_artwork_ids: patch.visibleArtworkIds,
-    featured_artwork_id: patch.featuredArtworkId ?? null,
     mode: patch.mode,
     max_visible_count: patch.maxVisibleCount,
   };
+  // featuredArtworkId はキーが渡されたときだけ反映する。
+  // (settings やイベントのみの更新で featured が意図せず消えるのを防ぐ。hero イベントは featured に依存)
+  if ("featuredArtworkId" in patch) {
+    row.featured_artwork_id = patch.featuredArtworkId ?? null;
+  }
+  if (patch.settings !== undefined) {
+    row.settings = settingsToJson(patch.settings);
+  }
   if ("displayEvent" in patch) {
     row.display_event =
       patch.displayEvent === null || patch.displayEvent === undefined
@@ -112,7 +167,7 @@ export class SupabaseDisplayStateService implements DisplayStateService {
     if (response.error !== null) {
       const cached = await getCachedDisplayState();
       if (cached !== null) {
-        return cached;
+        return withSettingsFallback(cached);
       }
       throw response.error;
     }
@@ -207,17 +262,27 @@ export class SupabaseDisplayStateService implements DisplayStateService {
     return this.updateDisplayState({ mode: current.mode === "paused" ? "random" : "paused" });
   }
 
-  async startBattleEvent(): Promise<DisplayState> {
-    const state = await this.updateDisplayState({
+  async startDisplayEvent(type: DisplayEventType): Promise<void> {
+    await this.updateDisplayState({
       displayEvent: {
         id: crypto.randomUUID(),
-        type: "battle",
+        type,
         startedAt: new Date().toISOString(),
       },
       mode: "random",
     });
-    await appendOperationLog("random", "battle_event_started");
-    return state;
+    await appendOperationLog("random", `${type}_event_started`);
+  }
+
+  // 既存呼び出し互換の残置ラッパー(08_設計書 §3)
+  async startBattleEvent(): Promise<DisplayState> {
+    await this.startDisplayEvent("battle");
+    return this.getDisplayState();
+  }
+
+  async updateSettings(patch: Partial<DisplaySettings>): Promise<void> {
+    const current = await this.getDisplayState();
+    await this.updateDisplayState({ settings: { ...current.settings, ...patch } });
   }
 
   async clearDisplayEvent(): Promise<DisplayState> {
@@ -252,12 +317,18 @@ export class SupabaseDisplayStateService implements DisplayStateService {
   }
 }
 
-export function createFuwafuwaServices(): { repository: SupabaseArtworkRepository; displayState: SupabaseDisplayStateService; characterContent: SupabaseCharacterContentRepository } {
+export function createFuwafuwaServices(): {
+  repository: SupabaseArtworkRepository;
+  displayState: SupabaseDisplayStateService;
+  characterContent: SupabaseCharacterContentRepository;
+  speechLines: SupabaseSpeechLineRepository;
+} {
   const clientPromise = ensureClient();
   const repository = new SupabaseArtworkRepository(clientPromise);
   return {
     repository,
     displayState: new SupabaseDisplayStateService(clientPromise, repository),
     characterContent: new SupabaseCharacterContentRepository(clientPromise),
+    speechLines: new SupabaseSpeechLineRepository(clientPromise),
   };
 }

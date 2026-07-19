@@ -1,8 +1,20 @@
 import { Application, Container, Graphics, Sprite, Text, Texture } from "pixi.js";
+import { BgmEngine } from "../../audio/BgmEngine";
 import type { FuwafuwaConfig } from "../config";
-import type { Artwork, DisplayState } from "../types";
+import { DEFAULT_BGM_VOLUME, DEFAULT_SPEECH_INTERVAL_MS, type Artwork, type BgmTrackId, type DisplayEvent, type DisplayState, type SpeechLine } from "../types";
 import { createBody, type MotionBody, updateBody } from "./artworkMotion";
+import { createBehavior, destroyBehavior, isBehaviorEligible, resetBehavior, updateBehavior, type BehaviorRuntime } from "./behaviors";
+import { createDisplayEvent, type DisplayEventHandle, type EventItemView } from "./displayEvents";
 import { SAMPLE_CHARACTERS } from "./sampleCharacters";
+import {
+  createSpeechBubble,
+  destroySpeechBubble,
+  normalizeSpeechIntervalMs,
+  rollSpeechIntervalMs,
+  selectSpeech,
+  updateSpeechBubble,
+  type SpeechBubble,
+} from "./speechBubbles";
 
 interface WorldItem {
   id: string;
@@ -12,6 +24,7 @@ interface WorldItem {
   artwork?: Artwork;
   texture?: Texture;
   featured?: boolean;
+  behavior: BehaviorRuntime;
 }
 
 interface WaawaaRainItem {
@@ -88,8 +101,15 @@ export class FuwafuwaWorld {
   private waawaaMode = false;
   private readonly waawaaAudio: HTMLAudioElement;
   private audioContext: AudioContext | null = null;
+  private readonly bgm = new BgmEngine();
   private readonly waawaaRain: WaawaaRainItem[] = [];
   private battleState: BattleState | null = null;
+  private displayEvent: DisplayEventHandle | null = null;
+  private speechLines: SpeechLine[] = [];
+  private speechIntervalMs = DEFAULT_SPEECH_INTERVAL_MS;
+  private nextSpeechAt = 0;
+  private lastSpeechCharacterId: string | null = null;
+  private speechBubble: SpeechBubble | null = null;
 
   constructor(config: FuwafuwaConfig) {
     this.config = config;
@@ -121,8 +141,14 @@ export class FuwafuwaWorld {
     this.background?.destroy();
     this.background = null;
     this.clearWaawaaRain();
-    this.clearBattleState();
-    this.items.forEach((item) => item.container.destroy({ children: true }));
+    this.stopDisplayEvent();
+    destroySpeechBubble(this.speechBubble);
+    this.speechBubble = null;
+    this.bgm.dispose();
+    this.items.forEach((item) => {
+      destroyBehavior(item.behavior);
+      item.container.destroy({ children: true });
+    });
     this.items.clear();
     this.loadingIds.clear();
     this.app?.destroy(true);
@@ -143,16 +169,70 @@ export class FuwafuwaWorld {
     if (context === null) {
       return false;
     }
-    await context.resume();
+    // 2つのAudioContextを同じクリックのuser activation内で同時にresumeする。
+    const [eventAudioUnlocked, bgmUnlocked] = await Promise.all([
+      context.resume().then(() => true).catch(() => false),
+      this.bgm.unlock(),
+    ]);
+    if (!eventAudioUnlocked || !bgmUnlocked) {
+      return false;
+    }
     this.playSparkleSound(1);
     return true;
   }
 
+  setBgm(trackId: BgmTrackId, volume = DEFAULT_BGM_VOLUME): void {
+    this.bgm.setVolume(volume);
+    this.bgm.setTrack(trackId);
+  }
+
+  setSpeechConfiguration(lines: readonly SpeechLine[], intervalMs: number | undefined): void {
+    const normalizedInterval = normalizeSpeechIntervalMs(intervalMs);
+    const intervalChanged = normalizedInterval !== this.speechIntervalMs;
+    this.speechLines = [...lines];
+    this.speechIntervalMs = normalizedInterval;
+    if (this.nextSpeechAt === 0 || intervalChanged) {
+      this.nextSpeechAt = performance.now() + rollSpeechIntervalMs(this.speechIntervalMs, Math.random);
+    }
+  }
+
+  startDisplayEvent(event: DisplayEvent): void {
+    destroySpeechBubble(this.speechBubble);
+    this.speechBubble = null;
+    if (event.type === "battle") {
+      this.startBattleEvent(event.id);
+      return;
+    }
+    if (this.app === null || this.displayEvent?.id === event.id) {
+      return;
+    }
+    this.stopDisplayEvent();
+    const views = this.eventViews();
+    const handle = createDisplayEvent(
+      event,
+      {
+        stage: this.app.stage,
+        bounds: () => ({ width: this.app?.screen.width ?? 1, height: this.app?.screen.height ?? 1 }),
+        playTone: (frequency, durationMs, gain, wave, delayMs) => this.playTone(frequency, durationMs, gain, wave, delayMs),
+        bigTextSize: () => this.getSecretModeTextSize(),
+      },
+      views,
+    );
+    if (handle === null) {
+      return;
+    }
+    this.items.forEach((item) => resetBehavior(item.behavior));
+    this.displayEvent = handle;
+    this.bgm.duck(true);
+  }
+
   startBattleEvent(eventId: string): void {
+    destroySpeechBubble(this.speechBubble);
+    this.speechBubble = null;
     if (this.app === null || this.battleState?.id === eventId) {
       return;
     }
-    this.clearBattleState();
+    this.stopDisplayEvent();
     const participants = Array.from(this.items.keys());
     if (participants.length === 0) {
       return;
@@ -204,11 +284,16 @@ export class FuwafuwaWorld {
       subtitle,
       effects: [],
     };
+    this.items.forEach((item) => resetBehavior(item.behavior));
+    this.bgm.duck(true);
     this.playBattleIntroSound();
   }
 
   stopDisplayEvent(): void {
     this.clearBattleState();
+    this.displayEvent?.destroy();
+    this.displayEvent = null;
+    this.bgm.duck(false);
   }
 
   async sync(artworks: Artwork[], state: DisplayState, getImageURL: (id: string) => Promise<string>): Promise<void> {
@@ -221,7 +306,12 @@ export class FuwafuwaWorld {
     this.desiredVisibleIds = visible;
     this.items.forEach((item, id) => {
       if (!visible.has(id)) {
+        if (this.speechBubble?.characterId === id) {
+          destroySpeechBubble(this.speechBubble);
+          this.speechBubble = null;
+        }
         this.app?.stage.removeChild(item.container);
+        destroyBehavior(item.behavior);
         item.container.destroy({ children: true });
         this.items.delete(id);
       }
@@ -262,8 +352,10 @@ export class FuwafuwaWorld {
     this.items.forEach((item, id) => {
       if (isSampleId(id)) {
         const artwork = artworks.find((candidate) => candidate.id === id);
-        item.container.alpha = 0.92;
-        item.container.scale.set(0.92 * ((artwork?.displayScale ?? 0.6) / 0.6));
+        const featured = state.featuredArtworkId === id;
+        item.featured = featured;
+        item.container.alpha = state.featuredArtworkId !== undefined && !featured ? 0.72 : 0.92;
+        item.container.scale.set((featured ? 1.3 : 0.92) * ((artwork?.displayScale ?? 0.6) / 0.6));
         return;
       }
       const featured = state.featuredArtworkId === id;
@@ -297,7 +389,7 @@ export class FuwafuwaWorld {
     this.applyCharacterTapBehavior(container, id);
     container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
     this.app.stage.addChild(container);
-    this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, texture, featured });
+    this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, texture, featured, behavior: createBehavior() });
   }
 
   private populateSprite(container: Container, texture: Texture, artwork: Artwork, featured: boolean): void {
@@ -374,7 +466,7 @@ export class FuwafuwaWorld {
       this.applyCharacterTapBehavior(container, id);
       container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
       this.app.stage.addChild(container);
-      this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured });
+      this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured, behavior: createBehavior() });
       return;
     }
     const card = new Graphics().roundRect(-96, -80, 192, 160, this.config.card.cornerRadius).fill(0xfffbeb).stroke({ color: 0xffb703, width: 4 });
@@ -387,7 +479,7 @@ export class FuwafuwaWorld {
     this.applyCharacterTapBehavior(container, id);
     container.scale.set((featured ? 2.2 : 1.7) * artwork.displayScale);
     this.app.stage.addChild(container);
-    this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured });
+    this.items.set(id, { id, container, body: this.createArtworkBody(), kind: "artwork", artwork, featured, behavior: createBehavior() });
   }
 
   private ensureSamples(sampleIds: string[]): void {
@@ -406,7 +498,7 @@ export class FuwafuwaWorld {
       this.applySampleTapBehavior(container, sample.id);
       this.app?.stage.addChild(container);
       if (this.app !== null) {
-        this.items.set(sample.id, { id: sample.id, container, body: createBody(this.app.screen.width, this.app.screen.height, this.config), kind: "sample" });
+        this.items.set(sample.id, { id: sample.id, container, body: createBody(this.app.screen.width, this.app.screen.height, this.config), kind: "sample", behavior: createBehavior() });
       }
       void this.populateSample(container, sample.id);
     });
@@ -693,8 +785,29 @@ export class FuwafuwaWorld {
     this.battleState = null;
   }
 
+  private eventViews(): EventItemView[] {
+    return Array.from(this.items.values()).map((item) => {
+      const sample = item.kind === "sample" ? SAMPLE_CHARACTERS.find((candidate) => candidate.id === item.id) : undefined;
+      return {
+        id: item.id,
+        container: item.container,
+        body: item.body,
+        baseScale: item.container.scale.x,
+        label: item.artwork?.givenName ?? item.artwork?.displayLabel ?? sample?.label ?? item.id,
+        featured: item.featured === true,
+        createdAtMs: item.artwork === undefined ? 0 : Date.parse(item.artwork.createdAt),
+        isSample: item.kind === "sample",
+      };
+    });
+  }
+
   private tick(deltaMs: number): void {
-    if (this.app === null || this.paused) {
+    if (this.app === null) {
+      return;
+    }
+    const now = performance.now();
+    this.updateActiveSpeechBubble(now);
+    if (this.paused) {
       return;
     }
     this.layoutBackground();
@@ -703,14 +816,74 @@ export class FuwafuwaWorld {
       this.tickBattle(deltaMs, bounds);
       return;
     }
+    if (this.displayEvent !== null) {
+      if (!this.displayEvent.update(deltaMs, performance.now())) {
+        this.stopDisplayEvent();
+      }
+      return;
+    }
     const speedAdjustedDelta = this.waawaaMode ? deltaMs * this.config.secretMode.speedMultiplier : deltaMs;
+    const behaviorItems = Array.from(this.items.values()).filter((item) => isBehaviorEligible(item.featured === true, false));
+    const peers = behaviorItems.map((item) => ({ id: item.id, x: item.body.x, y: item.body.y, state: item.behavior.state }));
+    const context = {
+      now,
+      bounds,
+      config: this.config,
+      stage: this.app.stage,
+      napCount: behaviorItems.filter((item) => item.behavior.state === "nap").length,
+      peers,
+      getRuntime: (id: string) => this.items.get(id)?.behavior,
+    };
     this.items.forEach((item) => {
-      item.body = updateBody(item.body, speedAdjustedDelta, bounds, this.config);
-      item.container.x = item.body.x;
-      item.container.y = item.body.y + Math.sin(item.body.phase) * this.config.motion.bobAmplitude;
-      item.container.rotation = this.waawaaMode ? item.container.rotation + speedAdjustedDelta * 0.006 : Math.sin(item.body.phase * 0.7) * item.body.rotation;
+      if (item.featured === true) {
+        item.body = updateBody(item.body, speedAdjustedDelta, bounds, this.config);
+        item.container.x = item.body.x;
+        item.container.y = item.body.y + Math.sin(item.body.phase) * this.config.motion.bobAmplitude;
+        item.container.rotation = Math.sin(item.body.phase * 0.7) * item.body.rotation;
+        return;
+      }
+      updateBehavior(item, context, speedAdjustedDelta);
+      if (this.waawaaMode) {
+        item.container.rotation += speedAdjustedDelta * 0.006;
+      }
     });
+    this.tickSpeech(context.now);
     this.tickWaawaaRain(speedAdjustedDelta, bounds);
+  }
+
+  private tickSpeech(now: number): void {
+    if (this.app === null) {
+      return;
+    }
+    if (now < this.nextSpeechAt) {
+      return;
+    }
+    this.nextSpeechAt = now + rollSpeechIntervalMs(this.speechIntervalMs, Math.random);
+    const selection = selectSpeech(
+      Array.from(this.items.values()).map((item) => ({ id: item.id, featured: item.featured === true })),
+      this.speechLines,
+      this.lastSpeechCharacterId,
+      false,
+      Math.random,
+    );
+    if (selection === null) {
+      return;
+    }
+    destroySpeechBubble(this.speechBubble);
+    this.speechBubble = createSpeechBubble(this.app.stage, selection, now);
+    this.lastSpeechCharacterId = selection.characterId;
+    const item = this.items.get(selection.characterId);
+    updateSpeechBubble(this.speechBubble, now, item?.container, this.app.screen.width);
+  }
+
+  private updateActiveSpeechBubble(now: number): void {
+    if (this.app === null || this.speechBubble === null) {
+      return;
+    }
+    const item = this.items.get(this.speechBubble.characterId);
+    if (!updateSpeechBubble(this.speechBubble, now, item?.container, this.app.screen.width)) {
+      this.speechBubble = null;
+    }
   }
 
   private tickBattle(deltaMs: number, bounds: { width: number; height: number }): void {
@@ -720,7 +893,7 @@ export class FuwafuwaWorld {
     const now = performance.now();
     const battle = this.battleState;
     if (now >= battle.endAt) {
-      this.clearBattleState();
+      this.stopDisplayEvent();
       return;
     }
     const activeActors = [...battle.actors.values()].filter((actor) => !actor.eliminated);

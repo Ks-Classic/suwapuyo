@@ -123,6 +123,38 @@ export interface Database {
           },
         ];
       };
+      character_claim_tokens: {
+        Row: {
+          token: string;
+          display_character_id: string;
+          status: "active" | "claimed" | "revoked";
+          expires_at: string;
+          created_at: string;
+          claimed_at: string | null;
+        };
+        Insert: {
+          token?: string;
+          display_character_id: string;
+          status?: "active" | "claimed" | "revoked";
+          expires_at?: string;
+          created_at?: string;
+          claimed_at?: string | null;
+        };
+        Update: {
+          display_character_id?: string;
+          status?: "active" | "claimed" | "revoked";
+          expires_at?: string;
+          claimed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "character_claim_tokens_display_character_id_fkey";
+            columns: ["display_character_id"];
+            referencedRelation: "display_characters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       display_state: {
         Row: {
           id: "current";
@@ -131,6 +163,7 @@ export interface Database {
           mode: "idle" | "random" | "featured" | "paused";
           max_visible_count: number;
           display_event: Json | null;
+          settings: Json;
           updated_at: string;
         };
         Insert: {
@@ -140,6 +173,7 @@ export interface Database {
           mode?: "idle" | "random" | "featured" | "paused";
           max_visible_count?: number;
           display_event?: Json | null;
+          settings?: Json;
         };
         Update: {
           visible_artwork_ids?: string[];
@@ -147,8 +181,82 @@ export interface Database {
           mode?: "idle" | "random" | "featured" | "paused";
           max_visible_count?: number;
           display_event?: Json | null;
+          settings?: Json;
         };
         Relationships: [];
+      };
+      fuwafuwa_speech_lines: {
+        Row: {
+          id: string;
+          text: string;
+          character_id: string | null;
+          category: "idle" | "booth_intro";
+          booth_ref: string | null;
+          weight: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          text: string;
+          character_id?: string | null;
+          category?: "idle" | "booth_intro";
+          booth_ref?: string | null;
+          weight?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          text?: string;
+          character_id?: string | null;
+          category?: "idle" | "booth_intro";
+          booth_ref?: string | null;
+          weight?: number;
+          active?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fuwafuwa_speech_lines_character_id_fkey";
+            columns: ["character_id"];
+            referencedRelation: "display_characters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      line_character_links: {
+        Row: {
+          id: string;
+          line_user_id: string;
+          display_character_id: string;
+          claim_token: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          line_user_id: string;
+          display_character_id: string;
+          claim_token?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          line_user_id?: string;
+          display_character_id?: string;
+          claim_token?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "line_character_links_display_character_id_fkey";
+            columns: ["display_character_id"];
+            referencedRelation: "display_characters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "line_character_links_claim_token_fkey";
+            columns: ["claim_token"];
+            referencedRelation: "character_claim_tokens";
+            referencedColumns: ["token"];
+          },
+        ];
       };
       tap_content_items: {
         Row: {
@@ -281,7 +389,34 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      claim_character: {
+        Args: {
+          p_token: string;
+          p_line_user_id: string;
+        };
+        Returns: {
+          display_character_id: string;
+          label: string;
+          image_path: string;
+          source_type: "sample" | "artwork" | "sponsor";
+          source_id: string;
+        }[];
+      };
+      list_my_characters: {
+        Args: {
+          p_line_user_id: string;
+        };
+        Returns: {
+          display_character_id: string;
+          label: string;
+          image_path: string;
+          source_type: "sample" | "artwork" | "sponsor";
+          source_id: string;
+          linked_at: string;
+        }[];
+      };
+    };
     Enums: {
       character_source_type: "sample" | "artwork" | "sponsor";
       display_character_status: "visible" | "hidden" | "archived";

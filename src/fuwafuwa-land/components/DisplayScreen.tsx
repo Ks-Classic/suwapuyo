@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SUUSUU_CONFIG } from "../config";
 import { FuwafuwaWorld } from "../renderer/FuwafuwaWorld";
-import type { Artwork, CharacterContentBundle, ConnectionStatus, DisplayCharacter, DisplayState, FuwafuwaServices, MetricsSnapshot } from "../types";
+import type { Artwork, CharacterContentBundle, ConnectionStatus, DisplayCharacter, DisplayState, FuwafuwaServices, MetricsSnapshot, SpeechLine } from "../types";
 import { CharacterContentPopup } from "./CharacterContentPopup";
 import { MetricsOverlay } from "./MetricsOverlay";
 
@@ -16,6 +16,7 @@ const INITIAL_STATE: DisplayState = {
   mode: "idle",
   maxVisibleCount: 12,
   displayEvent: null,
+  settings: {},
   updatedAt: new Date(0).toISOString(),
 };
 
@@ -81,6 +82,7 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   const worldRef = useRef<FuwafuwaWorld | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [displayCharacters, setDisplayCharacters] = useState<DisplayCharacter[] | null>(null);
+  const [speechLines, setSpeechLines] = useState<SpeechLine[]>([]);
   const [displayState, setDisplayState] = useState<DisplayState>(INITIAL_STATE);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const [fps, setFps] = useState(0);
@@ -127,11 +129,12 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
   }, [services.characterContent]);
 
   useEffect(() => {
-    void Promise.all([services.repository.list(), services.displayState.getDisplayState(), services.characterContent.listCharacters()])
-      .then(([loadedArtworks, loadedState, loadedCharacters]) => {
+    void Promise.all([services.repository.list(), services.displayState.getDisplayState(), services.characterContent.listCharacters(), services.speechLines.list()])
+      .then(([loadedArtworks, loadedState, loadedCharacters, loadedSpeechLines]) => {
         setArtworks(loadedArtworks);
         setDisplayState(loadedState);
         setDisplayCharacters(loadedCharacters);
+        setSpeechLines(loadedSpeechLines);
       })
       .catch(() => {
         setConnectionStatus("error");
@@ -151,12 +154,19 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
         }),
       setConnectionStatus,
     );
+    const speechSub = services.speechLines.subscribeChanges(
+      () => {
+        void services.speechLines.list().then(setSpeechLines).catch(() => setConnectionStatus("error"));
+      },
+      setConnectionStatus,
+    );
     return () => {
       void artworkSub.unsubscribe();
       void stateSub.unsubscribe();
       void characterSub.unsubscribe();
+      void speechSub.unsubscribe();
     };
-  }, [services.characterContent, services.displayState, services.repository]);
+  }, [services.characterContent, services.displayState, services.repository, services.speechLines]);
 
   const effectiveDisplayState = useMemo(() => stateFromCharacters(displayState, displayCharacters), [displayCharacters, displayState]);
   const worldArtworks = useMemo(() => {
@@ -196,7 +206,7 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
     if (!worldReady) {
       return;
     }
-    if (effectiveDisplayState.displayEvent?.type !== "battle") {
+    if (effectiveDisplayState.displayEvent === null || effectiveDisplayState.displayEvent === undefined) {
       lastEventIdRef.current = null;
       worldRef.current?.stopDisplayEvent();
       return;
@@ -205,8 +215,22 @@ export function DisplayScreen({ services, debug = false }: DisplayScreenProps) {
       return;
     }
     lastEventIdRef.current = effectiveDisplayState.displayEvent.id;
-    worldRef.current?.startBattleEvent(effectiveDisplayState.displayEvent.id);
+    worldRef.current?.startDisplayEvent(effectiveDisplayState.displayEvent);
   }, [effectiveDisplayState.displayEvent, worldReady]);
+
+  useEffect(() => {
+    if (!worldReady) {
+      return;
+    }
+    worldRef.current?.setBgm(effectiveDisplayState.settings.bgmTrackId ?? "off", effectiveDisplayState.settings.bgmVolume);
+  }, [effectiveDisplayState.settings.bgmTrackId, effectiveDisplayState.settings.bgmVolume, worldReady]);
+
+  useEffect(() => {
+    if (!worldReady) {
+      return;
+    }
+    worldRef.current?.setSpeechConfiguration(speechLines, effectiveDisplayState.settings.speechIntervalMs);
+  }, [effectiveDisplayState.settings.speechIntervalMs, speechLines, worldReady]);
 
   useEffect(() => {
     let active = true;

@@ -1,7 +1,14 @@
 export type ArtworkStatus = "queued" | "visible" | "hidden" | "archived";
 export type ConsentScope = "event_only" | "sns_allowed" | "unknown";
 export type DisplayMode = "idle" | "random" | "featured" | "paused";
-export type DisplayEventType = "battle";
+// 劇的イベント: 既存バトル + 08_設計書 §3 の6種
+export type DisplayEventType = "battle" | "rainbow" | "fireworks" | "candy_rain" | "train" | "bubbles" | "hero";
+export const DISPLAY_EVENT_TYPES: readonly DisplayEventType[] = ["battle", "rainbow", "fireworks", "candy_rain", "train", "bubbles", "hero"];
+// BGM: WebAudio合成4曲 + OFF(08_設計書 §1.2)
+export type BgmTrackId = "fuwafuwa_march" | "hidamari_sanpo" | "omatsuri" | "hoshizora_waltz" | "off";
+export const BGM_TRACK_IDS: readonly BgmTrackId[] = ["fuwafuwa_march", "hidamari_sanpo", "omatsuri", "hoshizora_waltz", "off"];
+export const DEFAULT_BGM_VOLUME = 0.5;
+export const DEFAULT_SPEECH_INTERVAL_MS = 30_000;
 export type ArtworkSource = "photo" | "digital";
 export type DisplayCharacterSourceType = "sample" | "artwork" | "sponsor";
 export type DisplayCharacterStatus = "visible" | "hidden" | "archived";
@@ -103,6 +110,32 @@ export interface CharacterContentBundle {
   items: TapContentItem[];
 }
 
+// display_state.settings (jsonb) に保存する表示画面の設定
+export interface DisplaySettings {
+  bgmTrackId?: BgmTrackId;
+  bgmVolume?: number;
+  speechIntervalMs?: number;
+}
+
+export type SpeechLineCategory = "idle" | "booth_intro";
+
+export interface SpeechLine {
+  id: string;
+  text: string;
+  characterId: string | null;
+  category: SpeechLineCategory;
+  boothRef: string | null;
+  weight: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface SpeechLineDraft {
+  text: string;
+  characterId: string | null;
+  weight: number;
+}
+
 export interface DisplayState {
   id: "current";
   visibleArtworkIds: string[];
@@ -110,7 +143,20 @@ export interface DisplayState {
   mode: DisplayMode;
   maxVisibleCount: number;
   displayEvent?: DisplayEvent | null;
+  settings: DisplaySettings;
   updatedAt: string;
+}
+
+// キャラQRクレーム用トークン(character_claim_tokens 行)
+export type ClaimTokenStatus = "active" | "claimed" | "revoked";
+
+export interface ClaimToken {
+  token: string;
+  displayCharacterId: string;
+  status: ClaimTokenStatus;
+  expiresAt: string;
+  createdAt: string;
+  claimedAt: string | null;
 }
 
 export interface DisplayEvent {
@@ -137,6 +183,9 @@ export interface RegisterArtworkInput {
   givenName?: string;
   consentScope: ConsentScope;
   notes?: string;
+  // display_characters へ upsert する際の初期状態。省略時 "visible"(従来動作)。
+  // キオスクお絵かきは "hidden" を渡してスタッフ承認待ちにする。
+  characterStatus?: "visible" | "hidden";
 }
 
 export interface ProcessedArtwork {
@@ -178,6 +227,7 @@ export interface CharacterContentRepository {
   getCharacterContent(characterId: string): Promise<CharacterContentBundle | null>;
   setCharacterStatus(id: string, status: DisplayCharacterStatus): Promise<DisplayCharacter>;
   setCharacterDisplayScale(id: string, scale: number): Promise<DisplayCharacter>;
+  setCharacterLabel(id: string, label: string): Promise<void>;
   saveTapContent(characterId: string, draft: TapContentDraft, items: TapContentItemDraft[]): Promise<CharacterContentBundle>;
   getMediaPublicUrl(path: string): string;
   uploadMedia(input: { characterId: string; kind: TapContentMediaKind; file: File | Blob; contentType: string; extension: string }): Promise<string>;
@@ -197,12 +247,23 @@ export interface DisplayStateService {
   setMaxVisible(count: number): Promise<DisplayState>;
   pauseToggle(): Promise<DisplayState>;
   startBattleEvent(): Promise<DisplayState>;
+  startDisplayEvent(type: DisplayEventType): Promise<void>;
+  updateSettings(patch: Partial<DisplaySettings>): Promise<void>;
   clearDisplayEvent(): Promise<DisplayState>;
   subscribeDisplayState(onChange: (state: DisplayState) => void, onStatus: (status: ConnectionStatus) => void): RealtimeSubscription;
+}
+
+export interface SpeechLineRepository {
+  list(): Promise<SpeechLine[]>;
+  add(draft: SpeechLineDraft): Promise<SpeechLine>;
+  remove(id: string): Promise<void>;
+  setActive(id: string, active: boolean): Promise<SpeechLine>;
+  subscribeChanges(onChange: () => void, onStatus: (status: ConnectionStatus) => void): RealtimeSubscription;
 }
 
 export interface FuwafuwaServices {
   repository: ArtworkRepository;
   displayState: DisplayStateService;
   characterContent: CharacterContentRepository;
+  speechLines: SpeechLineRepository;
 }
