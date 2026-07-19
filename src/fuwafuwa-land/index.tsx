@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseRuntimeConfig } from "./lib/supabase";
 import { createFuwafuwaServices } from "./store/displayState";
 import { requestStoragePersistence } from "./store/db";
-import { StaffPanel } from "./components/StaffPanel";
+import { StaffPanel, type OperationsTab } from "./components/StaffPanel";
 import { DisplayScreen } from "./components/DisplayScreen";
 import { FuwafuwaDrawScreen } from "./components/FuwafuwaDrawScreen";
 import { SUUSUU_CONFIG } from "./config";
@@ -10,9 +10,21 @@ import "./styles.css";
 
 type FuwafuwaRoute = "home" | "draw" | "staff" | "display" | "debug";
 
+const STAFF_TAB_SEGMENTS: readonly OperationsTab[] = ["artworks", "land", "drawing", "devices"];
+
+// /staff/<tab> ディープリンク(04_画面遷移 §4)。旧doc表記 drawing-settings も受理する。
+export function readStaffTab(pathname: string, hash: string): OperationsTab {
+  const source = pathname.startsWith("/staff") || pathname.startsWith("/fuwafuwa/staff") ? pathname : hash.replace(/^#/, "");
+  const segment = source.replace(/\/$/, "").split("/staff/")[1]?.split("/")[0] ?? "";
+  if (segment === "drawing-settings") {
+    return "drawing";
+  }
+  return (STAFF_TAB_SEGMENTS as readonly string[]).includes(segment) ? (segment as OperationsTab) : "home";
+}
+
 function readRoute(): FuwafuwaRoute {
   const path = window.location.pathname.replace(/\/$/, "");
-  if (path === "/staff" || path === "/fuwafuwa/staff") {
+  if (path === "/staff" || path.startsWith("/staff/") || path === "/fuwafuwa/staff" || path.startsWith("/fuwafuwa/staff/")) {
     return "staff";
   }
   if (path === "/debug" || path === "/fuwafuwa/debug") {
@@ -99,31 +111,44 @@ function MissingConfig() {
 
 export function FuwafuwaApp() {
   const [route, setRoute] = useState<FuwafuwaRoute>(() => readRoute());
+  const [staffTab, setStaffTab] = useState<OperationsTab>(() => readStaffTab(window.location.pathname, window.location.hash));
   const services = useMemo(() => (getSupabaseRuntimeConfig() === null ? null : createFuwafuwaServices()), []);
 
   useEffect(() => {
-    const onHashChange = () => setRoute(readRoute());
-    const onPopState = () => setRoute(readRoute());
-    window.addEventListener("hashchange", onHashChange);
-    window.addEventListener("popstate", onPopState);
+    const syncFromLocation = () => {
+      setRoute(readRoute());
+      setStaffTab(readStaffTab(window.location.pathname, window.location.hash));
+    };
+    window.addEventListener("hashchange", syncFromLocation);
+    window.addEventListener("popstate", syncFromLocation);
     void requestStoragePersistence();
     return () => {
-      window.removeEventListener("hashchange", onHashChange);
-      window.removeEventListener("popstate", onPopState);
+      window.removeEventListener("hashchange", syncFromLocation);
+      window.removeEventListener("popstate", syncFromLocation);
     };
+  }, []);
+
+  // タブ変更時にURLへ同期し、ブラウザバックでタブが戻れるようにする。
+  const openStaffTab = useCallback((tab: OperationsTab): void => {
+    setStaffTab(tab);
+    const base = window.location.pathname.startsWith("/fuwafuwa") ? "/fuwafuwa/staff" : "/staff";
+    const nextPath = tab === "home" ? base : `${base}/${tab}`;
+    if (window.location.pathname.replace(/\/$/, "") !== nextPath) {
+      window.history.pushState(null, "", nextPath);
+    }
   }, []);
 
   if (route === "home") {
     return <FuwafuwaHome />;
   }
   if (route === "draw") {
-    return <FuwafuwaDrawScreen />;
+    return <FuwafuwaDrawScreen services={services ?? undefined} />;
   }
   if (services === null) {
     return <MissingConfig />;
   }
   if (route === "staff") {
-    return <StaffPanel services={services} />;
+    return <StaffPanel services={services} tab={staffTab} onTabChange={openStaffTab} />;
   }
   return <DisplayScreen services={services} debug={route === "debug"} />;
 }

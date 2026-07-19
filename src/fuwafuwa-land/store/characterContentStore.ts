@@ -266,6 +266,28 @@ export class SupabaseCharacterContentRepository implements CharacterContentRepos
     return character;
   }
 
+  async setCharacterLabel(id: string, label: string): Promise<void> {
+    const trimmed = label.trim();
+    if (trimmed.length === 0) {
+      throw new Error("character_label_required");
+    }
+    const client = await this.clientPromise;
+    const response = await client.from("display_characters").update({ label: trimmed }).eq("id", id).select().single();
+    if (response.error !== null) {
+      await appendOperationLog("error", response.error.message, id);
+      throw response.error;
+    }
+    const character = displayCharacterFromRow(response.data);
+    // 作品由来キャラは artworks.given_name にも名前を同期する(08_設計書 §4.2)
+    if (character.sourceType === "artwork") {
+      const artworkResponse = await client.from("artworks").update({ given_name: trimmed }).eq("id", character.sourceId);
+      if (artworkResponse.error !== null) {
+        await appendOperationLog("error", artworkResponse.error.message, id);
+        throw artworkResponse.error;
+      }
+    }
+  }
+
   async setCharacterDisplayScale(id: string, scale: number): Promise<DisplayCharacter> {
     const client = await this.clientPromise;
     const displayScale = Math.min(2, Math.max(0.1, Math.round(scale * 10) / 10));

@@ -1,7 +1,7 @@
 import { ARTWORK_BUCKET } from "../config";
 import { getSupabaseClient, type FuwafuwaSupabaseClient } from "../lib/supabase";
 import type { Database } from "../types/database.types";
-import { DEFAULT_ARTWORK_DISPLAY_SCALE, type Artwork, type ArtworkRepository, type ArtworkStatus, type ConnectionStatus, type RegisterArtworkInput, type RealtimeSubscription } from "../types";
+import { DEFAULT_ARTWORK_DISPLAY_SCALE, type Artwork, type ArtworkRepository, type ArtworkStatus, type ConnectionStatus, type DisplayCharacterStatus, type RegisterArtworkInput, type RealtimeSubscription } from "../types";
 import { cacheArtwork, cacheArtworks, cacheImage, getCachedArtwork, getCachedArtworks, getCachedImage } from "./db";
 import { appendOperationLog } from "./operationLog";
 import { normalizeSearchQuery } from "../utils/id";
@@ -126,7 +126,8 @@ export class SupabaseArtworkRepository implements ArtworkRepository {
         source_id: artwork.id,
         label: artwork.givenName ?? artwork.displayLabel,
         image_path: artwork.imageBlobKey,
-        status: "visible",
+        // キオスクお絵かきは "hidden"(スタッフ承認待ち)、スタッフ登録は既定 "visible"
+        status: input.characterStatus ?? "visible",
         display_scale: artwork.displayScale,
         tap_enabled: false,
         sort_order: Math.floor(Date.now() / 1000),
@@ -193,6 +194,14 @@ export class SupabaseArtworkRepository implements ArtworkRepository {
       throw response.error;
     }
     const artwork = artworkFromRow(response.data);
+    // Codexレビュー P1対応: 承認境界を閉じるため display_characters にも状態を同期する
+    // (queued/hidden → hidden, visible → visible, archived → archived)
+    const characterStatus: DisplayCharacterStatus = status === "archived" ? "archived" : status === "visible" ? "visible" : "hidden";
+    const mirrored = await client.from("display_characters").update({ status: characterStatus }).eq("source_type", "artwork").eq("source_id", id);
+    if (mirrored.error !== null) {
+      await appendOperationLog("error", mirrored.error.message, id);
+      throw mirrored.error;
+    }
     await cacheArtwork(artwork);
     return artwork;
   }

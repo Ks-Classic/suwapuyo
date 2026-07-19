@@ -12,7 +12,8 @@ import {
 import { SoundFX } from "../../audio/SoundFX";
 import { YourTimeReflectionDemo } from "../YourTimeReflectionDemo";
 import { CharacterSelectScreen } from "./CharacterSelectScreen";
-import { TaisouInterlude } from "./TaisouInterlude";
+import { TaisouMission } from "../../exercise/TaisouMission";
+import { useTaisouMissionTimer } from "../../exercise/useTaisouMissionTimer";
 import { VillageNarrator } from "../VillageNarrator";
 import { CHARACTERS } from "../../config/characters";
 import { buddyImageObjectUrl, ensureDemoBuddy, getBuddy, markSummoned } from "../../shared/buddyStore";
@@ -402,6 +403,7 @@ class PuyoDemo {
   puyoSkins: PuyoSkinMap;
   lastBigCheerChain = 0;
   busy = false;
+  paused = false;
   time = 0;
   score = 0;
   chainCount = 0;
@@ -768,7 +770,7 @@ class PuyoDemo {
   // ──── Selection & Swap Logic ────
 
   handleClick(row: number, col: number) {
-    if (this.busy) return;
+    if (this.busy || this.paused) return;
 
     if (this.selectedRow === -1) {
       // Nothing selected → select this puyo
@@ -1441,6 +1443,17 @@ class PuyoDemo {
     );
   }
 
+  pauseForMission(): void {
+    this.paused = true;
+    this.app.ticker.stop();
+  }
+
+  resumeAfterMission(): void {
+    if (this.destroyed) return;
+    this.paused = false;
+    this.app.ticker.start();
+  }
+
   destroy() {
     this.destroyed = true;
     this.deselect();
@@ -1495,7 +1508,7 @@ function delay(ms: number): Promise<void> {
 const CANVAS_W = BOARD_W + BOARD_PAD * 2;
 const CANVAS_H = BOARD_H + BOARD_PAD * 2;
 
-export function DemoScreen({ mvpEmbedded = false }: { mvpEmbedded?: boolean }) {
+export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTaisouRequestHandled }: { mvpEmbedded?: boolean; taisouRequested?: boolean; onTaisouRequestHandled?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const boardWrapperRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<PuyoDemo | null>(null);
@@ -1512,6 +1525,22 @@ export function DemoScreen({ mvpEmbedded = false }: { mvpEmbedded?: boolean }) {
   const [selectionVersion, setSelectionVersion] = useState(0);
   const [puyoSkins, setPuyoSkins] = useState<PuyoSkinMap>(DEFAULT_PUYO_SKINS);
   const [gameError, setGameError] = useState<string | null>(null);
+  const missionVisible = showTaisou || taisouRequested;
+  const missionVisibleRef = useRef(missionVisible);
+  const openTaisouMission = useCallback(() => setShowTaisou(true), []);
+
+  useEffect(() => {
+    missionVisibleRef.current = missionVisible;
+  }, [missionVisible]);
+
+  // プレイ中30秒ごと。overlay中・画面外・読み込み/キャラ選択中は時計を進めない。
+  useTaisouMissionTimer(!missionVisible && !showSelect && !loading && activeView === "game", openTaisouMission);
+
+  useEffect(() => {
+    const demo = demoRef.current;
+    if (missionVisible) demo?.pauseForMission();
+    else demo?.resumeAfterMission();
+  }, [missionVisible]);
 
   // Auto-scale canvas to fit available space
   const scaleCanvas = useCallback(() => {
@@ -1612,7 +1641,9 @@ export function DemoScreen({ mvpEmbedded = false }: { mvpEmbedded?: boolean }) {
       demo
         .init(containerRef.current)
         .then(() => {
-          if (!demo?.destroyed) {
+          const currentDemo = demo;
+          if (currentDemo !== null && !currentDemo.destroyed) {
+            if (missionVisibleRef.current) currentDemo.pauseForMission();
             setLoading(false);
             requestAnimationFrame(scaleCanvas);
           }
@@ -1767,7 +1798,7 @@ export function DemoScreen({ mvpEmbedded = false }: { mvpEmbedded?: boolean }) {
             キャラをタップして選択 → 矢印で隣と入れ替え → つながったら消える！
           </p>
           <div className={styles.demoActions}>
-            <button type="button" onClick={() => setShowTaisou(true)}>
+            <button type="button" onClick={openTaisouMission}>
               体操タイム
             </button>
             <button
@@ -1806,7 +1837,10 @@ export function DemoScreen({ mvpEmbedded = false }: { mvpEmbedded?: boolean }) {
           </div>
       </div>
       ) : null}
-      {showTaisou ? <TaisouInterlude onClose={() => setShowTaisou(false)} /> : null}
+      {missionVisible ? <TaisouMission onComplete={() => {
+        setShowTaisou(false);
+        onTaisouRequestHandled?.();
+      }} /> : null}
     </div>
   );
 }

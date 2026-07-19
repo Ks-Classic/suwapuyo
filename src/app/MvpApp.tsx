@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CharacterSelectScreen } from "../components/screens/CharacterSelectScreen";
+import { ClaimScreen } from "../components/screens/ClaimScreen";
+import { getClaimTokenFromUrl } from "../integrations/characterClaim";
 import { CHARACTERS } from "../config/characters";
 import { BoothCheckinScreen } from "../checkin/BoothCheckinScreen";
 import { DEMO_CAMPAIGNS } from "../checkin/checkinRepository";
@@ -203,7 +205,17 @@ export function MvpApp() {
     flush();
     return () => window.removeEventListener("online", flush);
   }, []);
+  useEffect(() => {
+    // LIFF深リンク(?claim=... / liff.state内claim)からQRクレーム画面へ誘導
+    // (concierge の booth パラメータと同パターン)。navigate 後は claim= が
+    // search から消えるため再実行してもループしない。
+    const claimToken = getClaimTokenFromUrl();
+    if (claimToken !== null && path !== "/claim") {
+      navigate(`/claim?token=${encodeURIComponent(claimToken)}`);
+    }
+  }, [path, navigate]);
   if (liffState.status !== "ready" && liffState.status !== "demo") return <LiffGateScreen state={liffState} onRetry={() => setLiffAttempt((value) => value + 1)}/>;
+  if (path === "/claim") return <ClaimScreen navigate={navigate}/>;
   if (path === "/auth") return <AuthScreen onContinue={() => navigate("/auth/friend")}/>;
   if (path === "/auth/friend") return <FriendScreen onAdded={() => navigate("/welcome")}/>;
   if (path === "/welcome") return <WelcomeScreen onSurvey={() => navigate("/survey/family")} onPlay={() => navigate("/survey/family")}/>;

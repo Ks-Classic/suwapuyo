@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+// 統合キャラ管理(08_設計書 §4.2)。
+// サンプル/おえかき/出展キャラを1リストで管理: 名前インライン編集・大きさ・表示切替・QR発行・タップコンテンツCMS。
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ArtworkRepository,
   CharacterContentBundle,
@@ -10,6 +12,7 @@ import type {
   TapContentItemDraft,
   TapContentMediaKind,
 } from "../types";
+import { CharacterQrModal } from "./CharacterQrModal";
 
 interface CharacterListProps {
   repository: CharacterContentRepository;
@@ -20,6 +23,17 @@ interface CharacterListProps {
 type StatusFilter = DisplayCharacterStatus | "all";
 type SourceFilter = DisplayCharacterSourceType | "all";
 type UploadSlot = "imagePath" | "videoPath" | "audioPath";
+
+const NAME_SAVE_DEBOUNCE_MS = 600;
+const SCALE_SAVE_DEBOUNCE_MS = 600;
+
+// 大きさプリセット(08_設計書 §4.2)
+const SCALE_PRESETS: readonly { label: string; value: number }[] = [
+  { label: "ちいさめ", value: 0.3 },
+  { label: "ふつう", value: 0.6 },
+  { label: "おおきめ", value: 1.0 },
+  { label: "とくだい", value: 1.6 },
+];
 
 const MEDIA_SLOT_LABELS: Record<UploadSlot, { label: string; accept: string; help: string }> = {
   imagePath: { label: "画像", accept: "image/png,image/jpeg,image/webp", help: "PNG / JPG / WebP 5MBまで" },
@@ -61,10 +75,10 @@ function statusLabel(status: StatusFilter): string {
 
 function sourceLabel(source: SourceFilter): string {
   if (source === "sample") {
-    return "サンプル";
+    return "もともと";
   }
   if (source === "artwork") {
-    return "登録作品";
+    return "おえかき";
   }
   if (source === "sponsor") {
     return "出展者";
@@ -165,6 +179,116 @@ function CharacterThumbnail({ character, repository, artworkRepository }: { char
   return imageUrl.length > 0 ? <img src={imageUrl} alt="" /> : <span className="fuwafuwa-character-thumb-fallback">{character.label.slice(-2)}</span>;
 }
 
+// 名前インライン編集: タップでinput化、debounce 600ms + blur/Enterで即保存。
+function CharacterNameEditor({ character, onSave }: { character: DisplayCharacter; onSave: (id: string, label: string) => Promise<void> }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(character.label);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const save = useCallback(
+    (next: string): void => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      const trimmed = next.trim();
+      if (trimmed.length === 0 || trimmed === character.label) {
+        return;
+      }
+      void onSave(character.id, trimmed);
+    },
+    [character.id, character.label, onSave],
+  );
+
+  const scheduleSave = (next: string): void => {
+    setValue(next);
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      save(next);
+    }, NAME_SAVE_DEBOUNCE_MS);
+  };
+
+  if (!editing) {
+    return (
+      <button type="button" className="fuwafuwa-character-name" title="タップで名前を編集" onClick={() => setEditing(true)}>
+        <strong>{character.label}</strong>
+        <i aria-hidden="true">✏️</i>
+      </button>
+    );
+  }
+  return (
+    <input
+      className="fuwafuwa-character-name-input"
+      value={value}
+      autoFocus
+      aria-label={`${character.label} の名前を編集`}
+      onChange={(event) => scheduleSave(event.currentTarget.value)}
+      onBlur={() => {
+        save(value);
+        setEditing(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          save(value);
+          setEditing(false);
+        }
+      }}
+    />
+  );
+}
+
+// 1キャラ分の大きさ操作: スライダー + プリセット。debounceして保存(連打防止)。
+function CharacterScaleControl({ character, disabled, onSave }: { character: DisplayCharacter; disabled: boolean; onSave: (id: string, scale: number) => Promise<void> }) {
+  const [draft, setDraft] = useState(character.displayScale);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const change = (scale: number): void => {
+    setDraft(scale);
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      void onSave(character.id, scale);
+    }, SCALE_SAVE_DEBOUNCE_MS);
+  };
+
+  return (
+    <div className="fuwafuwa-scale-block">
+      <label className="fuwafuwa-scale-control">
+        <span>{draft.toFixed(1)}x</span>
+        <input type="range" min="0.1" max="2.0" step="0.1" value={draft} disabled={disabled} onChange={(event) => change(Number(event.currentTarget.value))} />
+      </label>
+      <div className="fuwafuwa-scale-presets" role="group" aria-label={`${character.label} のサイズプリセット`}>
+        {SCALE_PRESETS.map((preset) => (
+          <button key={preset.label} type="button" disabled={disabled} className={Math.abs(draft - preset.value) < 0.05 ? "is-active" : ""} onClick={() => change(preset.value)}>
+            {preset.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CharacterList({ repository, artworkRepository, refreshToken = 0 }: CharacterListProps) {
   const [characters, setCharacters] = useState<DisplayCharacter[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -172,40 +296,40 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
   const [query, setQuery] = useState("");
   const [scaleAll, setScaleAll] = useState(0.6);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [qrCharacterId, setQrCharacterId] = useState<string | null>(null);
   const [draft, setDraft] = useState<TapContentDraft>(EMPTY_DRAFT);
   const [items, setItems] = useState<TapContentItemDraft[]>([{ ...EMPTY_ITEM }]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  const charactersRef = useRef<DisplayCharacter[]>([]);
+  const bulkTimerRef = useRef<number | null>(null);
+  const bulkRunningRef = useRef(false);
+  const bulkNextRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    charactersRef.current = characters;
+  }, [characters]);
+
+  // 全件をロードし、検索・絞り込みはクライアント側で行う(キー入力ごとの再フェッチ廃止)。
   const loadCharacters = useCallback(async () => {
-    const filter = {
-      query,
-      ...(statusFilter === "all" ? {} : { status: statusFilter }),
-      ...(sourceFilter === "all" ? {} : { sourceType: sourceFilter }),
-    };
-    const loaded = await repository.listCharacters(filter);
+    const loaded = await repository.listCharacters();
     setCharacters(loaded);
-    if (loaded.length > 0) {
+    if (bulkTimerRef.current === null && !bulkRunningRef.current && loaded.length > 0) {
       setScaleAll(loaded[0].displayScale);
     }
-  }, [query, repository, sourceFilter, statusFilter]);
+  }, [repository]);
 
   useEffect(() => {
     let active = true;
-    const filter = {
-      query,
-      ...(statusFilter === "all" ? {} : { status: statusFilter }),
-      ...(sourceFilter === "all" ? {} : { sourceType: sourceFilter }),
-    };
     void repository
-      .listCharacters(filter)
+      .listCharacters()
       .then((loaded) => {
-        if (!active) {
-          return;
-        }
-        setCharacters(loaded);
-        if (loaded.length > 0) {
-          setScaleAll(loaded[0].displayScale);
+        if (active) {
+          setCharacters(loaded);
+          if (loaded.length > 0) {
+            setScaleAll(loaded[0].displayScale);
+          }
         }
       })
       .catch((error: unknown) => {
@@ -216,7 +340,7 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
     return () => {
       active = false;
     };
-  }, [query, refreshToken, repository, sourceFilter, statusFilter]);
+  }, [refreshToken, repository]);
 
   useEffect(() => {
     const subscription = repository.subscribeCharacterChanges(
@@ -230,7 +354,38 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
     };
   }, [loadCharacters, repository]);
 
+  useEffect(() => {
+    return () => {
+      if (bulkTimerRef.current !== null) {
+        window.clearTimeout(bulkTimerRef.current);
+      }
+    };
+  }, []);
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return characters.filter((character) => {
+      if (statusFilter !== "all" && character.status !== statusFilter) {
+        return false;
+      }
+      if (statusFilter === "all" && character.status === "archived") {
+        return false;
+      }
+      if (sourceFilter !== "all" && character.sourceType !== sourceFilter) {
+        return false;
+      }
+      if (normalizedQuery.length > 0 && !character.label.toLowerCase().includes(normalizedQuery) && !character.id.toLowerCase().includes(normalizedQuery)) {
+        return false;
+      }
+      return true;
+    });
+  }, [characters, query, sourceFilter, statusFilter]);
+
+  const visibleCount = useMemo(() => characters.filter((character) => character.status === "visible").length, [characters]);
+  const totalCount = useMemo(() => characters.filter((character) => character.status !== "archived").length, [characters]);
+
   const selected = selectedId === null ? null : characters.find((character) => character.id === selectedId) ?? null;
+  const qrCharacter = qrCharacterId === null ? null : characters.find((character) => character.id === qrCharacterId) ?? null;
 
   const loadCharacterContent = useCallback((characterId: string): void => {
     setBusyId(characterId);
@@ -273,11 +428,75 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
       .finally(() => setBusyId(null));
   };
 
-  const updateScaleAll = (scale: number): void => {
+  const saveLabel = useCallback(
+    async (id: string, label: string): Promise<void> => {
+      try {
+        await repository.setCharacterLabel(id, label);
+        setMessage("名前を保存しました");
+        await loadCharacters();
+      } catch (error) {
+        if (error instanceof Error && error.message === "character_label_required") {
+          setMessage("名前を入れてください");
+          return;
+        }
+        setMessage(error instanceof Error ? error.message : "label_update_failed");
+      }
+    },
+    [loadCharacters, repository],
+  );
+
+  const saveScale = useCallback(
+    async (id: string, scale: number): Promise<void> => {
+      try {
+        await repository.setCharacterDisplayScale(id, scale);
+        await loadCharacters();
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "scale_update_failed");
+      }
+    },
+    [loadCharacters, repository],
+  );
+
+  // 一覧サイズ: 旧実装の全件Promise.all連打をやめ、debounce後に1件ずつ直列で保存する。
+  const runBulkScale = useCallback(
+    async (scale: number): Promise<void> => {
+      if (bulkRunningRef.current) {
+        bulkNextRef.current = scale;
+        return;
+      }
+      bulkRunningRef.current = true;
+      try {
+        for (const character of charactersRef.current) {
+          if (character.status === "archived") {
+            continue;
+          }
+          await repository.setCharacterDisplayScale(character.id, scale);
+        }
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "scale_update_failed");
+      } finally {
+        bulkRunningRef.current = false;
+      }
+      const next = bulkNextRef.current;
+      bulkNextRef.current = null;
+      if (next !== null) {
+        await runBulkScale(next);
+        return;
+      }
+      await loadCharacters();
+    },
+    [loadCharacters, repository],
+  );
+
+  const changeScaleAll = (scale: number): void => {
     setScaleAll(scale);
-    void Promise.all(characters.map((character) => repository.setCharacterDisplayScale(character.id, scale)))
-      .then(loadCharacters)
-      .catch((error: unknown) => setMessage(error instanceof Error ? error.message : "scale_update_failed"));
+    if (bulkTimerRef.current !== null) {
+      window.clearTimeout(bulkTimerRef.current);
+    }
+    bulkTimerRef.current = window.setTimeout(() => {
+      bulkTimerRef.current = null;
+      void runBulkScale(scale);
+    }, SCALE_SAVE_DEBOUNCE_MS);
   };
 
   const updateItem = (index: number, patch: Partial<TapContentItemDraft>): void => {
@@ -345,16 +564,20 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
 
   return (
     <section className="fuwafuwa-panel fuwafuwa-character-panel">
-      <div className="fuwafuwa-list-head">
+      <div className="fuwafuwa-character-summary" aria-live="polite">
+        <strong>表示中 {visibleCount}体</strong>
+        <span>/ 全体 {totalCount}体</span>
+      </div>
+      <div className="fuwafuwa-list-head fuwafuwa-character-filter-head">
         <input value={query} placeholder="キャラ検索" onChange={(event) => setQuery(event.currentTarget.value)} />
-        <div className="fuwafuwa-status-filter" role="group" aria-label="表示状態フィルタ">
+        <div className="fuwafuwa-status-filter fuwafuwa-filter-chips" role="group" aria-label="表示状態フィルタ">
           {(["all", "visible", "hidden", "archived"] as StatusFilter[]).map((status) => (
             <button key={status} type="button" className={statusFilter === status ? "is-active" : ""} onClick={() => setStatusFilter(status)}>
               {statusLabel(status)}
             </button>
           ))}
         </div>
-        <div className="fuwafuwa-status-filter" role="group" aria-label="種別フィルタ">
+        <div className="fuwafuwa-status-filter fuwafuwa-filter-chips" role="group" aria-label="種別フィルタ">
           {(["all", "sample", "artwork", "sponsor"] as SourceFilter[]).map((source) => (
             <button key={source} type="button" className={sourceFilter === source ? "is-active" : ""} onClick={() => setSourceFilter(source)}>
               {sourceLabel(source)}
@@ -365,52 +588,66 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
           更新
         </button>
       </div>
-      <label className="fuwafuwa-scale-control fuwafuwa-scale-control-wide">
-        <span>一覧サイズ {scaleAll.toFixed(1)}x</span>
-        <input type="range" min="0.1" max="2.0" step="0.1" value={scaleAll} onChange={(event) => updateScaleAll(Number(event.currentTarget.value))} />
-      </label>
+      <div className="fuwafuwa-scale-block fuwafuwa-scale-control-wide">
+        <label className="fuwafuwa-scale-control">
+          <span>一覧サイズ {scaleAll.toFixed(1)}x</span>
+          <input type="range" min="0.1" max="2.0" step="0.1" value={scaleAll} onChange={(event) => changeScaleAll(Number(event.currentTarget.value))} />
+        </label>
+        <div className="fuwafuwa-scale-presets" role="group" aria-label="一覧サイズプリセット">
+          {SCALE_PRESETS.map((preset) => (
+            <button key={preset.label} type="button" className={Math.abs(scaleAll - preset.value) < 0.05 ? "is-active" : ""} onClick={() => changeScaleAll(preset.value)}>
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="fuwafuwa-character-workspace">
         <div className="fuwafuwa-character-list">
-          {characters.map((character) => (
+          {filtered.map((character) => (
             <article key={character.id} className={selectedId === character.id ? "fuwafuwa-character-row is-selected" : "fuwafuwa-character-row"}>
-              <button type="button" className="fuwafuwa-character-pick" onClick={() => selectCharacter(character)}>
-                <CharacterThumbnail character={character} repository={repository} artworkRepository={artworkRepository} />
-                <span>
-                  <strong>{character.label}</strong>
-                  <small>{character.sourceType} · {character.tapEnabled ? "tap設定あり" : "tap未設定"}</small>
-                </span>
-              </button>
-              <div className="fuwafuwa-row-actions fuwafuwa-row-actions-compact">
-                <button type="button" className={character.status === "visible" ? "is-active" : ""} disabled={busyId === character.id} onClick={() => setStatus(character, "visible")}>
-                  表示
+              <div className="fuwafuwa-character-identity">
+                <button type="button" className="fuwafuwa-character-pick" aria-label={`${character.label} のタップコンテンツを編集`} onClick={() => selectCharacter(character)}>
+                  <CharacterThumbnail character={character} repository={repository} artworkRepository={artworkRepository} />
                 </button>
-                <button type="button" className={character.status === "hidden" ? "is-active" : ""} disabled={busyId === character.id} onClick={() => setStatus(character, "hidden")}>
-                  非表示
-                </button>
-                <button type="button" className={character.status === "archived" ? "is-danger is-active" : "is-danger"} disabled={busyId === character.id} onClick={() => setStatus(character, "archived")}>
-                  削除
-                </button>
+                <div className="fuwafuwa-character-meta">
+                  <CharacterNameEditor key={`${character.id}:${character.label}`} character={character} onSave={saveLabel} />
+                  <span>
+                    <i className={`fuwafuwa-source-badge is-${character.sourceType}`}>{sourceLabel(character.sourceType)}</i>
+                    <small>{character.tapEnabled ? "tap設定あり" : "tap未設定"}</small>
+                  </span>
+                </div>
               </div>
-              <label className="fuwafuwa-scale-control">
-                <span>{character.displayScale.toFixed(1)}x</span>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2.0"
-                  step="0.1"
-                  value={character.displayScale}
-                  onChange={(event) => {
-                    setBusyId(character.id);
-                    void repository
-                      .setCharacterDisplayScale(character.id, Number(event.currentTarget.value))
-                      .then(loadCharacters)
-                      .catch((error: unknown) => setMessage(error instanceof Error ? error.message : "scale_update_failed"))
-                      .finally(() => setBusyId(null));
-                  }}
-                />
-              </label>
+              <div className="fuwafuwa-row-actions fuwafuwa-row-actions-compact">
+                {character.status === "archived" ? (
+                  <button type="button" disabled={busyId === character.id} onClick={() => setStatus(character, "hidden")}>
+                    もどす
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={character.status === "visible"}
+                    className={character.status === "visible" ? "fuwafuwa-visibility-toggle is-on" : "fuwafuwa-visibility-toggle"}
+                    disabled={busyId === character.id}
+                    onClick={() => setStatus(character, character.status === "visible" ? "hidden" : "visible")}
+                  >
+                    <i aria-hidden="true" />
+                    {character.status === "visible" ? "表示中" : "非表示"}
+                  </button>
+                )}
+                <button type="button" className="fuwafuwa-qr-button" disabled={busyId === character.id} onClick={() => setQrCharacterId(character.id)}>
+                  QR
+                </button>
+                {character.status === "archived" ? null : (
+                  <button type="button" className="is-danger" disabled={busyId === character.id} onClick={() => setStatus(character, "archived")}>
+                    削除
+                  </button>
+                )}
+              </div>
+              <CharacterScaleControl key={`${character.id}:${character.displayScale}`} character={character} disabled={busyId === character.id} onSave={saveScale} />
             </article>
           ))}
+          {filtered.length === 0 ? <p className="fuwafuwa-message">条件にあてはまるキャラがいません</p> : null}
         </div>
         <aside className="fuwafuwa-content-editor">
           <div className="fuwafuwa-panel-title">
@@ -535,6 +772,7 @@ export function CharacterList({ repository, artworkRepository, refreshToken = 0 
         </aside>
       </div>
       {message !== null ? <p className="fuwafuwa-message">{message}</p> : null}
+      {qrCharacter !== null ? <CharacterQrModal character={qrCharacter} onClose={() => setQrCharacterId(null)} /> : null}
     </section>
   );
 }
