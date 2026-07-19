@@ -10,6 +10,11 @@ interface DigitalCanvasProps {
 const COLORS = ["#202124", "#e84855", "#ff9f1c", "#ffd166", "#06d6a0", "#118ab2", "#7b2cbf", "#ffffff"];
 const SIZES = [8, 16, 28];
 
+interface UndoSnapshot {
+  imageData: ImageData;
+  hasInk: boolean;
+}
+
 export function DigitalCanvas({ width, height, onComplete }: DigitalCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const workspaceRef = useRef<HTMLDivElement | null>(null);
@@ -19,7 +24,7 @@ export function DigitalCanvas({ width, height, onComplete }: DigitalCanvasProps)
   const hasInkRef = useRef(false);
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(SIZES[1]);
-  const [undoStack, setUndoStack] = useState<ImageData[]>([]);
+  const undoStackRef = useRef<UndoSnapshot[]>([]);
   const [hasInk, setHasInk] = useState(false);
 
   useEffect(() => {
@@ -58,7 +63,10 @@ export function DigitalCanvas({ width, height, onComplete }: DigitalCanvasProps)
     if (canvas === null || ctx === null || ctx === undefined) {
       return;
     }
-    setUndoStack((current) => [...current.slice(-9), ctx.getImageData(0, 0, canvas.width, canvas.height)]);
+    undoStackRef.current = [
+      ...undoStackRef.current.slice(-9),
+      { imageData: ctx.getImageData(0, 0, canvas.width, canvas.height), hasInk: hasInkRef.current },
+    ];
   }
 
   function pointFromClientPosition(clientX: number, clientY: number, canvas: HTMLCanvasElement): { x: number; y: number } {
@@ -183,13 +191,12 @@ export function DigitalCanvas({ width, height, onComplete }: DigitalCanvasProps)
           onClick={() => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext("2d");
-            const snapshot = undoStack.at(-1);
+            const snapshot = undoStackRef.current.pop();
             if (ctx !== null && ctx !== undefined && snapshot !== undefined) {
-              ctx.putImageData(snapshot, 0, 0);
-              setUndoStack((current) => current.slice(0, -1));
-              // 復元直後にリサイズで絵が消えないよう、refも必ず立てる(Codexレビュー P2)
-              hasInkRef.current = true;
-              setHasInk(true);
+              ctx.putImageData(snapshot.imageData, 0, 0);
+              // snapshotの実状態をref/stateの両方へ戻し、ResizeObserverと完了可否を一致させる。
+              hasInkRef.current = snapshot.hasInk;
+              setHasInk(snapshot.hasInk);
             }
           }}
         >

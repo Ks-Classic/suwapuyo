@@ -39,6 +39,7 @@ function App() {
       window.location.pathname === "/fuwafuwa" ||
       window.location.pathname.startsWith("/fuwafuwa/") ||
       window.location.pathname === "/staff" ||
+      window.location.pathname.startsWith("/staff/") ||
       window.location.pathname === "/display" ||
       window.location.pathname === "/debug");
   const isLineDemo =

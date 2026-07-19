@@ -18,7 +18,7 @@ interface FuwafuwaDrawScreenProps {
 export function FuwafuwaDrawScreen({ services, arrivedResetMs = ARRIVED_RESET_MS }: FuwafuwaDrawScreenProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [message, setMessage] = useState(INITIAL_MESSAGE);
-  const [phase, setPhase] = useState<"drawing" | "sending" | "waiting" | "arrived">("drawing");
+  const [phase, setPhase] = useState<"drawing" | "sending" | "waiting" | "arrived" | "error">("drawing");
   const [artworkId, setArtworkId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,16 +31,28 @@ export function FuwafuwaDrawScreen({ services, arrivedResetMs = ARRIVED_RESET_MS
 
   useEffect(() => {
     if (services === undefined || artworkId === null) return;
-    const subscription = services.repository.subscribeArtworkChanges(
-      (artwork) => {
-        if (artwork.id === artworkId && artwork.status === "visible") {
-          setPhase("arrived");
-          setMessage("わあ！きみのなかまが ランドに とうちゃくしたよ！大きな画面を見てね！");
-        }
-      },
+    let active = true;
+    const markArrived = (characterId: string, status: string): void => {
+      if (active && characterId === artworkId && status === "visible") {
+        setPhase("arrived");
+        setMessage("わあ！きみのなかまが ランドに とうちゃくしたよ！大きな画面を見てね！");
+      }
+    };
+    const subscription = services.characterContent.subscribeCharacterChanges(
+      (character) => markArrived(character.id, character.status),
       () => undefined,
     );
+    // 承認がsubscribe開始より先に完了した場合も、表示側の正本から状態を回収する。
+    void services.characterContent
+      .getCharacterContent(artworkId)
+      .then((bundle) => {
+        if (bundle !== null) {
+          markArrived(bundle.character.id, bundle.character.status);
+        }
+      })
+      .catch(() => undefined);
     return () => {
+      active = false;
       void subscription.unsubscribe();
     };
   }, [artworkId, services]);
@@ -69,8 +81,8 @@ export function FuwafuwaDrawScreen({ services, arrivedResetMs = ARRIVED_RESET_MS
     setPreviewUrl(URL.createObjectURL(blob));
     setPhase("sending");
     setMessage("おお〜っ、いい子だ！村へ つれて行くじゅんび中だよ！");
-    if (services !== undefined) {
-      try {
+    try {
+      if (services !== undefined) {
         const artwork = await services.repository.register({
           source: "digital",
           imageBlob: blob,
@@ -81,22 +93,22 @@ export function FuwafuwaDrawScreen({ services, arrivedResetMs = ARRIVED_RESET_MS
           characterStatus: "hidden",
         });
         setArtworkId(artwork.id);
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "作品をあずかれませんでした。スタッフをよんでね。");
-        setPhase("waiting");
-        return;
+      } else {
+        await setBuddy({
+          artworkId: `local-${Date.now()}`,
+          label: "自分の絵",
+          image: blob,
+          width,
+          height,
+          scale: 0.6,
+          source: "fuwafuwa-local",
+          createdAt: new Date().toISOString(),
+        });
       }
-    } else {
-      await setBuddy({
-        artworkId: `local-${Date.now()}`,
-        label: "自分の絵",
-        image: blob,
-        width,
-        height,
-        scale: 0.6,
-        source: "fuwafuwa-local",
-        createdAt: new Date().toISOString(),
-      });
+    } catch {
+      setMessage("作品をあずかれませんでした。スタッフをよんでね。");
+      setPhase("error");
+      return;
     }
     setMessage("おお〜っ、いい子だ！スタッフさんが村に つれて行ってくれるよ！");
     setPhase("waiting");
@@ -116,11 +128,11 @@ export function FuwafuwaDrawScreen({ services, arrivedResetMs = ARRIVED_RESET_MS
             <span className="fuwafuwa-child-waiting-star" aria-hidden="true">✦</span>
             <span>あたらしいなかま</span>
             <img src={previewUrl} alt="描いたなかま" className="fuwafuwa-preview" />
-            <strong>{phase === "sending" ? "村へ送っているよ…" : phase === "arrived" ? "とうちゃく！大きな画面を見てね！" : "もうすぐランドに とうちゃく！"}</strong>
+            <strong>{phase === "sending" ? "村へ送っているよ…" : phase === "arrived" ? "とうちゃく！大きな画面を見てね！" : phase === "error" ? "うまく送れなかったよ" : "もうすぐランドに とうちゃく！"}</strong>
             {phase === "arrived" ? <small className="fuwafuwa-draw-next-note">まもなく つぎのおえかきに もどるよ</small> : null}
-            {phase === "waiting" ? (
+            {phase === "waiting" || phase === "error" ? (
               <button type="button" className="fuwafuwa-draw-again" onClick={resetForNext}>
-                またかいてね
+                {phase === "error" ? "もういちどかく" : "またかいてね"}
               </button>
             ) : null}
           </div>

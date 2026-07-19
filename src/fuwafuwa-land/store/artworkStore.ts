@@ -188,20 +188,31 @@ export class SupabaseArtworkRepository implements ArtworkRepository {
 
   async setStatus(id: string, status: ArtworkStatus): Promise<Artwork> {
     const client = await this.clientPromise;
+    // 大画面が参照する表示キャラを先に更新する。登録直後でキャラ行がまだ無い場合は
+    // 作品statusを進めず、スタッフが安全に再試行できる状態を保つ。
+    const characterStatus: DisplayCharacterStatus = status === "archived" ? "archived" : status === "visible" ? "visible" : "hidden";
+    const mirrored = await client
+      .from("display_characters")
+      .update({ status: characterStatus })
+      .eq("source_type", "artwork")
+      .eq("source_id", id)
+      .select("id")
+      .maybeSingle();
+    if (mirrored.error !== null) {
+      await appendOperationLog("error", mirrored.error.message, id);
+      throw mirrored.error;
+    }
+    if (mirrored.data === null) {
+      const error = new Error("display_character_not_ready");
+      await appendOperationLog("error", error.message, id);
+      throw error;
+    }
     const response = await client.from("artworks").update({ status }).eq("id", id).select().single();
     if (response.error !== null) {
       await appendOperationLog("error", response.error.message, id);
       throw response.error;
     }
     const artwork = artworkFromRow(response.data);
-    // Codexレビュー P1対応: 承認境界を閉じるため display_characters にも状態を同期する
-    // (queued/hidden → hidden, visible → visible, archived → archived)
-    const characterStatus: DisplayCharacterStatus = status === "archived" ? "archived" : status === "visible" ? "visible" : "hidden";
-    const mirrored = await client.from("display_characters").update({ status: characterStatus }).eq("source_type", "artwork").eq("source_id", id);
-    if (mirrored.error !== null) {
-      await appendOperationLog("error", mirrored.error.message, id);
-      throw mirrored.error;
-    }
     await cacheArtwork(artwork);
     return artwork;
   }
