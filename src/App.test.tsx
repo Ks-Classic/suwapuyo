@@ -21,7 +21,7 @@ describe("App route boundary", () => {
     },
   );
 
-  it.each(["/line", "/concierge", "/report", "/legacy/game", "/shorts-studio"])(
+  it.each(["/line", "/concierge", "/report", "/legacy/game", "/shorts-studio", "/fuwafuwa/staff"])(
     "does not expose the retired demo route %s",
     (path) => {
       window.history.replaceState(null, "", path);

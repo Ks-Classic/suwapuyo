@@ -7,6 +7,9 @@ const RETIRED_DEMO_ROOTS = [
   "/map",
   "/fuwafuwa/map",
   "/fuwafuwa/staff",
+  "/fuwafuwa/display",
+  "/fuwafuwa/debug",
+  "/debug",
 ] as const;
 
 export function isRetiredDemoPath(pathname: string): boolean {
