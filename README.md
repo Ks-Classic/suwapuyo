@@ -1,12 +1,11 @@
 # すわぷよ / ふわふわランド — YourTIME 2026-08-02
 
-1つの Vite + React + TypeScript アプリに、YourTIME 向けの **3プロダクト**が同居しています。
+1つの Vite + React + TypeScript アプリに、YourTIME向けの利用者体験と会場運営機能が同居しています。
 
-| プロダクト | 実装 | ドキュメント |
+| 境界 | 実装 | 現行SSoT |
 |---|---|---|
-| ふわふわランド（本命・参加型展示） | `src/fuwafuwa-land/` | `docs/10_fuwafuwa-land/` |
-| すわぷよ（パズルデモ） | `src/App.tsx` ほか | `docs/30_suwapuyo/` |
-| YOUR TIME Platform Demo | `src/components/YourTimeReflectionDemo.tsx` | `docs/40_yourtime-platform/` |
+| 利用者向け（すわぷよ・村・イベント） | `src/app/`ほか | `docs/70_すわぷよ・ユアタイム統合仕様/` |
+| 会場向け（お絵描き・運営・大画面） | `src/fuwafuwa-land/` | 同上。展示固有の根拠は`docs/10_fuwafuwa-land/` |
 
 ## はじめに読む
 
@@ -21,7 +20,7 @@ npm run build    # tsc -b && vite build
 npm run lint
 ```
 
-ルーティングはURLハッシュ分岐: `/`（すわぷよ）, `#/fuwafuwa/staff`, `#/fuwafuwa/display`, `#/fuwafuwa/debug`。
+ルーティングはpath分岐です。主な入口は`/`、`/fuwafuwa/draw`、`/display`、`/staff`です。旧デモとhashルートは廃止済みです。
 
 ## ドキュメント
 

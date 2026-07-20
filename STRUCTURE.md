@@ -9,7 +9,7 @@
 | **③ ふわふわランド体験** | capture / digital / soak などの体験UI | `src/fuwafuwa-land/` |
 | **④ 動画スタジオ** | ショート動画の生成エンジン（Python） | `shorts/` |
 
-アプリ（②③④のUIモック）は**単一のViteアプリ**（`src/main.tsx`）。`public/` はそのまま配信される静的領域。
+利用者・会場アプリ（②③）は**単一のViteアプリ**（`src/main.tsx`）。動画生成（④）はCLIで分離する。`public/`はそのまま配信される静的領域。
 
 ## ① 世界観IP — `public/content/fuwafuwa-land/`
 すべての土台。アプリも動画スタジオもここを読む。**動かさない**。
@@ -31,13 +31,13 @@ script.json         # 既定台本
 legacy/make_30s.py  # 旧・一発もの（ゴールデン位置の元。現render.pyに反映済）。*.mp4はgit除外
 out/                # 書き出し（mp4/preview/post-ledger.csv/meta）※.gitignore
 ```
-台本の置き場は **`public/content/shorts-studio/scripts/`**（アプリがブラウザから読む設計のため public 配下）。drafts も同階層。
+台本の置き場は **`public/content/shorts-studio/scripts/`**。動画生成CLIが参照し、Web UIは提供しない。
 - 使い方・台本仕様: `docs/60_shorts-studio/04_script-authoring.md`
 - 背景プロンプト: `docs/60_shorts-studio/03_background-prompts.md`
 - 実証パターン: `docs/60_shorts-studio/05_research-virality.md`
 
 ## ②③ アプリ — `src/`
-`src/fuwafuwa-land/`（体験）, `src/shorts-studio/`（動画スタジオの**UIモック**。実エンジンは `shorts/`）, ほかゲーム本体。
+`src/app/`（利用者向け）, `src/fuwafuwa-land/`（会場向け）, ほかゲーム本体。旧デモアプリと動画スタジオUIは配信しない。
 
 ## docs — ドキュメント"だけ"（コード・動画は置かない）
 ```
@@ -48,7 +48,7 @@ out/                # 書き出し（mp4/preview/post-ledger.csv/meta）※.giti
 ```
 
 ## 命名の注意（既知）
-- 動画エンジンは歴史的に `shorts/`、アプリUI・台本・docsは `shorts-studio`。**実体は同じ動画スタジオ**。改名は参照連鎖が大きいため0→1では見送り、本マップで明示する方針。
+- 動画エンジンは`shorts/`、台本とdocsは`shorts-studio`表記を維持する。これは公開Webアプリのルート名ではない。
 
 ## やらないこと（意図的・過剰整理の回避）
 monorepo化・パッケージ分割・素材を public 外へ移動、はしない（0→1では `管理コスト > 価値`）。

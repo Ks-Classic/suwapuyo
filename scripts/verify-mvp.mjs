@@ -140,7 +140,7 @@ async function runSkipFlow(browser) {
   await page.getByRole("button", { name: "あとで" }).click();
   await page.getByRole("button", { name: "同意してはじめる" }).click();
   await page.waitForURL(`${baseUrl}/`);
-  await page.goto(`${baseUrl}/survey/family`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/onboarding`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "今は設定しない" }).click();
   await page.waitForURL("**/play");
   await page.goto(`${baseUrl}/exercise/mouth`, { waitUntil: "domcontentloaded" });
@@ -157,12 +157,12 @@ async function runEventPhases(browser) {
   await page.getByRole("button", { name: "あとで" }).click();
   await page.getByRole("button", { name: "同意してはじめる" }).click();
   for (const [phase, heading] of [["before", "YourTIMEに行く予定はある？"], ["during", "今日は何人で来た？"], ["after", "YourTIMEには行った？"]]) {
-    await page.goto(`${baseUrl}/survey/event/${phase}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${baseUrl}/events/yourtime-2026-08/survey/${phase}`, { waitUntil: "domcontentloaded" });
     assert.equal(await page.getByRole("heading", { name: heading }).isVisible(), true);
     await assertNoHorizontalOverflow(page, `390 event ${phase}`);
     await page.screenshot({ path: `${evidenceDir}/survey-event-${phase}-390x844.png`, fullPage: true });
   }
-  await page.goto(`${baseUrl}/survey/event/normal`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/events/yourtime-2026-08/survey/normal`, { waitUntil: "domcontentloaded" });
   assert.equal(await page.getByRole("heading", { name: "イベント質問はありません" }).isVisible(), true);
   assert.equal(await page.getByText("今日は何人で来た？").count(), 0);
   await page.close();
