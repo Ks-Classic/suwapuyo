@@ -10,11 +10,8 @@ import {
   Texture,
 } from "pixi.js";
 import { SoundFX } from "../../audio/SoundFX";
-import { YourTimeReflectionDemo } from "../YourTimeReflectionDemo";
-import { CharacterSelectScreen } from "./CharacterSelectScreen";
 import { TaisouMission } from "../../exercise/TaisouMission";
 import { useTaisouMissionTimer } from "../../exercise/useTaisouMissionTimer";
-import { VillageNarrator } from "../VillageNarrator";
 import { CHARACTERS } from "../../config/characters";
 import { buddyImageObjectUrl, ensureDemoBuddy, getBuddy, markSummoned } from "../../shared/buddyStore";
 import { getProgress, markFirstSummoned, type PuyoSlotId } from "../../shared/progressStore";
@@ -46,13 +43,6 @@ const THEME_COLORS: Record<PuyoType, number> = {
   tooth: 0xfff5e0,
   blob: 0xe8e8f0,
   tanuki: 0xb08860,
-};
-
-const THEME_COLORS_HEX: Record<PuyoType, string> = {
-  ghost: "#C8E6F0",
-  tooth: "#FFF5E0",
-  blob: "#E8E8F0",
-  tanuki: "#B08860",
 };
 
 const CHAR_NAMES: Record<PuyoType, string> = {
@@ -1508,22 +1498,17 @@ function delay(ms: number): Promise<void> {
 const CANVAS_W = BOARD_W + BOARD_PAD * 2;
 const CANVAS_H = BOARD_H + BOARD_PAD * 2;
 
-export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTaisouRequestHandled }: { mvpEmbedded?: boolean; taisouRequested?: boolean; onTaisouRequestHandled?: () => void }) {
+export function DemoScreen({ taisouRequested = false, onTaisouRequestHandled }: { taisouRequested?: boolean; onTaisouRequestHandled?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const boardWrapperRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<PuyoDemo | null>(null);
   const [score, setScore] = useState(0);
   const [chain, setChain] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState<"game" | "reflection">("game");
-  const [showSelect, setShowSelect] = useState(false);
   const [showTaisou, setShowTaisou] = useState(() => {
-    if (mvpEmbedded) return false;
-    const params = new URLSearchParams(window.location.search);
-    return params.get("taisou") === "1";
+    return false;
   });
   const [selectionVersion, setSelectionVersion] = useState(0);
-  const [puyoSkins, setPuyoSkins] = useState<PuyoSkinMap>(DEFAULT_PUYO_SKINS);
   const [gameError, setGameError] = useState<string | null>(null);
   const missionVisible = showTaisou || taisouRequested;
   const missionVisibleRef = useRef(missionVisible);
@@ -1534,7 +1519,7 @@ export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTai
   }, [missionVisible]);
 
   // プレイ中30秒ごと。overlay中・画面外・読み込み/キャラ選択中は時計を進めない。
-  useTaisouMissionTimer(!missionVisible && !showSelect && !loading && activeView === "game", openTaisouMission);
+  useTaisouMissionTimer(!missionVisible && !loading, openTaisouMission);
 
   useEffect(() => {
     const demo = demoRef.current;
@@ -1558,7 +1543,7 @@ export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTai
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current || showSelect) return;
+    if (!containerRef.current) return;
 
     let cancelled = false;
     let demo: PuyoDemo | null = null;
@@ -1631,7 +1616,6 @@ export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTai
         }
         return;
       }
-      setPuyoSkins(skins);
       setGameError(null);
       demo = new PuyoDemo(buddyVisual, skins);
       demoRef.current = demo;
@@ -1660,7 +1644,7 @@ export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTai
       demo?.destroy();
       demoRef.current = null;
     };
-  }, [scaleCanvas, selectionVersion, showSelect]);
+  }, [scaleCanvas, selectionVersion]);
 
   // Observe wrapper size for responsive scaling
   useEffect(() => {
@@ -1680,63 +1664,14 @@ export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTai
   }, [loading, scaleCanvas]);
 
   useEffect(() => {
-    if (activeView === "game" && !loading) {
+    if (!loading) {
       requestAnimationFrame(scaleCanvas);
     }
-  }, [activeView, loading, scaleCanvas]);
-
-  if (showSelect && !mvpEmbedded) {
-    return (
-      <CharacterSelectScreen
-        onCancel={() => {
-          setShowSelect(false);
-        }}
-        onSelect={() => {
-          setLoading(true);
-          setShowSelect(false);
-          setSelectionVersion((current) => current + 1);
-        }}
-      />
-    );
-  }
+  }, [loading, scaleCanvas]);
 
   return (
     <div className={styles.wrapper}>
-      {!mvpEmbedded ? <>
-      {/* Header */}
-      <div className={styles.header}>
-        <h1 className={styles.title}>
-          <span className={styles.titleAccent}>すわ</span>ぷよ
-        </h1>
-        <p className={styles.subtitle}>YOUR TIME Platform Demo</p>
-      </div>
-
-      <div className={styles.viewSwitch} aria-label="表示切り替え">
-        <button
-          type="button"
-          className={activeView === "game" ? styles.viewSwitchActive : ""}
-          onClick={() => setActiveView("game")}
-        >
-          あそぶ
-        </button>
-        <button
-          type="button"
-          className={activeView === "reflection" ? styles.viewSwitchActive : ""}
-          onClick={() => setActiveView("reflection")}
-        >
-          ふりかえる
-        </button>
-      </div>
-
-      <VillageNarrator line="いっぱい消して、なかまを よろこばせよう！" compact />
-      </> : null}
-
-      <div
-        className={`${styles.viewPane} ${
-          activeView === "game" ? styles.viewPaneActive : ""
-        }`}
-        aria-hidden={activeView !== "game"}
-      >
+      <div className={`${styles.viewPane} ${styles.viewPaneActive}`}>
           {/* Score & Chain */}
           <div className={styles.statsBar}>
             <div className={styles.stat}>
@@ -1762,81 +1697,19 @@ export function DemoScreen({ mvpEmbedded = false, taisouRequested = false, onTai
             {gameError !== null && (
               <div className={styles.loading}>
                 <p>ゲームの初期化に失敗しました</p>
-                <button type="button" onClick={() => setShowSelect(true)}>
-                  選び直す
+                <button type="button" onClick={() => {
+                  setGameError(null);
+                  setLoading(true);
+                  setSelectionVersion((current) => current + 1);
+                }}>
+                  もう一度読み込む
                 </button>
               </div>
             )}
             <div ref={containerRef} className={styles.boardContainer} />
           </div>
 
-          {!mvpEmbedded ? <>
-          {/* Character Info */}
-          <div className={styles.charInfo}>
-            {TYPES.map((type) => (
-              <div key={type} className={styles.charCard}>
-                <img
-                  src={puyoSkins[type].imageUrl}
-                  alt={puyoSkins[type].name}
-                  className={styles.charIcon}
-                />
-                <div className={styles.charDetails}>
-                  <span className={styles.charName}>{puyoSkins[type].name}</span>
-                  <span
-                    className={styles.charPop}
-                    style={{ color: THEME_COLORS_HEX[type] }}
-                  >
-                    {MIN_POP[type]}個で消滅
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Instructions */}
-          <p className={styles.instructions}>
-            キャラをタップして選択 → 矢印で隣と入れ替え → つながったら消える！
-          </p>
-          <div className={styles.demoActions}>
-            <button type="button" onClick={openTaisouMission}>
-              体操タイム
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowSelect(true);
-              }}
-            >
-              キャラを選ぶ
-            </button>
-            <a className={styles.menuLink} href="/line">
-              村の案内所
-            </a>
-            <a className={styles.menuLink} href="/map">
-              会場マップ
-            </a>
-          </div>
-          </> : null}
       </div>
-
-      {!mvpEmbedded ? (
-      <div
-        className={`${styles.viewPane} ${
-          activeView === "reflection" ? styles.viewPaneActive : ""
-        }`}
-        aria-hidden={activeView !== "reflection"}
-      >
-          <div className={styles.reflectionLead}>
-            <p>イベント後の親子を、出展者と公式発信へやさしく再接続するデモ</p>
-            <span>
-              紙のスタンプラリーは残し、アプリは「あとで知る・続ける」を担当します。
-            </span>
-          </div>
-          <div className={styles.reflectionArea}>
-            {activeView === "reflection" ? <YourTimeReflectionDemo /> : null}
-          </div>
-      </div>
-      ) : null}
       {missionVisible ? <TaisouMission onComplete={() => {
         setShowTaisou(false);
         onTaisouRequestHandled?.();

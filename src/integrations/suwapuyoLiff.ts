@@ -1,4 +1,4 @@
-import { getLiffFriendship, initializeLiff, loginLiff, requestLiffFriendship, type LiffSession } from "../concierge/liffClient";
+import { getLiffFriendship, initializeLiff, loginLiff, requestLiffFriendship, type LiffSession } from "./liffClient";
 
 export type SuwapuyoLiffStatus = "loading" | "demo" | "login_required" | "friendship_required" | "ready" | "error";
 

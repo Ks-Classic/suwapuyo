@@ -13,27 +13,16 @@ type FuwafuwaRoute = "home" | "draw" | "staff" | "display" | "debug";
 
 function readRoute(): FuwafuwaRoute {
   const path = window.location.pathname.replace(/\/$/, "");
+  if (path === "/staff/debug") {
+    return "debug";
+  }
   if (path === "/staff" || path.startsWith("/staff/")) {
     return "staff";
-  }
-  if (path === "/debug" || path === "/fuwafuwa/debug") {
-    return "debug";
   }
   if (path === "/fuwafuwa/draw") {
     return "draw";
   }
-  if (path === "/display" || path === "/fuwafuwa/display") {
-    return "display";
-  }
-
-  const hash = window.location.hash;
-  if (hash.startsWith("#/fuwafuwa/debug")) {
-    return "debug";
-  }
-  if (hash.startsWith("#/fuwafuwa/draw")) {
-    return "draw";
-  }
-  if (hash.startsWith("#/fuwafuwa/display")) {
+  if (path === "/display") {
     return "display";
   }
   return "home";
@@ -56,20 +45,15 @@ function FuwafuwaHome() {
       </section>
 
       <nav className="fuwafuwa-home-nav" aria-label="ふわふわランドメニュー">
-        <a className="fuwafuwa-home-link is-primary" href="/line">
-          <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/02_わーわー.png" alt="" />
-          <strong>村の案内所</strong>
-          <span>LINE風メニューから全体を見る</span>
-        </a>
         <a className="fuwafuwa-home-link is-primary" href="/">
           <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/07_もぐぴよ.png" alt="" />
           <strong>すわぷよ</strong>
           <span>選んだなかまとぷよで遊ぶ</span>
         </a>
-        <a className="fuwafuwa-home-link" href="/concierge">
+        <a className="fuwafuwa-home-link" href="/village/map">
           <img src="/content/01_すわぷよ/01_キャラクター/02_表示用/01_すーすー.png" alt="" />
           <strong>会場マップ</strong>
-          <span>村の案内所からランド別に出展者を見る</span>
+          <span>エリアや一覧から出展者を見る</span>
         </a>
       </nav>
 
@@ -78,7 +62,7 @@ function FuwafuwaHome() {
         <span className="fuwafuwa-home-ops-label">運営用（来場者には見せません）</span>
         <a className="fuwafuwa-home-ops-link" href="/staff">スタッフ：撮る・選ぶ・描く・登録する</a>
         <a className="fuwafuwa-home-ops-link" href="/display">ディスプレイ：会場モニター表示</a>
-        <a className="fuwafuwa-home-ops-link" href="/debug">チェック：FPS・件数・接続状態</a>
+        <a className="fuwafuwa-home-ops-link" href="/staff/debug">チェック：FPS・件数・接続状態</a>
       </nav>
     </main>
   );

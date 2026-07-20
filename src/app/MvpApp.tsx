@@ -23,6 +23,7 @@ import { rerollUnpinnedSlots } from "../shared/progressStore";
 import { ExerciseBoothIntro, VenueMapFallback } from "../village/VillageScreens";
 import { FeaturedBoothCatalog } from "../booths/FeaturedBooths";
 import { DataModeBadge, MvpShell } from "./MvpShell";
+import { isRetiredDemoPath } from "./routePolicy";
 import styles from "./mvp.module.css";
 
 const REPORT_ID = "86da2704-835e-4e7b-9cf0-41f18be8cb21";
@@ -158,7 +159,7 @@ export function FamilySettings({ navigate }: { navigate: (path: string) => void 
   }
   return <main className={styles.contentScreen}>
     <div className={styles.screenTitleRow}><div><p className={styles.eyebrow}>保護者用</p><h1>遊びの設定</h1></div><button onClick={() => navigate("/")}>閉じる</button></div>
-    {survey === null ? <section className={styles.settingsCard}><p>まだ遊び方を設定していません。</p><button className={styles.primaryButton} onClick={() => navigate("/survey/family")}>3問で設定する</button></section> : <section className={styles.settingsCard}>
+    {survey === null ? <section className={styles.settingsCard}><p>まだ遊び方を設定していません。</p><button className={styles.primaryButton} onClick={() => navigate("/onboarding")}>3問で設定する</button></section> : <section className={styles.settingsCard}>
       <h2>{SURVEY_COPY.activity.question}</h2><p>次に体操を開いたときの表示順へ反映します。いつでも変更できます。</p>
       <div className={styles.optionGrid}>{SURVEY_COPY.activity.options.map(([label, value]) => <button aria-pressed={survey.preferredActivity === value} key={value} onClick={() => update(value)}>{label}</button>)}</div>
       <p className={styles.successNotice} role="status">現在の設定：{survey.preferredActivity === "mouth" ? "お口あそび" : survey.preferredActivity === "body" ? "からだあそび" : survey.preferredActivity === "random" ? "おまかせ" : "あとで選ぶ"}</p>
@@ -213,6 +214,7 @@ export function MvpApp() {
       navigate(`/claim?token=${encodeURIComponent(claimToken)}`);
     }
   }, [path, navigate]);
+  if (isRetiredDemoPath(path)) return <main className={styles.forbiddenScreen}><h1>このデモは終了しました</h1><p>現在のすわぷよへ移動してください。</p><button onClick={() => navigate("/")}>すわぷよを開く</button></main>;
   if (liffState.status !== "ready" && liffState.status !== "demo") return <LiffGateScreen state={liffState} onRetry={() => {
     setLiffState({ status: "loading", inClient: false });
     setLiffAttempt((value) => value + 1);
@@ -220,12 +222,12 @@ export function MvpApp() {
   if (path === "/claim") return <ClaimScreen navigate={navigate}/>;
   if (path === "/auth") return <AuthScreen onContinue={() => navigate("/auth/friend")}/>;
   if (path === "/auth/friend") return <FriendScreen onAdded={() => navigate("/welcome")}/>;
-  if (path === "/welcome") return <WelcomeScreen onSurvey={() => navigate("/survey/family")} onPlay={() => navigate("/survey/family")}/>;
-  if (path === "/survey/family" && !hasConsent("product")) return <WelcomeScreen onSurvey={() => navigate("/survey/family")} onPlay={() => navigate("/survey/family")}/>;
-  if (path === "/survey/family") return <OnboardingFlow onSkip={() => navigate("/welcome")} onComplete={() => navigate("/arrival")}/>;
+  if (path === "/welcome") return <WelcomeScreen onSurvey={() => navigate("/onboarding")} onPlay={() => navigate("/onboarding")}/>;
+  if (path === "/onboarding" && !hasConsent("product")) return <WelcomeScreen onSurvey={() => navigate("/onboarding")} onPlay={() => navigate("/onboarding")}/>;
+  if (path === "/onboarding") return <OnboardingFlow onSkip={() => navigate("/welcome")} onComplete={() => navigate("/arrival")}/>;
   if (hasConsent("product") && getSnapshot().survey === null) return <OnboardingFlow onSkip={() => navigate("/welcome")} onComplete={() => navigate("/arrival")}/>;
-  if (path.startsWith("/survey/event/")) {
-    const phase = path.split("/")[3];
+  if (path.startsWith("/events/") && path.includes("/survey/")) {
+    const phase = path.split("/")[4];
     if (phase === "before" || phase === "during" || phase === "after") return <EventSurveyScreen phase={phase} onDone={() => navigate("/play")} onSkip={() => navigate("/play")}/>;
     return <main className={styles.storyScreen}><h1>イベント質問はありません</h1><p>通常どおり遊べます。</p><button className={styles.primaryButton} onClick={() => navigate("/play")}>遊ぶ</button></main>;
   }
@@ -241,22 +243,25 @@ export function MvpApp() {
   }
   if (path === "/progress") return <MvpShell active="progress" onNavigate={navigate}><ProgressScreen onMissions={() => navigate("/missions")} onPlay={() => navigate("/play")}/></MvpShell>;
   if (path === "/missions") return <MvpShell active="progress" onNavigate={navigate}><MissionsScreen/></MvpShell>;
-  if (path.startsWith("/booths/") && path.endsWith("/check-in")) {
-    const boothId = path.split("/")[2];
-    return <BoothCheckinScreen campaignId={DEMO_CAMPAIGN_ID} boothId={boothId} onFindNext={() => navigate("/booths")}/>;
+  if (path.startsWith("/events/") && path.includes("/booths/") && path.endsWith("/check-in")) {
+    const segments = path.split("/");
+    const campaignId = segments[2] ?? DEMO_CAMPAIGN_ID;
+    const boothId = segments[4] ?? "";
+    return <BoothCheckinScreen campaignId={campaignId} boothId={boothId} onFindNext={() => navigate("/village/booths")}/>;
   }
-  if (path === "/booths" || path === "/village/booths") return <MvpShell active="village" onNavigate={navigate}><FeaturedBoothCatalog onMap={() => navigate("/village/map")}/></MvpShell>;
+  if (path === "/village/booths") return <MvpShell active="village" onNavigate={navigate}><FeaturedBoothCatalog onMap={() => navigate("/village/map")}/></MvpShell>;
   if (path === "/village/map") return <MvpShell active="village" onNavigate={navigate}><VenueMapFallback onList={() => navigate("/village/booths")}/></MvpShell>;
-  if (path === "/stamps") return <MvpShell active="village" onNavigate={navigate}><StampBook campaignId={DEMO_CAMPAIGN_ID} onBooth={(boothId) => navigate(`/booths/${boothId}/check-in`)}/></MvpShell>;
-  if (path.startsWith("/event/") && path.endsWith("/check-in")) {
+  if (path === "/village/stamps") return <MvpShell active="village" onNavigate={navigate}><StampBook campaignId={DEMO_CAMPAIGN_ID} onBooth={(boothId) => navigate(`/events/${DEMO_CAMPAIGN_ID}/booths/${boothId}/check-in`)}/></MvpShell>;
+  if (path.startsWith("/events/") && path.endsWith("/check-in")) {
     const campaignId = path.split("/")[2];
-    return <EventCheckinScreen campaignId={campaignId} onPlay={() => navigate("/play")} onBooths={() => navigate("/booths")}/>;
+    return <EventCheckinScreen campaignId={campaignId} onPlay={() => navigate("/play")} onBooths={() => navigate("/village/booths")}/>;
   }
-  if (path === "/maker") return <MakerPage onExit={() => navigate("/")}/>;
+  if (path === "/makers") return <MakerPage onExit={() => navigate("/")}/>;
   if (path.startsWith("/reports/exhibitors/")) {
     const id = path.split("/")[3];
     return id === REPORT_ID ? <ExhibitorReport onBizContactClick={() => { void recordEvent(newEvent("biz_contact_clicked", { reportId: REPORT_ID })); }}/> : <main className={styles.forbiddenScreen}><h1>レポートを表示できません</h1><p>URLを確認してください。</p></main>;
   }
-  if (!hasConsent("product")) return <WelcomeScreen onSurvey={() => navigate("/survey/family")} onPlay={() => navigate("/survey/family")}/>;
+  if (path !== "/") return <main className={styles.forbiddenScreen}><h1>ページが見つかりません</h1><p>URLを確認してください。</p><button onClick={() => navigate("/")}>ホームへ戻る</button></main>;
+  if (!hasConsent("product")) return <WelcomeScreen onSurvey={() => navigate("/onboarding")} onPlay={() => navigate("/onboarding")}/>;
   return <MvpShell active="play" onNavigate={navigate}><HomeScreen navigate={navigate}/></MvpShell>;
 }
