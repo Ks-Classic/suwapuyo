@@ -418,7 +418,7 @@ def validate_event_animations(spec, issues):
                 "message": f"unsupported eventAnimation ignored by renderer: {anim_id}",
             })
 
-# 医療広告NG（断定・効能）。出典: docs/20_business/medical-ad-content-policy.md の言い換え集
+# 医療広告NG（断定・効能）。出典: docs/20_事業/医療広告・コンテンツ方針.md の言い換え集
 COMPLIANCE_NG = ["治る", "治っ", "治り", "治療", "完治", "予防", "効果", "効能", "効く",
                  "改善", "保証", "日本一", "No.1", "ＮＯ．１"]
 def lint_compliance(spec, issues):
@@ -435,7 +435,7 @@ def lint_compliance(spec, issues):
             if ng in text:
                 issues.append({
                     "type": "compliance_risk", "severity": "warning", "path": path,
-                    "message": f"医療広告NGの可能性: 「{ng}」（断定・効能）→ 言い換え推奨（docs/20_business/medical-ad-content-policy.md）",
+                    "message": f"医療広告NGの可能性: 「{ng}」（断定・効能）→ 言い換え推奨（docs/20_事業/医療広告・コンテンツ方針.md）",
                 })
 
 def validate_spec(spec):
