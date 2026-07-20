@@ -44,15 +44,14 @@ describe("Cloudflare Access middleware boundary", () => {
   it.each([
     "/staff",
     "/staff/artworks",
-    "/fuwafuwa/staff",
-    "/concierge/staff",
+    "/staff/debug",
     "/api/admin",
     "/api/admin/display-state",
   ])("protects %s", (pathname) => {
     expect(isProtectedAdminPath(pathname)).toBe(true);
   });
 
-  it.each(["/", "/display", "/claim", "/concierge", "/api/public/display"])("leaves %s public", (pathname) => {
+  it.each(["/", "/display", "/claim", "/api/public/display"])("leaves %s public", (pathname) => {
     expect(isProtectedAdminPath(pathname)).toBe(false);
   });
 
@@ -109,14 +108,4 @@ describe("Cloudflare Access middleware boundary", () => {
     expect(ctx.next).not.toHaveBeenCalled();
   });
 
-  it("redirects an authenticated legacy staff path to the protected canonical path", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ keys: [publicJwk] })));
-    const ctx = context(new Request("https://example.test/fuwafuwa/staff/devices?from=legacy", {
-      headers: { "cf-access-jwt-assertion": validToken },
-    }), { CF_ACCESS_TEAM_DOMAIN: TEAM_DOMAIN, CF_ACCESS_AUD: AUDIENCE });
-    const response = await onRequest(ctx);
-    expect(response.status).toBe(308);
-    expect(response.headers.get("location")).toBe("https://example.test/staff/devices?from=legacy");
-    expect(ctx.next).not.toHaveBeenCalled();
-  });
 });

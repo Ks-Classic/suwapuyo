@@ -16,22 +16,11 @@ const SAFE_METHODS = new Set(["GET", "HEAD"]);
 
 export function isProtectedAdminPath(pathname: string): boolean {
   return pathname === "/staff" || pathname.startsWith("/staff/") ||
-    pathname === "/fuwafuwa/staff" || pathname.startsWith("/fuwafuwa/staff/") ||
-    pathname === "/concierge/staff" || pathname.startsWith("/concierge/staff/") ||
     pathname === "/api/admin" || pathname.startsWith("/api/admin/");
 }
 
 function jsonError(status: number, code: string): Response {
   return Response.json({ error: code }, { status, headers: { "cache-control": "no-store" } });
-}
-
-function canonicalStaffUrl(url: URL): URL | null {
-  if (url.pathname === "/fuwafuwa/staff" || url.pathname.startsWith("/fuwafuwa/staff/")) {
-    const target = new URL(url);
-    target.pathname = url.pathname.replace(/^\/fuwafuwa\/staff/, "/staff");
-    return target;
-  }
-  return null;
 }
 
 function validateMutationBoundary(request: Request): Response | null {
@@ -74,10 +63,6 @@ export async function onRequest(context: MiddlewareContext): Promise<Response> {
   const mutationError = validateMutationBoundary(context.request);
   if (mutationError !== null) return mutationError;
 
-  const canonical = canonicalStaffUrl(url);
-  if (canonical !== null) {
-    return Response.redirect(canonical.toString(), 308);
-  }
   const response = await context.next();
   if (url.pathname === "/api/admin" || url.pathname.startsWith("/api/admin/")) {
     const secured = new Response(response.body, response);
