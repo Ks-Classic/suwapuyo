@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" コンテンツ="width=device-width, initial-scale=1.0">
+<title>ふわふわランド 実装バイブル｜2026-06-23</title>
+<style>
+  :root{
+    --cream:#FBF7F0; --paper:#FFFFFF; --ink:#2A2622; --muted:#7A7066; --line:#EBE2D6;
+    --coral:#E8694A; --teal:#2F8F83; --teal-soft:#DCEFEC; --amber:#D9911F; --amber-soft:#FAF0DC;
+    --good:#2F8F83; --good-soft:#DCEFEC; --slate-soft:#F0ECE4; --code:#2C2A28;
+    --shadow:0 1px 2px rgba(42,38,34,.04),0 8px 28px rgba(42,38,34,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    background:radial-gradient(1100px 560px at 82% -10%, #DCEFEC 0%, transparent 55%),radial-gradient(900px 480px at -8% 8%, #FDEEE6 0%, transparent 50%),var(--cream);
+    color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;padding:clamp(16px,4vw,48px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .kicker{font-size:.78rem;letter-spacing:.18em;color:var(--teal);font-weight:700;text-transform:uppercase}
+  h1{font-size:clamp(1.8rem,4.3vw,2.9rem);line-height:1.14;letter-spacing:-.01em;margin:.3em 0 .25em;font-weight:800}
+  h1 .soft{color:var(--muted);font-weight:700}
+  .lede{color:var(--muted);max-width:64ch;font-size:1.02rem}
+  section{margin-top:clamp(32px,5vw,52px)}
+  h2{font-size:1.4rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.55em;margin-bottom:.2em}
+  h2 .n{font-size:.8rem;color:#fff;background:var(--ink);width:1.9em;height:1.9em;display:grid;place-items:center;border-radius:50%;font-weight:700}
+  .sub{color:var(--muted);font-size:.95rem;margin-bottom:1.1em}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:.82em;background:var(--cream);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+
+  .hero{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:clamp(22px,3.4vw,36px);box-shadow:var(--shadow);margin-top:24px}
+  .pill{display:inline-block;background:var(--teal);color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.06em;padding:5px 13px;border-radius:999px}
+  .hero h3{font-size:clamp(1.2rem,2.7vw,1.55rem);margin:14px 0 6px}
+  .stack{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+  .chip{background:var(--cream);border:1px solid var(--line);border-radius:11px;padding:8px 12px;font-size:.86rem}
+  .chip b{font-weight:700}
+  .chip.add{border-color:var(--coral);background:#FCE9E2}
+  .cmd{margin-top:14px;background:var(--code);color:#EDE6DC;border-radius:12px;padding:12px 16px;font-family:ui-monospace,Menlo,monospace;font-size:.86rem}
+  .cmd .c{color:#9BE36B}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:780px){.two{grid-template-columns:1fr}}
+  .tree{background:var(--code);color:#E7E1D6;border-radius:var(--radius);padding:18px 20px;font-family:ui-monospace,Menlo,monospace;font-size:.78rem;line-height:1.55;overflow-x:auto;box-shadow:var(--shadow)}
+  .tree .d{color:#7FB7E8}.tree .f{color:#E7E1D6}.tree .c{color:#8A8175}
+
+  .flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+  .step{flex:1;min-width:120px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:13px;text-align:center;box-shadow:var(--shadow)}
+  .step .i{font-size:1.3rem}.step h4{font-size:.86rem;margin:5px 0 3px}.step p{font-size:.74rem;color:var(--muted)}
+  .arrow{align-self:center;color:var(--coral);font-weight:800;font-size:1.1rem}
+
+  .phase{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:14px;border-top:4px solid var(--coral)}
+  .phase:nth-child(2){border-top-color:var(--amber)}.phase:nth-child(3){border-top-color:var(--teal)}
+  .phase h3{display:flex;align-items:center;gap:10px;font-size:1.05rem;margin-bottom:10px}
+  .phase h3 em{font-style:normal;font-size:.72rem;background:var(--slate-soft);padding:3px 9px;border-radius:999px;font-weight:800}
+  .task{display:grid;grid-template-columns:74px 1fr auto;gap:12px;align-items:center;padding:8px 0;border-top:1px dashed var(--line);font-size:.9rem}
+  .task:first-of-type{border-top:none}
+  .task .id{font-weight:800;color:var(--ink);font-family:ui-monospace,Menlo,monospace;font-size:.82rem}
+  .task .ac{font-size:.78rem;font-weight:700;color:var(--good);background:var(--good-soft);border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .task .ac.warn{color:var(--amber);background:var(--amber-soft)}
+
+  .perf{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:620px){.perf{grid-template-columns:1fr}}
+  .pf{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+  .pf b{font-size:1.5rem;color:var(--teal)}.pf span{display:block;font-size:.8rem;color:var(--muted)}
+
+  ul.clean{list-style:none;display:grid;gap:9px}
+  ul.clean li{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:.9rem;display:flex;gap:10px;align-items:flex-start}
+  ul.clean li::before{コンテンツ:"▸";color:var(--teal);font-weight:800}
+  footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;display:flex;justify-コンテンツ:space-between;flex-wrap:wrap;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">実装バイブル ・ Codexが迷わず着手できる状態</div>
+  <h1>ふわふわランド <span class="soft">3日Gate 実装プラン</span></h1>
+  <p class="lede">正は <code>06_旧実装バイブル.md</code>。スタック・ファイル木・型・関数シグネチャ・アルゴリズム・数値受け入れ基準まで確定。触るのは新規 <code>src/fuwafuwa-land/</code> と <code>App.tsx</code> の最小分岐のみ。</p>
+
+  <div class="hero">
+    <span class="pill">確定スタック</span>
+    <h3>既存資産そのまま＋追加3依存だけ・$0・オフライン</h3>
+    <div class="stack">
+      <div class="chip"><b>Vite 8</b> / React 19.2 / TS 5.9</div>
+      <div class="chip"><b>PixiJS 8.17</b>(導入済)</div>
+      <div class="chip add"><b>idb</b> IndexedDB</div>
+      <div class="chip add"><b>jsqr</b> QR-ID</div>
+      <div class="chip add"><b>perspective-transform</b> ワープ</div>
+      <div class="chip">マーカー検出/二値化/塗り = 自前(重依存なし)</div>
+    </div>
+    <div class="cmd"><span class="c">npm i</span> idb jsqr perspective-transform</div>
+  </div>
+
+  <!-- ファイル木 + パイプライン -->
+  <section>
+    <h2><span class="n">F</span>ファイル構成 ＆ 撮影パイプライン</h2>
+    <div class="two">
+      <div class="tree"><span class="c"># src/fuwafuwa-land/</span>
+<span class="f">index.tsx</span>        <span class="c">hashで画面切替</span>
+<span class="f">config.ts</span>        <span class="c">テーマ駆動=B2B再利用</span>
+<span class="f">types.ts</span>
+<span class="d">store/</span> db / artworkStore / displayState / log
+<span class="d">capture/</span> camera / markerDetect
+        warp / qr / processArtwork
+<span class="d">digital/</span> DigitalCanvas.tsx
+<span class="d">renderer/</span> FuwafuwaWorld / artworkMotion
+<span class="d">components/</span> StaffPanel / RegisterForm
+        ArtworkList / DisplayScreen / MetricsOverlay
+<span class="d">soak/</span> soakHarness.ts
+<span class="d">utils/</span> image / id</div>
+      <div>
+        <p class="sub" style="margin-bottom:14px"><b>C-2解消の本体</b>＝背景除去ではなく「既知矩形の切り出し」。</p>
+        <div class="flow">
+          <div class="step"><div class="i">📷</div><h4>撮影</h4><p>カメラ/ファイル</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="i">⬛</div><h4>4隅検出</h4><p>二値化+ブロブ</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="i">🔲</div><h4>ワープ</h4><p>ホモグラフィ</p></div>
+        </div>
+        <div class="flow" style="margin-top:8px">
+          <div class="step"><div class="i">✂️</div><h4>切り出し</h4><p>任意white-key</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="i">💾</div><h4>Blob保存</h4><p>IndexedDB</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="i">🫧</div><h4>登場</h4><p>PixiJS</p></div>
+        </div>
+        <ul class="clean" style="margin-top:14px">
+          <li>マーカー失敗時 → 再撮影 / 四角で登録 / <b>デジタル入力</b>へ</li>
+          <li>デジタル塗り = 透過PNGを直接出力（撮影/CVを飛ばす保険）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3日プラン -->
+  <section>
+    <h2><span class="n">G</span>3日プラン（FL-G・数値受け入れ基準つき）</h2>
+    <p class="sub">型(<code>types.ts</code>)と<code>config.ts</code>を最初に確定→各層。単一PCで実施。</p>
+    <div class="phase">
+      <h3><em>DAY 1</em>データ＆入力</h3>
+      <div class="task"><span class="id">FL-G01</span><span>IndexedDB＋Blobストア・persist()・採番</span><span class="ac">300件後リロード全復元</span></div>
+      <div class="task"><span class="id">FL-G02</span><span>撮影→マーカー切り出し→登録</span><span class="ac warn">30枚中切り出し良好≥18</span></div>
+      <div class="task"><span class="id">FL-G03</span><span>デジタル塗りキャンバス（透過PNG出力）</span><span class="ac">iPad Safariで描画可</span></div>
+    </div>
+    <div class="phase">
+      <h3><em>DAY 2</em>表示ワールド＆操作</h3>
+      <div class="task"><span class="id">FL-G04</span><span>PixiJSふわふわワールド・random/featured/hide/reset</span><span class="ac">12〜20体≥50fps</span></div>
+      <div class="task"><span class="id">FL-G05</span><span>ID/名前ジャンプ検索＋下の名前ラベル</span><span class="ac">100件で3秒到達</span></div>
+      <div class="task"><span class="id">FL-G06</span><span>計測オーバーレイ（FPS/メモリ/件数/容量）</span><span class="ac">リアルタイム更新</span></div>
+    </div>
+    <div class="phase">
+      <h3><em>DAY 3</em>検証＆判定</h3>
+      <div class="task"><span class="id">FL-G07</span><span>6時間ソーク（300枚・60分以上・途中操作）</span><span class="ac">ヒープ非張り付き</span></div>
+      <div class="task"><span class="id">FL-G08</span><span>1人10作品連続登録＋DELL横長視認</span><span class="ac">平均≤60秒/作品</span></div>
+      <div class="task"><span class="id">FL-G09</span><span>判定レポート記入</span><span class="ac warn">Go / Cond / No-Go</span></div>
+    </div>
+    <div class="perf">
+      <div class="pf"><b>≥50</b><span>fps（12〜20体）</span></div>
+      <div class="pf"><b>≥30</b><span>fps（30体）</span></div>
+      <div class="pf"><b>≤60s</b><span>1作品の登録</span></div>
+    </div>
+  </section>
+
+  <!-- 拡張点 -->
+  <section>
+    <h2><span class="n">+</span>今後の発展を塞がない設計</h2>
+    <ul class="clean">
+      <li><b>B2B受託</b>：テーマ/キャラ/背景/表示数は <code>config.ts</code> のみで差し替え可。固有値を直書きしない。</li>
+      <li><b>ランキング/発表アニメ</b>：<code>Artwork.votes?/score?</code> 予約済み。featured演出を関数分離し表彰演出に転用。</li>
+      <li><b>スマホ育成/すわぷよ連携</b>：<code>ArtworkRepository</code> をインターフェース化 → 将来 <code>Supabase…</code> / LAN-WS 実装に差し替えるだけでクラウド同期/他アプリ共有。</li>
+      <li><b>氏名/同意</b>：<code>givenName</code> はモニター可、SNS書き出し時の除外は export 側1箇所に集約。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>実装の正: <code>docs/ふわふわランド旧統合版/06_旧実装バイブル.md</code> ・ 決定: <code>05_旧サマリー/04</code> ・ 触る範囲: <code>src/fuwafuwa-land/</code>＋App.tsx分岐のみ</span>
+    <span>2026-06-23</span>
+  </footer>
+</div>
+</body>
+</html>

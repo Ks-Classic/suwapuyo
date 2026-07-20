@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" コンテンツ="width=device-width, initial-scale=1.0">
+<title>ふわふわランド ドキュメントレビュー｜2026-06-23</title>
+<style>
+  :root{
+    --cream:#FBF7F0; --paper:#FFFFFF; --ink:#2A2622; --muted:#7A7066;
+    --line:#EBE2D6;
+    --coral:#E8694A; --coral-soft:#FCE9E2;
+    --amber:#D9911F; --amber-soft:#FBF0DA;
+    --slate:#8A8175; --slate-soft:#F0ECE4;
+    --teal:#2F8F83; --teal-soft:#DCEFEC;
+    --crit:#D33A2C; --crit-soft:#FBE5E1;
+    --maj:#C9821A;  --maj-soft:#FAF0DC;
+    --min:#8A8175;  --min-soft:#F1EDE6;
+    --good:#2F8F83; --good-soft:#DCEFEC;
+    --shadow:0 1px 2px rgba(42,38,34,.04),0 8px 28px rgba(42,38,34,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #FDEEE6 0%, transparent 55%),
+      radial-gradient(1000px 500px at -10% 10%, #E7F2EF 0%, transparent 50%),
+      var(--cream);
+    color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;
+    padding:clamp(16px,4vw,48px);
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  .kicker{font-size:.78rem;letter-spacing:.18em;color:var(--coral);font-weight:700;text-transform:uppercase}
+  h1{font-size:clamp(1.9rem,4.5vw,3.1rem);line-height:1.15;letter-spacing:-.01em;margin:.3em 0 .25em;font-weight:800}
+  h1 .soft{color:var(--muted);font-weight:700}
+  .lede{color:var(--muted);max-width:62ch;font-size:1.02rem}
+  section{margin-top:clamp(34px,5vw,56px)}
+  h2{font-size:1.5rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.55em;margin-bottom:.2em}
+  h2 .n{font-size:.8rem;color:#fff;background:var(--ink);width:1.9em;height:1.9em;display:grid;place-items:center;border-radius:50%;font-weight:700}
+  .sub{color:var(--muted);font-size:.95rem;margin-bottom:1.2em}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.4fr .9fr;gap:28px;align-items:center;
+    background:var(--paper);border:1px solid var(--line);border-radius:26px;padding:clamp(22px,3.5vw,38px);box-shadow:var(--shadow);margin-top:24px}
+  @media(max-width:760px){.hero{grid-template-columns:1fr}}
+  .verdicts{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+  .chip{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:.9rem;display:flex;align-items:center;gap:8px}
+  .chip b{font-weight:700}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .dot.y{background:var(--amber)} .dot.g{background:var(--good)} .dot.r{background:var(--crit)}
+
+  .score{display:flex;flex-direction:column;align-items:center;justify-コンテンツ:center;gap:8px}
+  .ring{--p:70;width:180px;height:180px;border-radius:50%;
+    background:conic-gradient(var(--coral) calc(var(--p)*1%), var(--slate-soft) 0);
+    display:grid;place-items:center;position:relative}
+  .ring::before{コンテンツ:"";position:absolute;inset:14px;background:var(--paper);border-radius:50%}
+  .ring .v{position:relative;text-align:center;line-height:1}
+  .ring .v b{font-size:2.9rem;font-weight:800}
+  .ring .v span{font-size:1rem;color:var(--muted)}
+  .ring .v small{display:block;font-size:.72rem;letter-spacing:.12em;color:var(--coral);margin-top:6px;font-weight:700}
+
+  /* generic cards */
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:transform .15s ease,box-shadow .15s ease}
+  .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(42,38,34,.06),0 14px 36px rgba(42,38,34,.09)}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:999px;text-transform:uppercase}
+  .b-crit{background:var(--crit-soft);color:var(--crit)}
+  .b-maj{background:var(--maj-soft);color:var(--maj)}
+  .b-min{background:var(--min-soft);color:var(--min)}
+  .b-good{background:var(--good-soft);color:var(--good)}
+  .card h3{font-size:1.06rem;margin:12px 0 6px;letter-spacing:-.01em}
+  .card .file{font-size:.76rem;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:2px 7px;display:inline-block;margin-bottom:8px;word-break:break-all}
+  .card p{font-size:.92rem;color:#4a443d}
+  .card .fix{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+  .card .fix b{color:var(--teal)}
+  .id{font-weight:800;color:var(--crit);margin-right:.4em}
+  .b-maj + h3 .id{color:var(--maj)}
+
+  ul.clean{list-style:none;display:grid;gap:10px}
+  ul.clean li{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.92rem;display:flex;gap:10px;align-items:flex-start}
+  ul.clean li::before{コンテンツ:"●";color:var(--slate);font-size:.7rem;margin-top:.45em}
+  ul.good li::before{コンテンツ:"✓";color:var(--good);font-weight:800}
+
+  /* major chips compact */
+  .mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(max-width:760px){.mgrid{grid-template-columns:1fr}}
+  .mrow{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--maj);border-radius:12px;padding:12px 14px}
+  .mrow b{font-weight:800;color:var(--maj);margin-right:.4em}
+  .mrow span{font-size:.9rem}
+
+  /* timeline */
+  .tl{position:relative;padding-left:8px}
+  .phase{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:14px;border-top:4px solid var(--coral)}
+  .phase.b{border-top-color:var(--amber)} .phase.c{border-top-color:var(--teal)}
+  .phase h3{display:flex;align-items:center;gap:10px;font-size:1.05rem;margin-bottom:8px}
+  .phase h3 em{font-style:normal;font-size:.72rem;background:var(--coral-soft);color:var(--coral);padding:3px 9px;border-radius:999px;font-weight:800}
+  .phase.b h3 em{background:var(--amber-soft);color:var(--amber)}
+  .phase.c h3 em{background:var(--teal-soft);color:var(--teal)}
+  .phase ol{margin:0 0 0 1.1em;font-size:.92rem;display:grid;gap:5px}
+  .phase code{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;background:var(--cream);padding:1px 5px;border-radius:5px;border:1px solid var(--line)}
+
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;display:flex;justify-コンテンツ:space-between;flex-wrap:wrap;gap:10px}
+  .pill{display:inline-block;background:var(--ink);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.06em;padding:5px 12px;border-radius:999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">ドキュメントレビュー ・ PdM / PM / Tech Lead / 運営 / セキュリティ 複合視点</div>
+  <h1>すーすーわーわー ふわふわランド<br><span class="soft">実現可否ドキュメント レビュー</span></h1>
+  <p class="lede">対象: <code>docs/ふわふわランド旧統合版/</code> 正式体系（24ファイル）＋ TODO.md。判定期限 2026-06-25 / 本番 2026-08-02・6時間運営。</p>
+
+  <div class="hero">
+    <div>
+      <div class="pill">総評</div>
+      <p style="margin:14px 0 4px;font-size:1.05rem;font-weight:700">短期MVPの体系として実務水準。<br>ただし「本番で実際に壊れる経路」を3つ見逃している。</p>
+      <p style="color:var(--muted);font-size:.93rem">スコープの切り方・8〜20体への方針転換・Go/No-Go基準は全文書で一貫。一方、①6時間でのストレージ枯渇、②白背景除去の実品質、③作品に書かれた園児の名前露出 は、現状のテスト設計では検出できない。</p>
+      <div class="verdicts">
+        <div class="chip"><span class="dot y"></span><b>6/25 可否判断に使える？</b>　骨格はYES・Critical対応が前提</div>
+        <div class="chip"><span class="dot g"></span><b>8/2 本番の叩き台？</b>　YES</div>
+      </div>
+    </div>
+    <div class="score">
+      <div class="ring" style="--p:70">
+        <div class="v"><b>7</b><span>/10</span><small>FEASIBILITY DOCS</small></div>
+      </div>
+      <div style="font-size:.82rem;color:var(--muted)">Critical 4 ・ Major 8 ・ Minor 5</div>
+    </div>
+  </div>
+
+  <!-- 強み -->
+  <section>
+    <h2><span class="n">+</span>効いている点</h2>
+    <ul class="clean good g2" style="display:grid;grid-template-columns:1fr 1fr">
+      <li>「やらないこと」を先に固定し、判断対象を的確に絞れている</li>
+      <li>8〜20体への転換が overview / NFR / UI / 実装ルール / スライド 全てで整合</li>
+      <li>Go / Conditional Go / No-Go 基準が定義済み</li>
+      <li>顔写真回避・同意分離(event_only/SNS_allowed)・将来DB型の先回り</li>
+    </ul>
+  </section>
+
+  <!-- Critical -->
+  <section>
+    <h2><span class="n" style="background:var(--crit)">!</span>Critical Findings</h2>
+    <p class="sub">実現可否判断・本番運営を壊しうる。Gate前に必ず塞ぐ。</p>
+    <div class="grid g2">
+      <div class="card">
+        <span class="badge b-crit">Critical</span>
+        <h3><span class="id">C-1</span>6時間で作品プールが増え続け、localStorage枯渇で登録が静かに失敗</h3>
+        <span class="file">02_table-definitions / 03_backend-processing / NFR-101 / ST-005</span>
+        <p>表示数は制御されるが<b>プールは6h増え続ける</b>（総数100〜300件）。base64をlocalStorage(約5MB)保存だと数十枚で枯渇→例外で登録が無言失敗。10分50件テストでは絶対踏まない突然死経路。</p>
+        <div class="fix"><b>修正 ▸</b> 保存先を<b>IndexedDBに確定</b>／総登録数・1枚保存上限・枯渇時挙動をNFRに数値明記／枯渇警告をログ化</div>
+      </div>
+      <div class="card">
+        <span class="badge b-crit">Critical</span>
+        <h3><span class="id">C-2</span>白背景除去を過小評価。クレヨン絵にCanvas白キーは実用品質に届かない</h3>
+        <span class="file">FR-101 / FL-105 / TM-002</span>
+        <p>絵の中の白・淡色も抜け、撮影紙は純白でなく白ハロが残る。「透過してふわふわ漂う」体験の核なのに1行のCanvasタスク扱い。<b>TM-002合格基準が未定量</b>。透過(理想)と四角(受容)の不一致も未調整。</p>
+        <div class="fix"><b>修正 ▸</b> <b>ブラウザMLセグメンテーション</b>を第一候補化／成功率の定量基準（例:30枚中良好18+）／「四角が標準フォールバック」を明記し期待値整合</div>
+      </div>
+      <div class="card">
+        <span class="badge b-crit">Critical</span>
+        <h3><span class="id">C-2b</span>撮影セットアップ仕様が無く、背景除去・顔回避の両方がテスト不能</h3>
+        <span class="file">02_旧基本設計（仕様なし）/ FL-202・FL-102（TODOのまま）</span>
+        <p>背景除去品質も「顔を撮らない」も、照明・固定・台紙色・撮影枠といった<b>撮影リグを決めないと検証できない</b>。TM-002/TM-009 はCriticalなのに入力を作る仕様が不在。</p>
+        <div class="fix"><b>修正 ▸</b> <b>07_capture-setup.md 新設</b>（俯瞰固定／拡散光／無地マット／A4枠ガイド）。枠内=作品のみ→顔は構造的に写らない</div>
+      </div>
+      <div class="card">
+        <span class="badge b-crit">Critical</span>
+        <h3><span class="id">C-3</span>「6時間運営」を10分のストレステストで判定しようとしている</h3>
+        <span class="file">NFR-101 / 03_system-test-viewpoints / ST-005 / FL-109</span>
+        <p>10分は6hの実故障モード（メモリ漸増・テクスチャ/Data URL蓄積・リーク）を全く再現しない。<b>判定対象(6h)とテスト(10min)が桁で乖離</b>→テストがGo/No-Goに繋がっていない最大箇所。</p>
+        <div class="fix"><b>修正 ▸</b> ST-005を<b>最低60分・300件・FPS/メモリ/容量ログ</b>に改修。「メモリが線形に張り付かない」を合格基準化</div>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <span class="badge b-crit">Critical ・ Privacy</span>
+        <h3><span class="id">C-4</span>作品に書かれた園児の「名前」がモニター・SNSに露出する経路が塞がれていない</h3>
+        <span class="file">NFR-301〜303 / BR-004 / BR-010</span>
+        <p>顔は撮らない運用だが、<b>子どもは絵に名前を書く</b>。そのまま公開モニター→SNS転用で氏名が公衆/ネットに露出。名前マスキング規則が無く、<code>consentScope=unknown</code> のモニター表示可否も曖昧。対象が未就学児で炎上直結。</p>
+        <div class="fix"><b>修正 ▸</b> 登録プレビューに<b>個人情報写り込みチェック</b>を必須化（FR-003追記）／unknown既定の明文化／<b>06_プライバシー・同意.md 新設</b>（保持・削除・撤回・保護者同意様式）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Major -->
+  <section>
+    <h2><span class="n" style="background:var(--maj)">▲</span>Major Findings</h2>
+    <p class="sub">品質・運用・開発効率を大きく下げる。</p>
+    <div class="mgrid">
+      <div class="mrow"><span><b>M-1</b>Issue番号が TODO.md と 03_GitHub課題履歴.md で衝突（FL-106 が別作業）→ <b>ID体系を一本化</b>(FL-G##/FL-E##)</span></div>
+      <div class="mrow"><span><b>M-2</b>2台連結モニターの描画方式が未設計（ベゼル割れ・超横長性能）→ <b>1台横長を正</b>とし連結は別検証</span></div>
+      <div class="mrow"><span><b>M-3</b>大量プールでの「指定表示」=作品検索手段が無い（1人運用の実ボトルネック）→ <b>ID直接ジャンプ＋直近フィルタ</b></span></div>
+      <div class="mrow"><span><b>M-4</b>性能・背景除去の合格基準が「体感」で未定量 → <b>FPS閾値・成功率</b>を数値化しGo/No-Goに接続</span></div>
+      <div class="mrow"><span><b>M-5</b>計測/デバッグがCould止まり→6h判定の証拠が取れない → Gate期間は<b>メトリクスオーバーレイをMust</b></span></div>
+      <div class="mrow"><span><b>M-6</b>完全オフライン起動が未前提（会場wifi不調でページすら開けない）→ <b>localhost配信/PWA</b>を明記</span></div>
+      <div class="mrow"><span><b>M-7</b>「1人運用」が楽観的（60秒/作品=60件/時が上限）→ <b>人員前提とスループット目標</b>を運用Runbookに</span></div>
+      <div class="mrow"><span><b>M-8</b>感動水準に対し<b>体験/演出設計が薄い</b>（登場演出・音・声かけ台本・視線誘導）→ 設計ドキュメント新設</span></div>
+    </div>
+  </section>
+
+  <!-- Minor + Missing -->
+  <section class="grid g2">
+    <div>
+      <h2><span class="n" style="background:var(--min)">·</span>Minor</h2>
+      <ul class="clean" style="margin-top:14px">
+        <li>「標準」の体数表記揺れ（8〜20 / 12）→ 標準=12・許容=20・検証=30 を1箇所で固定</li>
+        <li>正式体系と統合版メモの二重持ち＝ドリフト源。TODOリンクが旧メモを指す→番号付きへ差し替え</li>
+        <li>ER図 <code>DISPLAY_STATE }o--o{ ARTWORK</code> の多対多表記が実態とズレ</li>
+        <li>randomの「偏り少なく」を <code>lastShownAt/showCount</code> 重み付けで一言定義</li>
+        <li>データ保持期間・イベント後削除の一文が要件に無い</li>
+      </ul>
+    </div>
+    <div>
+      <h2><span class="n" style="background:var(--teal)">+</span>不足ドキュメント</h2>
+      <ul class="clean" style="margin-top:14px">
+        <li><code>02/07_capture-setup.md</code> — 撮影セットアップ仕様（C-2b）</li>
+        <li><code>01/06_プライバシー・同意.md</code> — 同意/名前露出/保持削除（C-4）</li>
+        <li><code>02/08_experience-design.md</code> — 体験・感動設計（M-8）</li>
+        <li><code>05/04_operations-runbook.md</code> — 当日運用・人員・オフライン</li>
+        <li><code>05/05_risk-register.md</code> — トップリスクと緩和策</li>
+        <li><code>04/06_feasibility-report-template.md</code> — 6/25判定記録様式</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Patch plan -->
+  <section>
+    <h2><span class="n">→</span>推奨パッチ計画</h2>
+    <p class="sub">依存順。Gateを壊す穴 → 体系整合 → 感動水準。<b>Phase Aの5点だけでも先に当てれば6/25判定精度が一段上がる。</b></p>
+    <div class="tl">
+      <div class="phase">
+        <h3><em>PHASE A</em>Gate判定を成立させる（最優先・C系）</h3>
+        <ol>
+          <li>保存先を<b>IndexedDBに確定</b>＋総数/保存上限/枯渇時挙動を明記 <code>03/01・02/02</code></li>
+          <li>ST-005を<b>60分・300件・FPS/メモリ/容量計測</b>へ改修 <code>04/05・04/03</code></li>
+          <li><b>撮影リグ仕様 新設</b> <code>02/07_capture-setup.md</code></li>
+          <li>背景除去=ML第一候補化＋<b>定量合格基準</b>、FR-003に個人情報チェック追加 <code>04/01・04</code></li>
+          <li><b>プライバシー/同意 新設</b>（名前露出・unknown既定・保持削除） <code>01/06</code></li>
+        </ol>
+      </div>
+      <div class="phase b">
+        <h3><em>PHASE B</em>体系の整合と運用（M系）</h3>
+        <ol>
+          <li>Issue ID体系を一本化、TODOリンクを番号付きへ <code>05/03・TODO.md</code></li>
+          <li>MVPは1台横長を正、2台連結は別検証に分離 <code>02/01・03/04</code></li>
+          <li>作品IDジャンプ＋直近フィルタ追加 <code>02/06・FR-301</code></li>
+          <li>Gate期間メトリクスオーバーレイをMust化 <code>02/05</code></li>
+          <li>Runbook / Risk register / 判定レポート様式 を新設 <code>05/04・05/05・04/06</code></li>
+        </ol>
+      </div>
+      <div class="phase c">
+        <h3><em>PHASE C</em>感動水準（設問12）</h3>
+        <ol>
+          <li>体験/感動設計を新設（登場演出・音・声かけ台本・視線誘導） <code>02/08</code></li>
+          <li>企画スライドに「四角フォールバックが標準」を反映し期待値整合</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>修正対象は <code>docs/ふわふわランド旧統合版/</code> と TODO.md のふわふわランド部分に限定。コード実装・DB・<code>.env*</code>・無関係ファイルは触れない。</span>
+    <span>レビュー作成 2026-06-23</span>
+  </footer>
+</div>
+</body>
+</html>
