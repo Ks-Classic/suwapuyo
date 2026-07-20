@@ -181,7 +181,7 @@ Response:
 
 ### `POST /api/booth-intros/next`
 
-体操完了後のブース紹介候補を1件返す。入力は`exercise_type`とセッション内表示済みcontent ID。サーバーは`02_体験設計/06` §8のローテーション規則で選定し、`booth_rotation_counters`を更新、選定入力と理由を管理ログへ残す。候補なしは`204`。
+体操完了後のブース紹介候補を1件返す。入力は`exercise_type`とセッション内表示済みコンテンツ ID。サーバーは`02_体験設計/06` §8のローテーション規則で選定し、`booth_rotation_counters`を更新、選定入力と理由を管理ログへ残す。候補なしは`204`。
 
 ## 3. 出展者・運営API
 
@@ -194,6 +194,50 @@ Response:
 | `POST /api/admin/events/:id/retry` | 安全な再送 | 非公開（ローカル/preview限定） | admin |
 
 集計APIは少数セルの秘匿閾値を持つ。閾値は運営決定待ちで、MVP既定値は5未満を非表示とする。
+
+### 当日作品・ランド運営の境界
+
+当日作品は既存の`ArtworkRepository`、ランド状態は`DisplayStateService`をアプリ内境界とする。現行試作のブラウザ→Supabase直接書込をそのまま本番管理API仕様とはしない。要確認-007で運営認証、要確認-013で同期・復旧方式を確定した後に、Product Worker APIまたは認証済みSupabase APIのどちらを採用するか決定する。
+
+本番書込境界は最低限、次を満たす。
+
+| 操作 | 必須入力 | 結果 | 制約 |
+|---|---|---|---|
+| 作品完成 | client artwork UUID、PNG、寸法、設定版 | queued作品 | 空画像・過大画像・不正形式を拒否。再送で重複作成しない |
+| 登場 | artwork ID、operation UUID | visible / display event | queuedまたはhiddenの許可作品のみ。二重登場しない |
+| 描き直し | artwork ID、operation UUID | タブレットへ再開状態 | 公開せず、元作品との関係を監査可能にする |
+| 非表示・保管 | artwork ID、operation UUID、reason | hidden / archived | 物理削除しない。表示正本から除外 |
+| ランド操作 | operation UUID、許可済みpatch | display state | 未知mode・eventを拒否。競合時は最新versionを返す |
+| 設定変更 | operation UUID、設定version、許可済みpatch | 次セッション設定 | 描画中セッションへ無断即時反映しない |
+
+PCとスマホは同じ書込境界を使用する。画面幅やUser-Agentで認可を変えない。API path、設定schema、運営session方式はGate確定前に固定しない。
+
+### お絵描き完成から登場まで
+
+```mermaid
+sequenceDiagram
+  participant Child as 子ども
+  participant Tablet as タブレット
+  participant Store as 作品境界
+  participant Staff as PC/スマホ運営
+  participant State as ランド状態
+  participant Display as 大画面
+
+  Staff->>Tablet: 次の子を開始
+  Child->>Tablet: 指で描く・できた
+  Tablet->>Store: 作品完成(UUID、画像、設定版)
+  Store-->>Tablet: queued / 確認待ち
+  Store-->>Staff: 確認待ち通知
+  Staff->>State: ランドへ(operation UUID、artwork ID)
+  State->>State: 認可・状態・冪等・競合検証
+  State-->>Tablet: 送り出し開始
+  State-->>Display: 到着イベント
+  Display->>Display: 到着予告→登場→通常ランド
+  Display-->>State: 表示開始記録
+  State-->>Staff: 登場済み
+```
+
+通信失敗時はタブレットに未送信作品を残し、スタッフ画面と大画面は登場済みと表示しない。スタッフ操作後に表示PCが切断した場合、復帰時に最新状態と未消化イベントを照合する。
 
 ## 4. LINE認証シーケンス
 

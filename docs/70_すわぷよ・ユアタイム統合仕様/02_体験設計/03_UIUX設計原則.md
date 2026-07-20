@@ -155,6 +155,32 @@ LIFF内の主ナビゲーションは3〜4項目に制限する。
 - [Apple — Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
 - [Apple Design Awards 2025](https://developer.apple.com/design/awards/2025/)
 - [Android — Accessibility](https://developer.android.com/design/ui/mobile/guides/foundations/accessibility)
-- [Android — Adaptive layouts](https://developer.android.com/design/ui/mobile/guides/layout-and-content/adapt-layout)
+- [Android — Adaptive layouts](https://developer.android.com/design/ui/mobile/guides/layout-and-コンテンツ/adapt-layout)
 - [個人情報保護委員会 — 個人情報保護法ガイドライン（通則編）](https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/)
 - [日本小児歯科学会 — 口腔機能を育てる治療と年齢相応の発達](https://www.jspd.or.jp/recommendation/article26/)
+
+## 10. 会場お絵描きと運営画面
+
+### 子ども用タブレット
+
+- 1画面1目的とし、お絵描き以外のナビゲーション、管理設定、同意範囲、公開先を表示しない。
+- 3歳頃の利用を下限とし、主要操作は文字だけに依存させない。
+- 初期線幅は太め、色数は絞り、大きな色見本を使う。
+- 最低限の操作は色、戻す、消す、完成とする。追加機能は完成率を上げることを実機で確認してから採用する。
+- 作品の上手さを採点せず、どの作品もランドのキャラクターとして成立するよう余白・大きさ・表示位置を整える。
+
+### PC中心・スマホ対応の運営管理
+
+- PCを主対象とし、複数状態を一覧できる情報密度を持たせる。
+- スマホは別の簡易アプリにせず、同じ機能・データをレスポンシブに再配置する。
+- ナビゲーションは`ホーム / 作品 / ランド / お絵描き設定 / 端末・設定`とする。
+- スマホでは主要操作を画面下部へ置き、縦画面で横スクロールを要求しない。
+- 削除、全体初期化、イベント終了等の復旧しにくい操作は、通常の登場・非表示操作から視覚的に分離する。
+- PCとスマホの同時操作では、最新状態、操作中、反映済みを明示する。
+
+### 登場演出
+
+- タブレットから作品が飛び立ち、大画面側で受け取られる時間的・方向的な連続性を持たせる。
+- 大画面では到着予告、登場、歓迎、通常のランド動作への移行を短く構成する。
+- 演出パターンはシャボン玉、雲、星等を候補とするが、採用数・尺・音は回転率と実機検証で確定する。
+- 演出中も緊急停止、音量オフ、Reduce Motionを利用できる。
