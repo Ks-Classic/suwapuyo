@@ -1,0 +1,43 @@
+{
+  "evaluationId": "SUW-33-boundary-refactor-2026-07-21",
+  "evaluatedAt": "2026-07-21T03:45:00+09:00",
+  "tasks": ["SUW-33", "TB-51"],
+  "decision": "pass",
+  "reviewMode": {
+    "builder": "Codex implementation phase",
+    "evaluator": "same-agent context-separated self-review phase",
+    "independentReviewer": false,
+    "limitation": "別モデル・別担当者による独立評価ではない。ユーザー指定のセルフレビューとして、実装意図から評価基準へ視点を切り替えて再判定した。"
+  },
+  "hardThresholds": [
+    {"id": "B-01", "result": "pass", "evidence": ["07_サマリー/06_すわぷよ本体_実装状態.md", "07_サマリー/07_ふわふわランド本体_実装状態.md", "07_サマリー/08_すわぷよ・ふわふわランド接続_実装状態.md", "07_サマリー/09_YourTIME当日運用_実装状態.md", "07_サマリー/10_ブランド・SNS_実装状態.md"], "finding": "5領域ごとに責務、利用者、URL、所有データ、非対象を分離した。"},
+    {"id": "B-02", "result": "pass", "evidence": ["各領域SSoTの現在地、本番Gate、次の実装順、完了の定義"], "finding": "各文書単独で実装済み、未完、本番可否、次のGateを判定できる。"},
+    {"id": "B-03", "result": "pass", "evidence": ["07_サマリー/08_すわぷよ・ふわふわランド接続_実装状態.md §1, §4, §7", "src/integrations/characterClaimContract.ts"], "finding": "接続を第三境界とし、停止時も両本体を単独継続する契約にした。"},
+    {"id": "B-04", "result": "pass", "evidence": ["node validate.js", "hierarchy-validator: legacy project without hierarchy remains valid"], "finding": "階層はoptionalで、集約9 projectのうちpilotはsuwapuyoだけ。"},
+    {"id": "B-05", "result": "pass", "evidence": ["node --test scripts/hierarchy-validator.test.js scripts/workstream-hierarchy.test.js", "data/schema.json", "validate.js"], "finding": "node ID重複、参照切れ、深度超過、policy不整合を拒否する。task所属は単一nodeIdなので複数所属を構造上許さない。"},
+    {"id": "B-06", "result": "pass", "evidence": ["scripts/workstream-hierarchy.test.js", "board-core.js computeWorkstreamHierarchy"], "finding": "blockedを最優先、次にwaiting_humanとして上位伝播し、件数をdone率と別表示する。"},
+    {"id": "B-07", "result": "pass", "evidence": ["src/productRoutes.test.ts", "src/App.test.tsx", "full npm test: 48 files / 254 tests passed"], "finding": "既存land URL、retired URL、本体URLの振分けを型付き正本へ移し、挙動を維持した。"},
+    {"id": "B-08", "result": "pass", "evidence": ["src/app/productBoundaries.test.ts", "src/shared/characters/sampleCharacters.ts"], "finding": "すわぷよcoreのland内部importを禁止し、共有キャラcatalogをsharedへ移した。"},
+    {"id": "B-09", "result": "pass", "evidence": ["npm test: 48 files / 254 tests passed", "npm run lint: exit 0", "npm run build: exit 0", "git diff --check: exit 0", "live.html inline JavaScript: 1 script parsed", "GET http://127.0.0.1:4173/live.html: 200 text/html"], "finding": "静的検査、unit test、production build、画面配信確認を完了した。"},
+    {"id": "B-10", "result": "pass", "evidence": ["作業契約の非対象", "実行履歴"], "finding": "本番、DB、LINE、Cloudflare、外部SaaSへの書込、deploy、commit、pushは実施していない。"}
+  ],
+  "taskboardVerification": {
+    "projects": 9,
+    "tasksBeforeCompletionUpdate": 182,
+    "hierarchicalProjects": ["suwapuyo"],
+    "suwapuyoRootWorkstreams": 8,
+    "suwapuyoUnclassifiedTaskIds": [],
+    "validator": "pass",
+    "hierarchyTests": "2 files passed",
+    "livePage": "HTTP 200"
+  },
+  "builderFindings": [
+    {"severity": "fixed", "finding": "URL parserの既定引数がbrowser外でwindowを参照し得た。", "resolution": "実行時guardへ変え、SSRではnullを返す後方互換を維持した。"}
+  ],
+  "evaluatorFindings": [
+    {"severity": "accepted_warning", "finding": "production bundleに1.1 MB級chunkの警告が残る。", "impact": "今回の境界再編の合否は妨げないが、初期表示性能の別改善候補。"},
+    {"severity": "accepted_warning", "finding": "jsdomテストでCanvas getContext未実装通知が出る。", "impact": "254テストは全て合格。実canvas品質は既存の実機・E2E Gateで判定する。"},
+    {"severity": "accepted_limitation", "finding": "TaskboardディレクトリはGit repositoryではない。", "impact": "schema、表示、データ変更のcommit provenanceはこの作業だけでは確立できない。"}
+  ],
+  "externalEffects": {"production": false, "database": false, "saasWrite": false, "deploy": false, "commit": false, "push": false}
+}
