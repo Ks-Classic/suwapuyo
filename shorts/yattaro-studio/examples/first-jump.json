@@ -1,0 +1,21 @@
+{
+  "title": "yattaro-first-jump",
+  "duration": 6,
+  "fps": 30,
+  "characterAsset": "public/content/04_ツナやす_ブランド/01_キャラクター案/yasu-cousin-draft-v1.png",
+  "titleText": "やったろう！",
+  "subtitle": "まずは うごいてみる！",
+  "background": {
+    "top": "#17324d",
+    "bottom": "#4f9da6"
+  },
+  "motions": [
+    { "at": 0.0, "x": 0.50, "y": 0.59, "scale": 0.62, "rotation": 0 },
+    { "at": 1.0, "x": 0.42, "y": 0.56, "scale": 0.66, "rotation": -7 },
+    { "at": 2.0, "x": 0.58, "y": 0.48, "scale": 0.72, "rotation": 8 },
+    { "at": 3.0, "x": 0.50, "y": 0.59, "scale": 0.66, "rotation": 0 },
+    { "at": 4.0, "x": 0.50, "y": 0.51, "scale": 0.72, "rotation": -5 },
+    { "at": 5.0, "x": 0.50, "y": 0.59, "scale": 0.66, "rotation": 0 },
+    { "at": 6.0, "x": 0.50, "y": 0.57, "scale": 0.70, "rotation": 0 }
+  ]
+}
