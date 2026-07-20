@@ -3,6 +3,7 @@
 // トークン発行(運営側)は src/fuwafuwa-land/store/claimStore.ts。
 import { ARTWORK_BUCKET, CHARACTER_CONTENT_BUCKET } from "../fuwafuwa-land/config";
 import { getSupabaseClient } from "../fuwafuwa-land/lib/supabase";
+export { getClaimTokenFromUrl } from "./characterClaimUrl";
 
 export type ClaimedCharacterSourceType = "sample" | "artwork" | "sponsor";
 
@@ -90,33 +91,6 @@ export function getCharacterImageUrl(imagePath: string, sourceType?: ClaimedChar
   }
   const bucket = sourceType === "artwork" ? ARTWORK_BUCKET : CHARACTER_CONTENT_BUCKET;
   return client.storage.from(bucket).getPublicUrl(imagePath).data.publicUrl;
-}
-
-// URL からクレームトークンを取り出す。
-// 直接 `?claim=...` と LIFF 深リンク(`liff.state` 内の `claim`)の両方に対応
-// (concierge/liffClient.ts の getBoothIdFromLiffUrl と同パターン)。
-export function getClaimTokenFromUrl(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  const params = new URLSearchParams(window.location.search);
-  const direct = params.get("claim");
-  if (direct !== null && direct.trim().length > 0) {
-    return direct.trim();
-  }
-  const state = params.get("liff.state");
-  if (state === null || state.trim().length === 0) {
-    return null;
-  }
-  try {
-    const decoded = decodeURIComponent(state);
-    const stateQuery = decoded.includes("?") ? decoded.slice(decoded.indexOf("?") + 1) : decoded.replace(/^\?/, "");
-    const stateParams = new URLSearchParams(stateQuery);
-    const claim = stateParams.get("claim");
-    return claim !== null && claim.trim().length > 0 ? claim.trim() : null;
-  } catch {
-    return null;
-  }
 }
 
 const DEMO_LINE_USER_KEY = "suwapuyo.claim.demoUserId";

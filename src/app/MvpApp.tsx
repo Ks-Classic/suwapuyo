@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CharacterSelectScreen } from "../components/screens/CharacterSelectScreen";
 import { ClaimScreen } from "../components/screens/ClaimScreen";
-import { getClaimTokenFromUrl } from "../integrations/characterClaim";
+import { getClaimTokenFromUrl } from "../integrations/characterClaimUrl";
 import { CHARACTERS } from "../config/characters";
 import { BoothCheckinScreen } from "../checkin/BoothCheckinScreen";
 import { DEMO_CAMPAIGNS } from "../checkin/checkinRepository";

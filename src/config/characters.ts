@@ -1,4 +1,4 @@
-import { SAMPLE_CHARACTERS } from "../fuwafuwa-land/renderer/sampleCharacters";
+import { SAMPLE_CHARACTERS } from "../shared/characters/sampleCharacters";
 import type { SuwapuyoProgress } from "../shared/progressStore";
 
 export interface SelectableCharacter {
