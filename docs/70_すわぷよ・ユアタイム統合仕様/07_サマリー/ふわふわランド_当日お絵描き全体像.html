@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" コンテンツ="width=device-width, initial-scale=1">
+  <meta name="color-scheme" コンテンツ="light">
+  <title>ふわふわランド｜当日お絵描き 全体像</title>
+  <style>
+    :root {
+      --ink: #183142;
+      --muted: #63737b;
+      --paper: #fffdf7;
+      --sky: #edf8fc;
+      --line: #dce7e6;
+      --mint: #42bda5;
+      --mint-dark: #168775;
+      --peach: #ff9867;
+      --sun: #ffd45e;
+      --berry: #d65d7e;
+      --navy: #173b4d;
+      --shadow: 0 18px 50px rgb(26 70 79 / 10%);
+      --radius: 22px;
+      font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); line-height: 1.75; }
+    a { color: inherit; }
+
+    .shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; height: 100vh; padding: 30px 20px; color: #eaf8f6; background: var(--navy); }
+    .brand { display: flex; align-items: center; gap: 10px; margin: 0 0 34px; color: white; font-size: 15px; font-weight: 800; letter-spacing: .03em; }
+    .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 12px; background: linear-gradient(135deg, var(--sun), var(--peach)); box-shadow: 0 6px 18px rgb(255 184 91 / 25%); color: var(--navy); }
+    .eyebrow { margin: 0 0 8px; color: var(--mint-dark); font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+    .sidebar .eyebrow { color: #93ddd0; }
+    .side-title { margin: 0 0 22px; color: #fff; font-size: 18px; line-height: 1.45; }
+    .nav { display: grid; gap: 4px; }
+    .nav a { padding: 9px 12px; border-radius: 10px; color: #c9e1e0; font-size: 14px; font-weight: 700; text-decoration: none; }
+    .nav a:hover { color: #fff; background: rgb(255 255 255 / 12%); }
+    .side-note { position: absolute; right: 20px; bottom: 26px; left: 20px; padding: 13px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 14px; color: #b9d3d4; font-size: 12px; line-height: 1.6; }
+
+    main { overflow: hidden; }
+    .wrap { width: min(1180px, calc(100% - 64px)); margin: 0 auto; }
+    .hero { padding: 74px 0 56px; background: radial-gradient(circle at 78% 18%, #c3f1e9 0, transparent 24%), radial-gradient(circle at 67% 76%, #ffe3a5 0, transparent 19%), linear-gradient(135deg, #effbff, #fffdf7 69%); }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(300px, .88fr); gap: 56px; align-items: center; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 760px; margin-bottom: 20px; color: var(--navy); font-size: clamp(38px, 5vw, 70px); line-height: 1.17; letter-spacing: -.055em; }
+    .lead { max-width: 670px; color: #405c68; font-size: 18px; line-height: 1.9; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
+    .pill { padding: 6px 11px; border: 1px solid #cfe5e1; border-radius: 999px; background: rgb(255 255 255 / 75%); color: var(--mint-dark); font-size: 13px; font-weight: 800; }
+
+    .story-card { position: relative; min-height: 400px; padding: 24px; overflow: hidden; border: 1px solid rgb(255 255 255 / 80%); border-radius: 30px; background: linear-gradient(150deg, #1d4b61, #276a74); box-shadow: var(--shadow); }
+    .story-card::before, .story-card::after { position: absolute; border-radius: 999px; コンテンツ: ""; filter: blur(1px); }
+    .story-card::before { width: 230px; height: 230px; right: -72px; top: -70px; background: rgb(125 235 210 / 23%); }
+    .story-card::after { width: 190px; height: 190px; left: -80px; bottom: -88px; background: rgb(255 209 99 / 22%); }
+    .story-label { position: relative; z-index: 1; color: #9ce5d6; font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+    .journey { position: relative; z-index: 1; display: grid; gap: 15px; margin-top: 27px; }
+    .journey-item { display: grid; grid-template-columns: 44px 1fr; gap: 13px; align-items: center; padding: 10px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 16px; background: rgb(255 255 255 / 9%); color: white; }
+    .journey-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; background: rgb(255 255 255 / 16%); font-size: 21px; }
+    .journey-item strong { display: block; font-size: 14px; }
+    .journey-item span { display: block; color: #c9e4e4; font-size: 12px; line-height: 1.45; }
+
+    section { padding: 72px 0; }
+    section:nth-of-type(even) { background: #f5faf8; }
+    .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, .55fr); gap: 28px; align-items: end; margin-bottom: 32px; }
+    h2 { margin-bottom: 0; color: var(--navy); font-size: clamp(26px, 3vw, 39px); line-height: 1.3; letter-spacing: -.035em; }
+    .section-intro { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .north-star { display: grid; grid-template-columns: 78px 1fr; gap: 22px; padding: 27px; border: 1px solid #d7ebe5; border-radius: var(--radius); background: #fff; box-shadow: 0 10px 24px rgb(20 78 73 / 5%); }
+    .north-star .symbol { display: grid; width: 68px; height: 68px; place-items: center; border-radius: 22px; background: #e4faf5; color: var(--mint-dark); font-size: 31px; }
+    .north-star p { margin: 5px 0 0; color: #547077; }
+
+    .device-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .device { position: relative; padding: 25px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+    .device::after { position: absolute; width: 90px; height: 90px; right: -35px; bottom: -35px; border-radius: 999px; コンテンツ: ""; opacity: .58; }
+    .device.tablet::after { background: #bdeee7; }.device.pc::after { background: #c5e4f7; }.device.phone::after { background: #ffe2ad; }
+    .device-icon { display: grid; width: 49px; height: 49px; place-items: center; border-radius: 16px; font-size: 24px; }
+    .tablet .device-icon { background: #e5faf7; }.pc .device-icon { background: #e9f4fb; }.phone .device-icon { background: #fff3d6; }
+    .device h3 { margin: 16px 0 7px; color: var(--navy); font-size: 21px; }.device p { margin: 0; color: var(--muted); font-size: 14px; }
+    .device ul { position: relative; z-index: 1; margin: 14px 0 0; padding: 0; list-style: none; font-size: 13px; }.device li { margin: 7px 0; }.device li::before { margin-right: 8px; color: var(--mint-dark); コンテンツ: "✓"; font-weight: 900; }
+
+    .flow { display: grid; grid-template-columns: repeat(6, minmax(135px, 1fr)); gap: 11px; align-items: stretch; }
+    .step { position: relative; padding: 17px 14px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+    .step:not(:last-child)::after { position: absolute; z-index: 2; top: 50%; right: -18px; width: 25px; height: 2px; background: #a1d8cf; コンテンツ: ""; }.step:not(:last-child)::before { position: absolute; z-index: 3; top: calc(50% - 4px); right: -19px; border-width: 5px 0 5px 7px; border-style: solid; border-color: transparent transparent transparent #a1d8cf; コンテンツ: ""; }
+    .step-num { color: var(--mint-dark); font-size: 11px; font-weight: 900; letter-spacing: .1em; }.step h3 { margin: 8px 0 5px; font-size: 16px; line-height: 1.4; }.step p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .layout-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 18px; }
+    .panel { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+    .panel h3 { margin-bottom: 14px; color: var(--navy); font-size: 19px; }
+    .menu-map { display: grid; grid-template-columns: 145px 1fr; gap: 14px; }
+    .menu-list { display: grid; gap: 7px; align-コンテンツ: start; padding: 12px; border-radius: 15px; background: #f0f8f7; }
+    .menu-list div { padding: 8px 9px; border-radius: 9px; color: #56716f; font-size: 13px; font-weight: 800; }.menu-list div:first-child { background: var(--mint); color: #fff; }
+    .home-card { min-height: 230px; padding: 18px; border: 1px solid #d8e9e6; border-radius: 16px; background: linear-gradient(145deg, #fff, #f7fbfa); }
+    .status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; background: #e5faf5; color: var(--mint-dark); font-size: 11px; font-weight: 800; }.status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .queue { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }.mini { padding: 12px; border-radius: 12px; background: #edf7f5; }.mini strong { display: block; color: var(--navy); font-size: 24px; line-height: 1; }.mini span { color: var(--muted); font-size: 11px; }
+    .cta { display: block; margin-top: 14px; padding: 10px; border-radius: 10px; background: var(--peach); color: white; text-align: center; font-size: 13px; font-weight: 900; }
+    .child-rule { display: grid; gap: 9px; }.rule { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; padding: 11px 0; border-bottom: 1px solid #edf2f1; }.rule:last-child { border-bottom: 0; }.rule b { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; background: #fff1d2; color: #a56710; font-size: 14px; }.rule p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .arrival { display: grid; grid-template-columns: 1fr 46px 1fr; align-items: center; gap: 10px; padding: 23px; border: 1px solid #d6e8e5; border-radius: var(--radius); background: linear-gradient(100deg, #eafaf7, #fff8e9); }
+    .arrival-side { padding: 17px; border-radius: 16px; background: #fff; text-align: center; box-shadow: 0 8px 18px rgb(30 95 83 / 7%); }.arrival-side .big { font-size: 31px; }.arrival-side strong { display: block; margin-top: 5px; color: var(--navy); }.arrival-side span { color: var(--muted); font-size: 12px; }.arrow { color: var(--peach); font-size: 34px; font-weight: 900; text-align: center; }
+
+    .architecture { display: grid; grid-template-columns: 1fr 70px 1fr 70px 1fr; align-items: center; gap: 8px; }.node { min-height: 145px; padding: 18px; border-radius: 19px; background: #fff; box-shadow: 0 8px 22px rgb(24 73 81 / 6%); }.node h3 { margin: 0 0 6px; color: var(--navy); font-size: 16px; }.node p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }.node em { display: inline-block; margin-top: 9px; color: var(--mint-dark); font-size: 11px; font-style: normal; font-weight: 800; }.connector { color: #75bdb1; font-size: 29px; font-weight: 800; text-align: center; }
+
+    .state-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }.state { padding: 17px; border-radius: 16px; background: #fff; border-top: 4px solid var(--mint); }.state:nth-child(2) { border-color: var(--sun); }.state:nth-child(3) { border-color: var(--peach); }.state:nth-child(4) { border-color: var(--berry); }.state h3 { margin: 0 0 5px; color: var(--navy); font-size: 16px; }.state p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+
+    .split { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; }.scope { padding: 25px; border-radius: var(--radius); }.scope.now { background: var(--navy); color: white; }.scope.later { border: 1px solid #dce8e5; background: #fff; }.scope h3 { margin-bottom: 12px; font-size: 21px; }.scope p { color: inherit; opacity: .84; font-size: 14px; }.scope ul { margin: 15px 0 0; padding: 0; list-style: none; }.scope li { margin: 9px 0; font-size: 14px; }.scope li::before { margin-right: 8px; コンテンツ: "→"; color: var(--sun); font-weight: 900; }.scope.later li::before { color: var(--mint-dark); }
+    .gate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }.gate { padding: 17px; border: 1px solid #f0ddd2; border-radius: 16px; background: #fffaf5; }.gate b { color: #b8502f; font-size: 12px; }.gate h3 { margin: 6px 0; color: var(--navy); font-size: 16px; }.gate p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+
+    .checklist { display: grid; grid-template-columns: repeat(2, 1fr); gap: 11px; }.check { display: flex; gap: 10px; padding: 14px; border: 1px solid #dce9e6; border-radius: 14px; background: #fff; color: #506a70; font-size: 13px; line-height: 1.6; }.check b { flex: 0 0 auto; color: var(--mint-dark); }
+    footer { padding: 40px 0 52px; color: #6c8182; font-size: 12px; text-align: center; }
+    .source-links { display: flex; flex-wrap: wrap; justify-コンテンツ: center; gap: 8px; margin-top: 13px; }.source-links a { padding: 5px 9px; border: 1px solid #d4e4e1; border-radius: 999px; text-decoration: none; }
+
+    @media (max-width: 1000px) { .shell { display: block; }.sidebar { position: static; height: auto; padding: 17px 22px; }.brand, .side-title { margin-bottom: 10px; }.nav { grid-template-columns: repeat(4, max-コンテンツ); overflow-x: auto; }.side-note { display: none; }.hero-grid, .section-head, .layout-grid, .split { grid-template-columns: 1fr; }.flow { grid-template-columns: repeat(3, 1fr); }.flow .step:nth-child(3)::after, .flow .step:nth-child(3)::before { display: none; }.device-grid { grid-template-columns: 1fr; }.architecture { grid-template-columns: 1fr; }.connector { transform: rotate(90deg); }.state-grid, .gate-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .wrap { width: min(100% - 32px, 1180px); }.hero { padding-top: 46px; }.story-card { min-height: auto; }.flow, .state-grid, .gate-grid, .checklist { grid-template-columns: 1fr; }.flow .step:not(:last-child)::after, .flow .step:not(:last-child)::before { display: none; }.menu-map { grid-template-columns: 1fr; }.menu-list { grid-template-columns: repeat(2, 1fr); }.arrival { grid-template-columns: 1fr; }.arrow { transform: rotate(90deg); }.sidebar { padding: 15px 16px; }.nav a { padding: 8px; font-size: 12px; } }
+    @media print { .sidebar { display: none; }.shell { display: block; }.hero { padding-top: 30px; } section { break-inside: avoid; padding: 34px 0; }.wrap { width: min(100% - 32px, 1180px); } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="目次">
+      <div class="brand"><span class="brand-mark">✦</span>ふわふわランド</div>
+      <p class="eyebrow">ONE-PAGE OVERVIEW</p>
+      <p class="side-title">当日お絵描きと<br>ランド運営の全体像</p>
+      <nav class="nav">
+        <a href="#purpose">めざす体験</a>
+        <a href="#roles">端末と役割</a>
+        <a href="#flow">当日の流れ</a>
+        <a href="#experience">体験とメニュー</a>
+        <a href="#architecture">裏側の構造</a>
+        <a href="#scope">MVPとGate</a>
+        <a href="#quality">確認すること</a>
+      </nav>
+      <div class="side-note">仕様の要約版です。実装判断は統合仕様と、意思決定・要確認一覧を正とします。</div>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <p class="eyebrow">YOURTIME EVENT EXPERIENCE</p>
+            <h1>描いた子が、<br>ほんとうに村の<br>なかまになる。</h1>
+            <p class="lead">子どもはタブレットで指を動かすだけ。スタッフはPCを中心に、必要なときだけスマホから支える。完成した一枚は、大画面のふわふわランドへ飛び込んで、新しいなかまとして動き出します。</p>
+            <div class="pill-row"><span class="pill">3歳頃〜小学生</span><span class="pill">タブレットで指描き</span><span class="pill">PC中心の運営</span><span class="pill">スマホでも管理</span></div>
+          </div>
+          <div class="story-card" aria-label="体験の要約">
+            <p class="story-label">ONE SENTENCE</p>
+            <div class="journey">
+              <div class="journey-item"><span class="journey-icon">✎</span><div><strong>子どもが描く</strong><span>文字を読めなくても、指と色で始められる。</span></div></div>
+              <div class="journey-item"><span class="journey-icon">✓</span><div><strong>スタッフが見守る</strong><span>完成作品を確認し、安全に登場させる。</span></div></div>
+              <div class="journey-item"><span class="journey-icon">☁</span><div><strong>ランドで出会う</strong><span>自分の絵が大画面の世界に住みはじめる。</span></div></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section id="purpose">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">01 / PURPOSE</p><h2>これは「お絵描きアプリ」ではなく、<br>自分の作品に会える体験。</h2></div><p class="section-intro">子どもが上手に描けることを採点する場ではありません。描いたものが世界に迎え入れられ、「自分がつくった」と感じられることを中心に置きます。</p></div>
+          <div class="north-star"><div class="symbol">◎</div><div><strong>北極星</strong><p>3歳頃から小学生までの子どもが、短時間で「できた！」を押し、自分の作品が大画面のふわふわランドへ移動して動き始める。その一連を、説明より先に体験で理解できるようにする。</p></div></div>
+        </div>
+      </section>
+
+      <section id="roles">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">02 / ROLES</p><h2>端末ごとに、することを<br>きっぱり分ける。</h2></div><p class="section-intro">子どもが触る画面に管理は置かない。運営が見る画面に子ども向けの迷いは置かない。だから会場で迷子になりません。</p></div>
+          <div class="device-grid">
+            <article class="device tablet"><div class="device-icon">▱</div><h3>子ども用タブレット</h3><p>一人の子どもが作品をつくるための、まっさらな舞台です。</p><ul><li>指描きだけに集中</li><li>大きな色・太い線・戻す・消す</li><li>管理・同意・公開設定は見せない</li></ul></article>
+            <article class="device pc"><div class="device-icon">▰</div><h3>運営PC</h3><p>当日の中心。全体の状況を見渡しながら、判断と設定を行います。</p><ul><li>確認待ち作品とランドを一覧</li><li>登場・非表示・演出・設定</li><li>接続・未送信・エラーを確認</li></ul></article>
+            <article class="device phone"><div class="device-icon">▯</div><h3>スタッフスマホ</h3><p>PCの簡易版ではなく、同じ運営情報へ会場内から触れる窓口です。</p><ul><li>PCと同じ作品・設定を参照</li><li>移動中に登場・非表示を操作</li><li>縦画面でも主要操作が完結</li></ul></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="flow">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">03 / EVENT FLOW</p><h2>一人の作品が、村へ入るまで。</h2></div><p class="section-intro">スタッフは作品を「登録する人」ではなく、子どもの達成を支える案内役です。公開判断は1タップ、作品づくりの主役は子どもです。</p></div>
+          <div class="flow">
+            <article class="step"><span class="step-num">01</span><h3>次の子を始める</h3><p>スタッフが新しいセッションを用意する。</p></article>
+            <article class="step"><span class="step-num">02</span><h3>指で描く</h3><p>子どもは色を選び、自由に線を描く。</p></article>
+            <article class="step"><span class="step-num">03</span><h3>「できた！」</h3><p>空作品は送らず、完成作品だけを渡す。</p></article>
+            <article class="step"><span class="step-num">04</span><h3>スタッフ確認</h3><p>登場・描き直し・非表示を選ぶ。</p></article>
+            <article class="step"><span class="step-num">05</span><h3>送り出し</h3><p>タブレットの絵が光り、画面の外へ飛び立つ。</p></article>
+            <article class="step"><span class="step-num">06</span><h3>ランドで歓迎</h3><p>大画面に到着し、村のなかまとして動き始める。</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="experience">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">04 / EXPERIENCE DESIGN</p><h2>画面は増やしても、<br>一人が迷うことは増やさない。</h2></div><p class="section-intro">運営画面はSaaSのように整然と、子ども画面は絵本のように単純に。役割が違うから、見た目と情報量も変えます。</p></div>
+          <div class="layout-grid">
+            <article class="panel"><h3>PC中心の運営メニュー</h3><div class="menu-map"><div class="menu-list"><div>ホーム</div><div>作品</div><div>ランド</div><div>お絵描き設定</div><div>端末・設定</div></div><div class="home-card"><span class="status"><i></i>すべて同期中</span><h3 style="margin-top:15px">ホームは「いま」の要約</h3><div class="queue"><div class="mini"><strong>1</strong><span>確認待ち</span></div><div class="mini"><strong>18</strong><span>ランドに登場中</span></div></div><span class="cta">確認待ちの作品をランドへ</span></div></div></article>
+            <article class="panel"><h3>子ども画面のルール</h3><div class="child-rule"><div class="rule"><b>1</b><p><strong>一画面一目的。</strong><br>描くこと以外のナビゲーションを置かない。</p></div><div class="rule"><b>2</b><p><strong>文字を読めなくても使える。</strong><br>色、太さ、戻す、消す、完成は視覚で分かる。</p></div><div class="rule"><b>3</b><p><strong>上手さを評価しない。</strong><br>どんな線でもランドでなかまとして成立させる。</p></div><div class="rule"><b>4</b><p><strong>完了後も管理画面を見せない。</strong><br>待つ時間まで、次の登場を楽しむ時間にする。</p></div></div></article>
+          </div>
+          <div class="arrival" style="margin-top:18px"><div class="arrival-side"><div class="big">✦</div><strong>タブレット</strong><span>作品が光り、画面の外へ</span></div><div class="arrow">→</div><div class="arrival-side"><div class="big">☁</div><strong>大画面ランド</strong><span>到着予告 → 登場 → ふわふわ動く</span></div></div>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">05 / STRUCTURE</p><h2>表では一瞬。裏では、<br>状態を丁寧につなぐ。</h2></div><p class="section-intro">作品を保存した瞬間に公開するのではありません。確認待ち、スタッフ判断、登場イベント、表示開始を分けることで、安全性と喜びを両立します。</p></div>
+          <div class="architecture"><article class="node"><h3>作品の境界</h3><p>完成画像、寸法、状態を受け取り、空作品・重複・不正な形式を防ぐ。</p><em>作品はまず「確認待ち」</em></article><div class="connector">→</div><article class="node"><h3>運営の判断</h3><p>PCまたはスマホで、登場・描き直し・非表示・保管を決める。</p><em>同じ認証・同じデータ</em></article><div class="connector">→</div><article class="node"><h3>ランドの表示</h3><p>到着イベントを受け取り、大画面で歓迎してから通常の動きへつなぐ。</p><em>表示PCは見ることに専念</em></article></div>
+          <div class="state-grid" style="margin-top:18px"><article class="state"><h3>確認待ち</h3><p>子どもが完成。まだ大画面へは出ない。</p></article><article class="state"><h3>登場中</h3><p>スタッフ判断後、到着演出を実行している。</p></article><article class="state"><h3>表示中</h3><p>ランドのなかまで、ほかのキャラと動く。</p></article><article class="state"><h3>非表示・保管</h3><p>問題があっても、まずは復旧できる状態に残す。</p></article></div>
+        </div>
+      </section>
+
+      <section id="scope">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">06 / SCOPE &amp; GATES</p><h2>今つくるものと、<br>決めてからつくるもの。</h2></div><p class="section-intro">曖昧な部分を「なんとなく実装」しないことも、当日体験を守る設計です。決まっていることと、実機で確かめることを分けます。</p></div>
+          <div class="split"><article class="scope now"><h3>今回のMVP</h3><p>会場で「描く → 確認する → 登場する」を迷いなく通す。</p><ul><li>子ども専用の指描きタブレット</li><li>PC中心・スマホ対応の作品／ランド管理</li><li>確認待ちからのスタッフ公開</li><li>タブレットから大画面への連続演出</li><li>非表示・保管・接続状態の確認</li></ul></article><article class="scope later"><h3>後続にするもの</h3><p>当日の達成を邪魔しないよう、持ち帰りや高度な運用は後から伸ばす。</p><ul><li>LINE・すわぷよへの作品QR引換</li><li>お絵描き補助の種類を増やすこと</li><li>演出パターンの大幅な追加</li><li>作品を使ったSNSや二次利用の運用</li><li>出展者・運営の高度なレポート</li></ul></article></div>
+          <div class="gate-grid" style="margin-top:18px"><article class="gate"><b>GATE 01</b><h3>運営認証</h3><p>PC・スマホから作品や設定を書き換えるため、認証なしの管理は使わない。方式を確定してから本番配線する。</p></article><article class="gate"><b>GATE 02</b><h3>回転率と描画補助</h3><p>目標時間、色数、土台、スタンプ、演出の長さは、3歳頃から小学生までの実機テストで決める。</p></article><article class="gate"><b>GATE 03</b><h3>会場回線と復旧</h3><p>回線が切れても、表示済み作品は止めない。新しい作品をどう渡し、どう復旧するかを現地条件で決める。</p></article></div>
+        </div>
+      </section>
+
+      <section id="quality">
+        <div class="wrap">
+          <div class="section-head"><div><p class="eyebrow">07 / WHAT WE WILL PROVE</p><h2>完成とは、機能があることではなく、<br>会場で回ること。</h2></div><p class="section-intro">テストではコードだけでなく、子ども・スタッフ・大画面の三者が一つの体験としてつながるかを確かめます。</p></div>
+          <div class="checklist"><div class="check"><b>✓</b><span>子どもが説明なしでも、色を選び、描き、完成まで進める。</span></div><div class="check"><b>✓</b><span>スタッフがPCでもスマホでも、確認待ち作品を迷わず扱える。</span></div><div class="check"><b>✓</b><span>未確認作品が自動公開されず、二重登場もしない。</span></div><div class="check"><b>✓</b><span>子どもがタブレットの絵と大画面のキャラを結びつけられる。</span></div><div class="check"><b>✓</b><span>音なし・Reduce Motionでも、到着と完了が分かる。</span></div><div class="check"><b>✓</b><span>回線・タブレット・表示PCの切断時に、成功したように見せない。</span></div></div>
+        </div>
+      </section>
+
+      <footer>
+        すわぷよ・ユアタイム統合仕様｜当日お絵描き・ふわふわランド運営 概要
+        <div class="source-links"><a href="../00_案内.md">仕様案内</a><a href="../01_要件定義/03_業務フロー.md">業務フロー</a><a href="../02_体験設計/05_画面UI定義.md">画面UI定義</a><a href="../03_基本設計/01_システム概要・構成図.md">システム構成</a><a href="02_意思決定・要確認一覧.md">意思決定・Gate</a></div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
