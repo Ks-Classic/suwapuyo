@@ -1,0 +1,27 @@
+{
+  "status": "review",
+  "image": { "width": 2500, "height": 1686, "maxBytes": 1000000 },
+  "officialReference": "https://developers.line.biz/en/reference/messaging-api/#upload-rich-menu-image",
+  "areas": [
+    { "key": "main", "bounds": { "x": 0, "y": 0, "width": 1000, "height": 1686 } },
+    { "key": "right_top_left", "bounds": { "x": 1000, "y": 0, "width": 750, "height": 843 } },
+    { "key": "right_top_right", "bounds": { "x": 1750, "y": 0, "width": 750, "height": 843 } },
+    { "key": "right_bottom_left", "bounds": { "x": 1000, "y": 843, "width": 750, "height": 843 } },
+    { "key": "right_bottom_right", "bounds": { "x": 1750, "y": 843, "width": 750, "height": 843 } }
+  ],
+  "menus": {
+    "before": {
+      "image": "rich-menu-before-gpt-image2-v3.jpg",
+      "actions": [
+        { "key": "play", "label": "すわぷよで遊ぶ" },
+        { "key": "booths", "label": "出展ブース" },
+        { "key": "event_info", "label": "YourTIME.・日時／アクセス" },
+        { "key": "makers", "label": "すわぷよの作り手" },
+        { "key": "about_suwapuyo", "label": "すわぷよって？", "purpose": "初めての人へ、どんなゲームで何をして遊ぶかを短く説明し、主導線へ戻す" }
+      ]
+    },
+    "during": { "image": "rich-menu-during-素材-v2.jpg" },
+    "after": { "image": "rich-menu-after-素材-v2.jpg" }
+  },
+  "productionGate": "LINE-206: unresolved external URLs and fallback actions must be fixed before registration"
+}
