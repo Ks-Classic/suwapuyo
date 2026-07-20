@@ -9,18 +9,25 @@ description: すわぷよのInstagram・X・Threads向け静止画やカルー�
 
 ## 最初に読む
 
+静止画と動画で企画・コピー・キャラ・公開判断を共有するため、作業前に [SNS静止画・動画 共通制作契約](../../../docs/80_制作過程/11_SNS静止画・動画共通制作契約.md) を全文読む。
+
 公式やすを扱う場合、またはキャラクター原画の扱いに迷う場合は、作業前に [references/brand-asset-rules.md](references/brand-asset-rules.md) を全文読む。
+
+動画も派生する企画では、同じ`content/social/posts/<content-id>/post.md`を正本にし、やっ太郎の動画だけを `.agents/skills/suwapuyo-sns-video/` へ渡す。静止画の承認を動画へ自動継承しない。
+
+SNSブランドシリーズの使用キャラは基本`やっ太郎`と、保護原画を変えない`じく太郎`だけとする。ほかのすわぷよキャラを使う場合は、投稿ごとの明示決定と権利・ブランド確認を先に行う。
 
 ## 固定ルール
 
 1. Instagram静止画を基準とし、最終画像を必ず `1080×1350` PNGにする。
 2. 画像内コピーの正本を、生成前にUTF-8テキストとして固定する。プロンプト中にも逐語で指定する。
-3. 画像内文字は原則GPT Image 2で一体生成する。誤字が出た生成物は公開候補にせず、再生成する。
+3. 画像内文字は必ずGPT Image 2で背景・装飾と一体生成する。Pillow、Canvas、SVG、HTML/CSS、ImageMagick等で文字を後載せしない。誤字が出た生成物は公開候補にせず、GPT Image 2で再生成または文字修正する。
 4. 「生成時に誤字が絶対発生しない」と表現しない。保証するのは、未検証・不一致の画像を承認工程へ通さないことである。
-5. 公式やすの原画を生成AIへ入力しない。再描画、背景除去、切り抜き、補完、色変更、ポーズ変更、衣装変更を禁止する。
-6. 公式やすを使う場合は、SHA-256確認済みの原画を1:1・無変形・整数座標で最終キャンバスへ貼る。余白や白背景を消さない。
-7. 公式やすを透明背景で使いたい場合は、ツナマヨさんから承認済み透過原画を受領するまで止める。
-8. review・approved・publishedを混同しない。人の承認前は必ず `assets/01_review/` に置く。
+5. 公式やすの保護原画を生成AIへ入力しない。再描画、切り抜き、補完、色変更、ポーズ変更、衣装変更を禁止する。背景透過だけは作者許諾済みのため、元JPGのRGB・寸法を保持し、外周につながる白背景だけを決定的処理で二値透過した登録済みPNGを使用できる。
+6. 公式やすを使う場合は、SHA-256確認済みのJPGまたは登録済み透過PNGを1:1・無変形・整数座標で最終キャンバスへ貼る。透過PNGでは不透明領域の全pixel一致を検査する。
+7. 新しい透過版を作る場合は、`create_protected_transparent_asset.py`で元JPGのhashを確認して作成し、出力hashをasset-registerへ固定する。AI背景除去、crop、リサイズ、半透明化はしない。
+8. 保護原画を含む画像は、先にGPT Image 2で背景・全文字・吹き出し・装飾・AI入力可能なキャラまでを完成スライドとして一体生成し、保護原画の配置領域だけを空ける。その後、保護原画を1:1で合成する。完成スライドに含められる文字や吹き出しを、理由なく部品単体で別生成しない。
+9. review・approved・publishedを混同しない。人の承認前は必ず `assets/01_review/` に置く。
 
 ## 制作フロー
 
@@ -40,7 +47,10 @@ description: すわぷよのInstagram・X・Threads向け静止画やカルー�
 
 - 4:5の短い縦長キャンバス、Instagram feed、全要素をcrop-safe area内、と明示する。
 - 文字は正本を引用し、行区切り、句読点、空白まで指定する。
-- 公式やすを使うスライドは、公式やすを除いた背景・文字・装飾だけを生成し、原画配置領域を空ける。
+- 文字なし背景を生成してローカル処理で文字を後載せする方式は禁止する。GPT Image 2が利用できなければ、別方式へ無断で切り替えず制作を止める。
+- 公式やすを使うスライドは、公式やすを除いた背景・全文字・吹き出し・装飾・AI入力可能なキャラまでをGPT Image 2で完成させ、原画配置領域だけを空ける。
+- 吹き出し単体や文字パーツだけを先に生成せず、原則としてスライド全体の文脈・余白・視線誘導を含む完成レイヤーを一発で生成する。誤字修正も完成レイヤーをGPT Image 2で修正する。
+- 過去画像を再掲・注釈する場合、保護原画入り完成画像をGPT Image 2へ戻さない。保護原画合成前のレイヤーがあれば、それへ注釈・吹き出しを一体生成してから同じ保護原画を再合成する。
 - 生成画像が4:5でなくても、そのまま採用しない。
 
 ### 3. 4:5へ正規化する
@@ -64,13 +74,13 @@ python3 .agents/skills/suwapuyo-sns-image/scripts/normalize_feed_image.py \
 ```bash
 python3 .agents/skills/suwapuyo-sns-image/scripts/compose_protected_asset.py \
   --background <1080x1350-background.png> \
-  --protected やすさん.jpg \
-  --expected-sha256 8dd3b3f13e7b292c6a2bf0972ff4737bd0cae7b5a486a205f628f2421b37a4dd \
+  --protected public/content/04_ツナやす_ブランド/01_キャラクター案/jikutaro-transparent-approved-v1.png \
+  --expected-sha256 09ba43605e8411afc143e76f37021f5c774025b23a049640689928e82feb6237 \
   --x 119 --y 508 \
   --output <final.png>
 ```
 
-原画を縮小・拡大して収めない。入らない構図を作り直す。
+保護原画を縮小・拡大して収めない。入らない構図を作り直す。
 
 ### 5. セルフチェックする
 
@@ -83,8 +93,8 @@ python3 .agents/skills/suwapuyo-sns-image/scripts/validate_social_image.py \
   --image <final.png> \
   --expected-copy <expected.txt> \
   --observed-copy <observed.txt> \
-  --protected-source やすさん.jpg \
-  --protected-sha256 8dd3b3f13e7b292c6a2bf0972ff4737bd0cae7b5a486a205f628f2421b37a4dd \
+  --protected-source public/content/04_ツナやす_ブランド/01_キャラクター案/jikutaro-transparent-approved-v1.png \
+  --protected-sha256 09ba43605e8411afc143e76f37021f5c774025b23a049640689928e82feb6237 \
   --protected-x 119 --protected-y 508
 ```
 
