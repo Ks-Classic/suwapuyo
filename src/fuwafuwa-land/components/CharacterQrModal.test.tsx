@@ -2,7 +2,8 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CharacterQrModal, buildClaimUrl, claimTokenStatusLabel } from "./CharacterQrModal";
+import { CharacterQrModal } from "./CharacterQrModal";
+import { buildClaimUrl, claimTokenStatusLabel } from "./characterQr";
 import { createClaimToken, listClaimTokens, revokeClaimToken } from "../store/claimStore";
 import type { ClaimToken, DisplayCharacter } from "../types";
 

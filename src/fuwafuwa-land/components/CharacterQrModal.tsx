@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import type { ClaimToken, DisplayCharacter } from "../types";
 import { createClaimToken, listClaimTokens, revokeClaimToken } from "../store/claimStore";
+import { buildClaimUrl, claimTokenStatusLabel } from "./characterQr";
 
 interface CharacterQrModalProps {
   character: DisplayCharacter;
@@ -13,28 +14,6 @@ interface CharacterQrModalProps {
 }
 
 const QR_CANVAS_SIZE = 280;
-
-// QRに載せるURL。LIFF IDがあればLIFFディープリンク、なければ自ホストの /claim ルート。
-export function buildClaimUrl(token: string, liffId: string | undefined, origin: string): string {
-  const trimmedLiffId = liffId?.trim() ?? "";
-  if (trimmedLiffId.length > 0) {
-    return `https://liff.line.me/${trimmedLiffId}?claim=${encodeURIComponent(token)}`;
-  }
-  return `${origin}/claim?token=${encodeURIComponent(token)}`;
-}
-
-export function claimTokenStatusLabel(token: ClaimToken, now: Date = new Date()): string {
-  if (token.status === "claimed") {
-    return "使用済み";
-  }
-  if (token.status === "revoked") {
-    return "失効";
-  }
-  if (Date.parse(token.expiresAt) < now.getTime()) {
-    return "期限切れ";
-  }
-  return "有効";
-}
 
 function isUsableToken(token: ClaimToken): boolean {
   return token.status === "active" && Date.parse(token.expiresAt) > Date.now();
@@ -53,18 +32,16 @@ export function CharacterQrModal({ character, onClose, liffId = envLiffId() }: C
 
   const claimUrl = activeToken === null ? null : buildClaimUrl(activeToken, liffId, window.location.origin);
 
-  const reloadTokens = useCallback(async (): Promise<ClaimToken[]> => {
-    const loaded = await listClaimTokens(character.id);
-    setTokens(loaded);
-    return loaded;
-  }, [character.id]);
+  const loadTokens = useCallback((): Promise<ClaimToken[]> => listClaimTokens(character.id), [character.id]);
 
   // 開いたとき: 既存の有効トークンがあれば再利用、なければ新規発行(QR1枚=1トークン)。
   useEffect(() => {
     let active = true;
-    setBusy(true);
-    void reloadTokens()
+    void loadTokens()
       .then(async (loaded) => {
+        if (active) {
+          setTokens(loaded);
+        }
         const usable = loaded.find(isUsableToken);
         if (usable !== undefined) {
           return usable.token;
@@ -93,7 +70,7 @@ export function CharacterQrModal({ character, onClose, liffId = envLiffId() }: C
     return () => {
       active = false;
     };
-  }, [character.id, reloadTokens]);
+  }, [character.id, loadTokens]);
 
   // トークン確定後にcanvasへQR描画。
   useEffect(() => {
@@ -112,7 +89,7 @@ export function CharacterQrModal({ character, onClose, liffId = envLiffId() }: C
       .then((created) => {
         setActiveToken(created.token);
         setMessage("あたらしいQRを発行しました");
-        return reloadTokens();
+        return loadTokens().then(setTokens);
       })
       .catch((error: unknown) => setMessage(error instanceof Error ? error.message : "qr_token_issue_failed"))
       .finally(() => setBusy(false));
@@ -126,7 +103,7 @@ export function CharacterQrModal({ character, onClose, liffId = envLiffId() }: C
         if (token === activeToken) {
           setActiveToken(null);
         }
-        return reloadTokens();
+        return loadTokens().then(setTokens);
       })
       .catch((error: unknown) => setMessage(error instanceof Error ? error.message : "qr_token_revoke_failed"))
       .finally(() => setBusy(false));

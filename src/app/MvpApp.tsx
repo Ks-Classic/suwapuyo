@@ -192,7 +192,6 @@ export function MvpApp() {
   const [liffState, setLiffState] = useState<SuwapuyoLiffState>({ status: "loading", inClient: false });
   useEffect(() => {
     let active = true;
-    setLiffState({ status: "loading", inClient: false });
     void resolveSuwapuyoLiff(SUWAPUYO_LIFF_ID).then((state) => { if (active) setLiffState(state); });
     return () => { active = false; };
   }, [liffAttempt]);
@@ -214,7 +213,10 @@ export function MvpApp() {
       navigate(`/claim?token=${encodeURIComponent(claimToken)}`);
     }
   }, [path, navigate]);
-  if (liffState.status !== "ready" && liffState.status !== "demo") return <LiffGateScreen state={liffState} onRetry={() => setLiffAttempt((value) => value + 1)}/>;
+  if (liffState.status !== "ready" && liffState.status !== "demo") return <LiffGateScreen state={liffState} onRetry={() => {
+    setLiffState({ status: "loading", inClient: false });
+    setLiffAttempt((value) => value + 1);
+  }}/>;
   if (path === "/claim") return <ClaimScreen navigate={navigate}/>;
   if (path === "/auth") return <AuthScreen onContinue={() => navigate("/auth/friend")}/>;
   if (path === "/auth/friend") return <FriendScreen onAdded={() => navigate("/welcome")}/>;

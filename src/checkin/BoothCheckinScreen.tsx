@@ -28,10 +28,13 @@ export function BoothCheckinScreen({ campaignId, boothId, onFindNext }: BoothChe
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const outcome = recordBoothVisit(campaignId, boothId);
-    setVisit(outcome);
-    if (outcome.granted) track("stamp_get", { surface: "booth_checkin", id: boothId });
-    if (outcome.newMilestone !== null) track("reward_reach", { surface: "booth_milestone", id: String(outcome.newMilestone) });
+    const timer = window.setTimeout(() => {
+      const outcome = recordBoothVisit(campaignId, boothId);
+      setVisit(outcome);
+      if (outcome.granted) track("stamp_get", { surface: "booth_checkin", id: boothId });
+      if (outcome.newMilestone !== null) track("reward_reach", { surface: "booth_milestone", id: String(outcome.newMilestone) });
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [campaignId, boothId]);
 
   if (booth === null) {
