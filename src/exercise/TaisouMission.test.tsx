@@ -15,7 +15,7 @@ vi.mock("../shared/progressStore", () => ({ incrementTaisouCount: mocks.incremen
 vi.mock("../shared/analytics", () => ({ track: mocks.track }));
 vi.mock("../components/VillageNarrator", () => ({ VillageNarrator: ({ line }: { line: string }) => <div>{line}</div> }));
 vi.mock("./missionIntro", () => ({
-  pickMissionIntro: () => ({ id: "intro-1", missionLine: "きょうは「おおきくあーん」！", cheerLine: "いっしょに たのしもう！", launchLine: "いっくよー！" }),
+  pickMissionIntro: () => ({ id: "intro-1", missionLine: "「おおきくあーん」に ちょうせん！", cheerLine: "いっしょに たのしもう！", launchLine: "いっくよー！" }),
 }));
 
 const HOST: TaisouMissionHost = { id: "host", name: "ホスト", image: "/host.png" };
@@ -62,7 +62,7 @@ describe("TaisouMission", () => {
     expect(screen.getByText("ホストが とびだしてきた！")).toBeInTheDocument();
     expect(mocks.music.playDrumroll).toHaveBeenCalledWith(1200);
     act(() => vi.advanceTimersByTime(TAISOU_TIMING.YOKOKU_MS));
-    expect(screen.getByText("きょうは「おおきくあーん」！")).toBeInTheDocument();
+    expect(screen.getByText("「おおきくあーん」に ちょうせん！")).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(TAISOU_TIMING.SHOUKAI_MS));
     expect(screen.getByText("いっしょに たのしもう！")).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(TAISOU_TIMING.CHEER_MS));

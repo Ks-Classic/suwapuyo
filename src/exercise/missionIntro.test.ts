@@ -15,7 +15,7 @@ describe("mission intro", () => {
 
   it("combines the selected character style with the exercise name", () => {
     const intro = pickMissionIntro(HOST, MISSION);
-    expect(intro.missionLine).toBe("きょうは「おおきくあーん」！");
+    expect(intro.missionLine).toBe("「おおきくあーん」に ちょうせん！");
     expect(intro.cheerLine.length).toBeGreaterThan(0);
     expect(intro.launchLine.length).toBeGreaterThan(0);
   });

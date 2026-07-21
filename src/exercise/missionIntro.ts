@@ -78,6 +78,6 @@ export function pickMissionIntro(host: TaisouMissionHost, mission: MouthMission)
   rememberIntro(selected.id, recent);
   return {
     ...selected,
-    missionLine: `きょうは「${mission.name}」！`,
+    missionLine: `「${mission.name}」に ちょうせん！`,
   };
 }
