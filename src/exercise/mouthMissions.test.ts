@@ -18,6 +18,21 @@ describe("mouth missions v2", () => {
     expect(new Set(signatures).size).toBe(10);
   });
 
+  it("assigns every exercise a reviewed UX duration within the 15 to 60 second envelope", () => {
+    expect(Object.fromEntries(MOUTH_MISSIONS.map(({ id, suggestedDurationSec }) => [id, suggestedDurationSec]))).toEqual({
+      aan: 15,
+      niko_ii: 15,
+      tako_uu: 15,
+      pukupuku: 20,
+      beee: 15,
+      pachipachi: 20,
+      wink: 30,
+      aiube: 45,
+      fuusen: 30,
+      chu: 15,
+    });
+  });
+
   it("weights recently used hosts lower", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const first = pickMissionHost();

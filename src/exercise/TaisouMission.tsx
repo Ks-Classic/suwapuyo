@@ -1,4 +1,4 @@
-// お口体操ミッションv2。唯一の出口を「できた！」に限定し、スキップを構造的に持たない。
+// お口体操ミッションv2。目安時間はタイプ別で、完了・一時停止・スキップを利用者が選べる。
 import { useEffect, useRef, useState } from "react";
 import { getTaisouMusic } from "../audio/TaisouMusic";
 import { VillageNarrator } from "../components/VillageNarrator";
@@ -12,13 +12,17 @@ type TaisouMissionPhase = "yokoku" | "tame" | "kakegoe" | "honpen" | "matsu";
 export interface TaisouMissionProps {
   /** できた後のスタンプ演出完了時だけ呼ばれる。 */
   onComplete: () => void;
+  /** 記録を増やさずゲームへ戻る。 */
+  onSkip: () => void;
 }
 
-export function TaisouMission({ onComplete }: TaisouMissionProps) {
+export function TaisouMission({ onComplete, onSkip }: TaisouMissionProps) {
   const [host] = useState(() => pickMissionHost());
   const [mission] = useState(() => pickMouthMission());
   const [phase, setPhase] = useState<TaisouMissionPhase>("yokoku");
   const [beat, setBeat] = useState(0);
+  const [remainingSec, setRemainingSec] = useState<number>(() => mission.suggestedDurationSec);
+  const [paused, setPaused] = useState(false);
   const [stamped, setStamped] = useState(false);
   const musicRef = useRef(getTaisouMusic());
   const completionTimerRef = useRef<number | null>(null);
@@ -39,23 +43,39 @@ export function TaisouMission({ onComplete }: TaisouMissionProps) {
       const timer = window.setTimeout(() => setPhase("honpen"), TAISOU_TIMING.KAKEGOE_MS);
       return () => window.clearTimeout(timer);
     }
-    if (phase === "honpen") music.startLoop(mission.musicId);
     return undefined;
   }, [mission.musicId, phase]);
 
   useEffect(() => {
-    if (phase !== "honpen") return undefined;
+    const music = musicRef.current;
+    if (phase !== "honpen" || paused) {
+      music.stopLoop();
+      return undefined;
+    }
+    music.startLoop(mission.musicId);
+    return () => music.stopLoop();
+  }, [mission.musicId, paused, phase]);
+
+  useEffect(() => {
+    if (phase !== "honpen" || paused) return undefined;
     const timer = window.setTimeout(() => {
-      const next = beat + 1;
-      if (next >= mission.steps.length) {
-        musicRef.current.stopLoop();
-        setPhase("matsu");
-      } else {
-        setBeat(next);
-      }
+      setBeat((current) => (current + 1) % mission.steps.length);
     }, TAISOU_TIMING.BEAT_MS);
     return () => window.clearTimeout(timer);
-  }, [beat, mission.steps.length, phase]);
+  }, [beat, mission.steps.length, paused, phase]);
+
+  useEffect(() => {
+    if (phase !== "honpen" || paused) return undefined;
+    const timer = window.setTimeout(() => {
+      if (remainingSec <= 1) {
+        setRemainingSec(0);
+        setPhase("matsu");
+        return;
+      }
+      setRemainingSec((current) => current - 1);
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [paused, phase, remainingSec]);
 
   useEffect(() => () => {
     musicRef.current.stopLoop();
@@ -71,8 +91,24 @@ export function TaisouMission({ onComplete }: TaisouMissionProps) {
     completionTimerRef.current = window.setTimeout(onComplete, TAISOU_TIMING.STAMP_MS);
   };
 
+  const handleSkip = (): void => {
+    musicRef.current.stopLoop();
+    track("item_view", { kind: "taisou_mouth_skip", id: mission.id, surface: "taisou_mission" });
+    onSkip();
+  };
+
+  const handlePause = (): void => {
+    setPaused((current) => !current);
+  };
+
   const currentStep = mission.steps[Math.min(beat, mission.steps.length - 1)];
-  const narratorLine = phase === "matsu" ? (stamped ? "じょうずっ！はなまるだ〜！" : "できたら おして！") : phase === "kakegoe" ? mission.kakegoe : "ここで…お口体操タイム！";
+  const narratorLine = paused
+    ? "ひとやすみ。できるときに つづけよう！"
+    : phase === "matsu"
+      ? (stamped ? "じょうずっ！はなまるだ〜！" : "できたら おして！")
+      : phase === "kakegoe"
+        ? mission.kakegoe
+        : "ここで…お口体操タイム！";
 
   return (
     <div className={styles.taisouOverlay} role="dialog" aria-modal="true" aria-label="お口体操ミッション">
@@ -84,18 +120,26 @@ export function TaisouMission({ onComplete }: TaisouMissionProps) {
             {phase === "yokoku" ? <div className={styles.taisouYokokuIcon}>♪</div> : null}
             {phase === "tame" ? <div className={styles.taisouTame}>すー…</div> : null}
             {phase === "kakegoe" ? <p className={styles.taisouKakegoe}>{mission.kakegoe}</p> : null}
-            {phase === "honpen" ? <>
+            {stamped ? <div className={styles.taisouDone}>できたね！</div> : phase === "honpen" ? <>
               <div className={styles.kanaBeat}>{currentStep.kana}</div>
               <div className={styles.mouthPict} aria-label={currentStep.pictLabel}><span>{PICT_EMOJI[currentStep.pict] ?? currentStep.pict}</span></div>
-              <p className={styles.beatLine}>{currentStep.pictLabel}</p>
+              <p className={styles.beatLine}>{paused ? "いまは おやすみ中" : currentStep.pictLabel}</p>
+              <button type="button" className={styles.taisouCompleteButton} onClick={handleComplete}>できた！</button>
             </> : null}
-            {phase === "matsu" ? stamped ? <div className={styles.taisouDone}>できたね！</div> : <>
+            {phase === "matsu" && !stamped ? <>
               <p className={styles.taisouLine}>できたら おして！</p>
               <button type="button" className={styles.taisouCompleteButton} onClick={handleComplete}>できた！</button>
             </> : null}
           </div>
+          <div className={styles.timerRing} aria-label={`目安の残り時間 ${remainingSec}秒`}>
+            <span>{remainingSec}秒</span>
+          </div>
         </div>
-        <p className={styles.taisouLine}>{mission.name}（{mission.aim}）</p>
+        <p className={styles.taisouLine}>{mission.name}（目安 {mission.suggestedDurationSec}秒）</p>
+        {!stamped ? <div className={styles.taisouActions}>
+          <button type="button" className={styles.taisouSecondaryButton} onClick={handleSkip}>スキップ</button>
+          {phase === "honpen" ? <button type="button" className={styles.taisouSecondaryButton} onClick={handlePause}>{paused ? "再開" : "一時停止"}</button> : <span>無理せず、できる範囲でね</span>}
+        </div> : null}
       </div>
     </div>
   );

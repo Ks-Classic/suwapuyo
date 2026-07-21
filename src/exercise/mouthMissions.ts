@@ -46,6 +46,8 @@ export interface MouthMission {
     | "exercise-classic"
     | "latin"
     | "cute-pop";
+  /** UX上の目安時間。医療的な運動量ではなく、いつでも完了・中断できる。 */
+  suggestedDurationSec: 15 | 20 | 30 | 45 | 60;
   steps: MouthMissionStep[];
 }
 
@@ -80,6 +82,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "いっくよ〜！",
     musicId: "aan",
     musicStyle: "march",
+    suggestedDurationSec: 15,
     steps: [
       { kana: "あ", pict: "open", pictLabel: "おくちを おおきく ひらく" },
       { kana: "あ", pict: "open", pictLabel: "もういちど おおきく" },
@@ -93,6 +96,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "じゅんびはいい？",
     musicId: "niko_ii",
     musicStyle: "skip",
+    suggestedDurationSec: 15,
     steps: [
       { kana: "い", pict: "wide", pictLabel: "おくちを よこに ひく" },
       { kana: "い", pict: "wide", pictLabel: "にっこり もういちど" },
@@ -106,6 +110,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "おくちのじかんだよ〜！",
     musicId: "tako_uu",
     musicStyle: "waltz",
+    suggestedDurationSec: 15,
     steps: [
       { kana: "う", pict: "round-small", pictLabel: "おくちを すぼめる" },
       { kana: "う", pict: "round-small", pictLabel: "たこさんみたいに" },
@@ -119,6 +124,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "ほっぺの じゅんびは いい？",
     musicId: "pukupuku",
     musicStyle: "percussive",
+    suggestedDurationSec: 20,
     steps: [
       { kana: "ぷく", pict: "puff", pictLabel: "ほっぺを ふくらませる" },
       { kana: "ぷく", pict: "puff", pictLabel: "もっと ぷくーっと" },
@@ -132,6 +138,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "べろの じかんだよ〜！",
     musicId: "beee",
     musicStyle: "blues",
+    suggestedDurationSec: 15,
     steps: [
       { kana: "べ", pict: "tongue", pictLabel: "したを だす" },
       { kana: "べ", pict: "tongue", pictLabel: "もういちど べっ" },
@@ -145,6 +152,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "おめめも いっしょに いくよ〜！",
     musicId: "pachipachi",
     musicStyle: "pizzicato",
+    suggestedDurationSec: 20,
     steps: [
       { kana: "ぱち", pict: "blink", pictLabel: "まばたき ぱち" },
       { kana: "ぱち", pict: "blink", pictLabel: "もういちど ぱち" },
@@ -159,6 +167,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "かたっぽずつ いっくよ〜！",
     musicId: "wink",
     musicStyle: "jazz",
+    suggestedDurationSec: 30,
     steps: [
       { kana: "みぎ", pict: "wink-right", pictLabel: "みぎめで ウィンク" },
       { kana: "ひだり", pict: "wink-left", pictLabel: "ひだりめで ウィンク" },
@@ -173,6 +182,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "せーの、いっくよ〜！",
     musicId: "aiube",
     musicStyle: "exercise-classic",
+    suggestedDurationSec: 45,
     steps: [
       { kana: "あ", pict: "open", pictLabel: "おおきく あ" },
       { kana: "い", pict: "wide", pictLabel: "よこに い" },
@@ -187,6 +197,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "ふうせん ぷくー！じゅんびはいい？",
     musicId: "fuusen",
     musicStyle: "latin",
+    suggestedDurationSec: 30,
     steps: [
       { kana: "みぎぷく", pict: "puff-right", pictLabel: "みぎの ほっぺを ぷくー" },
       { kana: "ひだりぷく", pict: "puff-left", pictLabel: "ひだりの ほっぺを ぷくー" },
@@ -200,6 +211,7 @@ export const MOUTH_MISSIONS: MouthMission[] = [
     kakegoe: "さいごは ちゅーのくちだよ〜！",
     musicId: "chu",
     musicStyle: "cute-pop",
+    suggestedDurationSec: 15,
     steps: [
       { kana: "ちゅ", pict: "kiss", pictLabel: "ちゅーの おくち" },
       { kana: "ちゅ", pict: "kiss", pictLabel: "もういちど ちゅ" },

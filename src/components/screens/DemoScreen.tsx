@@ -1518,7 +1518,7 @@ export function DemoScreen({ taisouRequested = false, onTaisouRequestHandled }: 
     missionVisibleRef.current = missionVisible;
   }, [missionVisible]);
 
-  // プレイ中30秒ごと。overlay中・画面外・読み込み/キャラ選択中は時計を進めない。
+  // プレイ中60秒ごと。overlay中・画面外・読み込み/キャラ選択中は時計を進めない。
   useTaisouMissionTimer(!missionVisible && !loading, openTaisouMission);
 
   useEffect(() => {
@@ -1711,6 +1711,9 @@ export function DemoScreen({ taisouRequested = false, onTaisouRequestHandled }: 
 
       </div>
       {missionVisible ? <TaisouMission onComplete={() => {
+        setShowTaisou(false);
+        onTaisouRequestHandled?.();
+      }} onSkip={() => {
         setShowTaisou(false);
         onTaisouRequestHandled?.();
       }} /> : null}
