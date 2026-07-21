@@ -5,9 +5,10 @@ import { VillageNarrator } from "../components/VillageNarrator";
 import { track } from "../shared/analytics";
 import { incrementTaisouCount } from "../shared/progressStore";
 import styles from "../styles/demo.module.css";
+import { pickMissionIntro } from "./missionIntro";
 import { PICT_EMOJI, TAISOU_TIMING, pickMissionHost, pickMouthMission } from "./mouthMissions";
 
-type TaisouMissionPhase = "yokoku" | "tame" | "kakegoe" | "honpen" | "matsu";
+type TaisouMissionPhase = "yokoku" | "shoukai" | "cheer" | "countdown" | "launch" | "honpen" | "matsu";
 
 export interface TaisouMissionProps {
   /** できた後のスタンプ演出完了時だけ呼ばれる。 */
@@ -19,7 +20,9 @@ export interface TaisouMissionProps {
 export function TaisouMission({ onComplete, onSkip }: TaisouMissionProps) {
   const [host] = useState(() => pickMissionHost());
   const [mission] = useState(() => pickMouthMission());
+  const [intro] = useState(() => pickMissionIntro(host, mission));
   const [phase, setPhase] = useState<TaisouMissionPhase>("yokoku");
+  const [countdown, setCountdown] = useState<3 | 2 | 1>(3);
   const [beat, setBeat] = useState(0);
   const [remainingSec, setRemainingSec] = useState<number>(() => mission.suggestedDurationSec);
   const [paused, setPaused] = useState(false);
@@ -31,20 +34,36 @@ export function TaisouMission({ onComplete, onSkip }: TaisouMissionProps) {
     const music = musicRef.current;
     if (phase === "yokoku") {
       music.playDrumroll(TAISOU_TIMING.YOKOKU_MS);
-      const timer = window.setTimeout(() => setPhase("tame"), TAISOU_TIMING.YOKOKU_MS);
+      const timer = window.setTimeout(() => setPhase("shoukai"), TAISOU_TIMING.YOKOKU_MS);
       return () => window.clearTimeout(timer);
     }
-    if (phase === "tame") {
-      const timer = window.setTimeout(() => setPhase("kakegoe"), TAISOU_TIMING.TAME_MS);
+    if (phase === "shoukai") {
+      const timer = window.setTimeout(() => setPhase("cheer"), TAISOU_TIMING.SHOUKAI_MS);
       return () => window.clearTimeout(timer);
     }
-    if (phase === "kakegoe") {
+    if (phase === "cheer") {
+      const timer = window.setTimeout(() => setPhase("countdown"), TAISOU_TIMING.CHEER_MS);
+      return () => window.clearTimeout(timer);
+    }
+    if (phase === "countdown") {
+      music.playCountdownTick(countdown);
+      const timer = window.setTimeout(() => {
+        if (countdown > 1) {
+          setCountdown(countdown === 3 ? 2 : 1);
+        } else {
+          setPhase("launch");
+        }
+      }, TAISOU_TIMING.COUNTDOWN_STEP_MS);
+      return () => window.clearTimeout(timer);
+    }
+    if (phase === "launch") {
+      music.playLaunch();
       music.playIntro(mission.musicId);
-      const timer = window.setTimeout(() => setPhase("honpen"), TAISOU_TIMING.KAKEGOE_MS);
+      const timer = window.setTimeout(() => setPhase("honpen"), TAISOU_TIMING.LAUNCH_MS);
       return () => window.clearTimeout(timer);
     }
     return undefined;
-  }, [mission.musicId, phase]);
+  }, [countdown, mission.musicId, phase]);
 
   useEffect(() => {
     const music = musicRef.current;
@@ -106,20 +125,35 @@ export function TaisouMission({ onComplete, onSkip }: TaisouMissionProps) {
     ? "ひとやすみ。できるときに つづけよう！"
     : phase === "matsu"
       ? (stamped ? "じょうずっ！はなまるだ〜！" : "できたら おして！")
-      : phase === "kakegoe"
-        ? mission.kakegoe
-        : "ここで…お口体操タイム！";
+      : phase === "yokoku"
+        ? `${host.name}が とびだしてきた！`
+        : phase === "shoukai"
+          ? intro.missionLine
+          : phase === "cheer"
+            ? intro.cheerLine
+            : phase === "countdown"
+              ? `${countdown}！`
+              : phase === "launch"
+                ? intro.launchLine
+                : `${host.name}と いっしょに！`;
 
   return (
     <div className={styles.taisouOverlay} role="dialog" aria-modal="true" aria-label="お口体操ミッション">
       <div className={styles.taisouPanel}>
         <VillageNarrator line={narratorLine} compact />
         <div className={styles.taisouStage}>
-          <img src={host.image} alt={host.name} className={`${styles.taisouHost} ${phase === "yokoku" ? styles.taisouHostPopIn : ""}`} />
-          <div className={styles.taisouMain}>
+          <img
+            key={phase === "countdown" ? `countdown-${countdown}` : phase}
+            src={host.image}
+            alt={host.name}
+            className={`${styles.taisouHost} ${phase === "yokoku" ? styles.taisouHostPopIn : ""} ${phase === "countdown" || phase === "launch" ? styles.taisouHostCountdown : ""}`}
+          />
+          <div className={styles.taisouMain} aria-live={phase === "countdown" || phase === "launch" ? "assertive" : "polite"}>
             {phase === "yokoku" ? <div className={styles.taisouYokokuIcon}>♪</div> : null}
-            {phase === "tame" ? <div className={styles.taisouTame}>すー…</div> : null}
-            {phase === "kakegoe" ? <p className={styles.taisouKakegoe}>{mission.kakegoe}</p> : null}
+            {phase === "shoukai" ? <p className={styles.taisouIntroTitle}>{mission.name}</p> : null}
+            {phase === "cheer" ? <div className={styles.taisouTame}>わくわく</div> : null}
+            {phase === "countdown" ? <div key={countdown} className={styles.taisouCountdown}>{countdown}</div> : null}
+            {phase === "launch" ? <p className={styles.taisouKakegoe}>{intro.launchLine}</p> : null}
             {stamped ? <div className={styles.taisouDone}>できたね！</div> : phase === "honpen" ? <>
               <div className={styles.kanaBeat}>{currentStep.kana}</div>
               <div className={styles.mouthPict} aria-label={currentStep.pictLabel}><span>{PICT_EMOJI[currentStep.pict] ?? currentStep.pict}</span></div>
@@ -131,9 +165,9 @@ export function TaisouMission({ onComplete, onSkip }: TaisouMissionProps) {
               <button type="button" className={styles.taisouCompleteButton} onClick={handleComplete}>できた！</button>
             </> : null}
           </div>
-          <div className={styles.timerRing} aria-label={`目安の残り時間 ${remainingSec}秒`}>
+          {phase === "honpen" || phase === "matsu" ? <div className={styles.timerRing} aria-label={`目安の残り時間 ${remainingSec}秒`}>
             <span>{remainingSec}秒</span>
-          </div>
+          </div> : <div aria-hidden="true" />}
         </div>
         <p className={styles.taisouLine}>{mission.name}（目安 {mission.suggestedDurationSec}秒）</p>
         {!stamped ? <div className={styles.taisouActions}>

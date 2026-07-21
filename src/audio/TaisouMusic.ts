@@ -315,6 +315,27 @@ export class TaisouMusic {
     this.scheduleNotes(tune.intro, tune.bpm, tune.swing ?? 0, ctx.currentTime + 0.02, ctx.destination, ctx);
   }
 
+  /** 3・2・1の数字と同期する上昇音。 */
+  playCountdownTick(count: 3 | 2 | 1): void {
+    const ctx = this.getCtx();
+    if (ctx === null) {
+      return;
+    }
+    const frequencies: Record<3 | 2 | 1, number> = { 3: 523, 2: 659, 1: 784 };
+    this.scheduleTone(ctx, ctx.destination, ctx.currentTime + 0.02, 0.22, frequencies[count], "triangle", 1);
+  }
+
+  /** カウントダウン後の開始音。 */
+  playLaunch(): void {
+    const ctx = this.getCtx();
+    if (ctx === null) {
+      return;
+    }
+    const now = ctx.currentTime + 0.02;
+    this.scheduleTone(ctx, ctx.destination, now, 0.42, 1047, "square", 1.15);
+    this.scheduleNoise(ctx, ctx.destination, now, 0.18, 4200, 0.45);
+  }
+
   /** 本編ループ音楽の開始(停止まで繰り返し) */
   startLoop(missionId: string): void {
     this.stopLoop();

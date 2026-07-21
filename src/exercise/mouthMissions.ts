@@ -220,11 +220,13 @@ export const MOUTH_MISSIONS: MouthMission[] = [
   },
 ];
 
-// ミッション本編の演出タイミング(既存 TaisouInterlude の BEAT_MS=1500 を踏襲)
+// 導入は合計約6.6秒。本編は既存 TaisouInterlude の BEAT_MS=1500 を踏襲。
 export const TAISOU_TIMING = {
   YOKOKU_MS: 1200,
-  TAME_MS: 800,
-  KAKEGOE_MS: 1000,
+  SHOUKAI_MS: 1200,
+  CHEER_MS: 1300,
+  COUNTDOWN_STEP_MS: 700,
+  LAUNCH_MS: 800,
   BEAT_MS: 1500,
   STAMP_MS: 2400,
 } as const;

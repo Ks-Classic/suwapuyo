@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TAISOU_TIMING, type MouthMission, type TaisouMissionHost } from "./mouthMissions";
 
 const mocks = vi.hoisted(() => ({
-  music: { playDrumroll: vi.fn(), playIntro: vi.fn(), startLoop: vi.fn(), stopLoop: vi.fn(), playFanfare: vi.fn() },
+  music: { playDrumroll: vi.fn(), playCountdownTick: vi.fn(), playLaunch: vi.fn(), playIntro: vi.fn(), startLoop: vi.fn(), stopLoop: vi.fn(), playFanfare: vi.fn() },
   increment: vi.fn(),
   track: vi.fn(),
 }));
@@ -14,6 +14,9 @@ vi.mock("../audio/TaisouMusic", () => ({ getTaisouMusic: () => mocks.music }));
 vi.mock("../shared/progressStore", () => ({ incrementTaisouCount: mocks.increment }));
 vi.mock("../shared/analytics", () => ({ track: mocks.track }));
 vi.mock("../components/VillageNarrator", () => ({ VillageNarrator: ({ line }: { line: string }) => <div>{line}</div> }));
+vi.mock("./missionIntro", () => ({
+  pickMissionIntro: () => ({ id: "intro-1", missionLine: "きょうは「おおきくあーん」！", cheerLine: "いっしょに たのしもう！", launchLine: "いっくよー！" }),
+}));
 
 const HOST: TaisouMissionHost = { id: "host", name: "ホスト", image: "/host.png" };
 const MISSION: MouthMission = {
@@ -34,8 +37,12 @@ import { TaisouMission } from "./TaisouMission";
 
 function advanceToExercise(): void {
   act(() => vi.advanceTimersByTime(TAISOU_TIMING.YOKOKU_MS));
-  act(() => vi.advanceTimersByTime(TAISOU_TIMING.TAME_MS));
-  act(() => vi.advanceTimersByTime(TAISOU_TIMING.KAKEGOE_MS));
+  act(() => vi.advanceTimersByTime(TAISOU_TIMING.SHOUKAI_MS));
+  act(() => vi.advanceTimersByTime(TAISOU_TIMING.CHEER_MS));
+  for (let count = 3; count >= 1; count--) {
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.COUNTDOWN_STEP_MS));
+  }
+  act(() => vi.advanceTimersByTime(TAISOU_TIMING.LAUNCH_MS));
 }
 
 function advanceToCompletionWait(): void {
@@ -49,16 +56,29 @@ describe("TaisouMission", () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); });
   afterEach(() => { cleanup(); vi.useRealTimers(); });
 
-  it("runs the specified intro phases and mission-specific audio", () => {
+  it("runs the character cheer, audible countdown, launch and mission-specific audio", () => {
     render(<TaisouMission onComplete={vi.fn()} onSkip={vi.fn()} />);
     expect(screen.getByText("♪")).toBeInTheDocument();
+    expect(screen.getByText("ホストが とびだしてきた！")).toBeInTheDocument();
     expect(mocks.music.playDrumroll).toHaveBeenCalledWith(1200);
     act(() => vi.advanceTimersByTime(TAISOU_TIMING.YOKOKU_MS));
-    expect(screen.getByText("すー…")).toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(TAISOU_TIMING.TAME_MS));
-    expect(screen.getAllByText("いっくよ〜！").length).toBeGreaterThan(0);
+    expect(screen.getByText("きょうは「おおきくあーん」！")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.SHOUKAI_MS));
+    expect(screen.getByText("いっしょに たのしもう！")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.CHEER_MS));
+    expect(screen.getAllByText("3").length).toBeGreaterThan(0);
+    expect(mocks.music.playCountdownTick).toHaveBeenLastCalledWith(3);
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.COUNTDOWN_STEP_MS));
+    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
+    expect(mocks.music.playCountdownTick).toHaveBeenLastCalledWith(2);
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.COUNTDOWN_STEP_MS));
+    expect(screen.getAllByText("1").length).toBeGreaterThan(0);
+    expect(mocks.music.playCountdownTick).toHaveBeenLastCalledWith(1);
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.COUNTDOWN_STEP_MS));
+    expect(screen.getAllByText("いっくよー！").length).toBeGreaterThan(0);
+    expect(mocks.music.playLaunch).toHaveBeenCalledOnce();
     expect(mocks.music.playIntro).toHaveBeenCalledWith("aan");
-    act(() => vi.advanceTimersByTime(TAISOU_TIMING.KAKEGOE_MS));
+    act(() => vi.advanceTimersByTime(TAISOU_TIMING.LAUNCH_MS));
     expect(mocks.music.startLoop).toHaveBeenCalledWith("aan");
     expect(screen.getByText("ひらく")).toBeInTheDocument();
   });
